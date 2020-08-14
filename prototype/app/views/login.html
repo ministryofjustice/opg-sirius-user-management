@@ -1,0 +1,46 @@
+{% extends "layout_public.html" %}
+
+{% block pageTitle %}
+  Sign in - Sirius
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-xl">Sign in</h1>
+
+      <form class="form" action="/home" method="post">
+
+        {{ govukInput({
+          id: "f-email",
+          name: "email",
+          classes: "govuk-!-width-two-thirds",
+          label: {
+            text: "Email address"
+          }
+        }) }}
+
+        {{ govukInput({
+          id: "f-password",
+          name: "password",
+          type: "password",
+          classes: "govuk-!-width-two-thirds",
+          label: {
+            text: "Password"
+          }
+        }) }}
+
+        {{ govukButton({
+          text: "Sign in"
+        }) }}
+
+      </form>
+
+      <p>
+        <a href="/forgot-password">
+          Forgotten your password?
+        </a>
+      </p>
+    </div>
+  </div>
+{% endblock %}

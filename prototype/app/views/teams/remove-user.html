@@ -1,0 +1,34 @@
+{% extends "layout.html" %}
+
+{% block pageTitle %}
+  Remove user from team - Sirius
+{% endblock %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="/teams/details">Back</a>
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-xl">Remove user from team</h1>
+
+      <p>Are you sure you want to remove <strong>Dan Karstetter</strong> from the <strong>Allocations - (Supervision)</strong> team?</p>
+
+      <form class="form" action="/teams/details" method="post">
+
+        {{ govukButton({
+          text: "Remove user"
+        }) }}
+
+        {{ govukButton({
+          element: "a",
+          href: "/teams/details",
+          text: "Cancel",
+          classes: "govuk-button--secondary"
+        }) }}
+
+      </form>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+
+{% from "moj/components/banner/macro.njk" import mojBanner %}
+
+{% block pageTitle %}
+  Resend activation email - Sirius
+{% endblock %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="/edit">Back</a>
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-xl">Resend activation email</h1>
+
+      {{ mojBanner({
+        type: "success",
+        html: "New activation email sent to maurine.bilski@opgtest.com"
+      }) }}
+
+      {{ govukButton({
+        element: "a",
+        text: "Continue"
+      }) }}
+    </div>
+  </div>
+{% endblock %}
