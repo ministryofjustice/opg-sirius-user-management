@@ -1,0 +1,37 @@
+
+{% extends "layout_public.html" %}
+
+{% block pageTitle %}
+  Sirius User Management Prototype
+{% endblock %}
+
+{% block content %}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-xl">
+        Sirius User Management Prototype
+        <span class="govuk-caption-xl">{{releaseVersion}}</span>
+      </h1>{{releaseVersion | log }}
+      <p>
+        This is a prototype of the new Sirius user management application. Further specification can be found <a href="https://opgtransform.atlassian.net/wiki/spaces/LS/pages/1733165095/Shared+user+management+interface">on the wiki</a>.
+      </p>
+
+      <h2 class="govuk-heading-m">Get started</h2>
+
+      <p>Visit one of the links below to explore the prototype.</p>
+
+      <ul class="govuk-list govuk-list--bullet">
+        <li>
+          <a href="/login">Login screen</a>
+          <ul class="govuk-list govuk-list--bullet">
+            <li>Use the username "user@opgtest.com" to view as a non-admin</li>
+            <li>Use any other username/password to view as an admin</li>
+          </ul>
+        </li>
+        <li><a href="/home">Dashboard for administrators</a></li>
+      </ul>
+    </div>
+  </div>
+
+{% endblock %}

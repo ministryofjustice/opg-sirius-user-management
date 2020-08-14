@@ -1,0 +1,93 @@
+{% extends "layout.html" %}
+
+{% from "moj/components/banner/macro.njk" import mojBanner %}
+
+{% block pageTitle %}
+  Edit Maurine Bilski - Sirius
+{% endblock %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="/home">Back</a>
+{% endblock %}
+
+{% block content %}
+  <h1 class="govuk-heading-xl">Edit Maurine Bilski</h1>
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <form class="form" action="/edit-permissions" method="post">
+
+        {{ mojBanner({
+          type: 'information',
+          html: "User has not activated their account yet, do you want to <a href='/resend-activation'>resend the activation email</a>?"
+        }) }}
+
+        {{ govukInput({
+          id: "f-email",
+          name: "email",
+          label: {
+            text: "Email address"
+          },
+          value: "maurine.bilski@opgtest.com",
+          attributes: {
+            disabled: "disabled"
+          }
+        }) }}
+
+        {{ govukInput({
+          id: "f-firstname",
+          name: "firstname",
+          label: {
+            text: "First name"
+          },
+          value: "Maurine",
+          classes: "govuk-!-width-two-thirds",
+          autocomplete: "name",
+          attributes: {
+            spellcheck: "false"
+          }
+        }) }}
+
+        {{ govukInput({
+          id: "f-lastname",
+          name: "lastname",
+          label: {
+            text: "Last name"
+          },
+          value: "Bilski",
+          classes: "govuk-!-width-two-thirds",
+          autocomplete: "name",
+          attributes: {
+            spellcheck: "false"
+          }
+        }) }}
+
+        {{ govukRadios({
+          classes: "govuk-radios--inline",
+          idPrefix: "suspended",
+          name: "suspended",
+          fieldset: {
+            legend: {
+              text: "Suspended",
+              classes: "govuk-fieldset__legend--m"
+            }
+          },
+          items: [
+            {
+              text: "Yes"
+            },
+            {
+              text: "No",
+              checked: true
+            }
+          ]
+        }) }}
+
+        {{ govukButton({
+          text: "Continue"
+        }) }}
+
+      </form>
+    </div>
+  </div>
+{% endblock %}

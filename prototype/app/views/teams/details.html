@@ -1,0 +1,79 @@
+{% extends "layout.html" %}
+
+{% from "moj/components/page-header-actions/macro.njk" import mojPageHeaderActions %}
+{% from "moj/components/search/macro.njk"              import mojSearch %}
+
+{% block pageTitle %}
+  Allocations - (Supervision) - Sirius
+{% endblock %}
+
+{% block headextra %}
+  <style>
+    .govuk-checkboxes--small .govuk-checkboxes__label::before { top: 0; }
+    .govuk-checkboxes--small .govuk-checkboxes__label::after  { top: 8px; }
+  </style>
+{% endblock %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="/teams">Back</a>
+{% endblock %}
+
+{% block content %}
+  {% macro checkbox(name) %}
+    <div class="govuk-checkboxes govuk-checkboxes--small">
+      <div class="govuk-checkboxes__item">
+        <input class="govuk-checkboxes__input" name="cb[]" type="checkbox">
+        <label class="govuk-label govuk-checkboxes__label">
+          <span class="govuk-visually-hidden">Waste from animal carcasses</span>
+        </label>
+      </div>
+    </div>
+  {% endmacro %}
+
+  {{ mojPageHeaderActions({
+    heading: {
+      html: '<h1 class="govuk-heading-xl">Allocations - (Supervision)</h1>'
+    },
+    items: [
+      {
+        text: 'Edit team',
+        href: '/teams/edit',
+        classes: 'govuk-button--secondary'
+      },
+      {
+        text: 'Add user to team',
+        href: '/teams/add-user-search',
+        classes: 'govuk-button--secondary'
+      }
+    ]
+  }) }}
+
+  {{ govukButton({
+    href: '/teams/remove-user-multi',
+    classes: 'govuk-button--secondary',
+    text: 'Remove selected from team'
+  }) }}
+
+  {{ govukTable({
+    firstCellIsHeader: true,
+    head: [
+      {
+        html: checkbox('Select all')
+      },
+      {
+        text: "Name"
+      },
+      {
+        text: "Email"
+      },
+      {
+        html: "<span class='govuk-visually-hidden'>Actions</span>"
+      }
+    ],
+    rows: [
+      [{html: checkbox('Dan Karstetter')}, {text: 'Dan Karstetter'}, {text: 'dan.karstetter@opgtest.com'}, {html: '<a href="/teams/remove-user">Remove from team</a>'}],
+      [{html: checkbox('Craig Shawaiki')}, {text: 'Craig Shawaiki'}, {text: 'craig.shawaiki@opgtest.com'}, {html: '<a href="/teams/remove-user">Remove from team</a>'}],
+      [{html: checkbox('Dorinda Fuselier')}, {text: 'Dorinda Fuselier'}, {text: 'dorinda.fuselier@opgtest.com'}, {html: '<a href="/teams/remove-user">Remove from team</a>'}]
+    ]
+  }) }}
+{% endblock %}

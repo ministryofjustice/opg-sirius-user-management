@@ -1,0 +1,59 @@
+{% extends "layout.html" %}
+
+{% block pageTitle %}
+  Add new user - Sirius
+{% endblock %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="/home">Back</a>
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-xl">Add new user</h1>
+
+      <form class="form" action="/add-permissions" method="post">
+
+        {{ govukInput({
+          id: "f-email",
+          name: "email",
+          label: {
+            text: "Email address"
+          }
+        }) }}
+
+        {{ govukInput({
+          id: "f-firstname",
+          name: "firstname",
+          label: {
+            text: "First name"
+          },
+          classes: "govuk-!-width-two-thirds",
+          autocomplete: "name",
+          attributes: {
+            spellcheck: "false"
+          }
+        }) }}
+
+        {{ govukInput({
+          id: "f-lastname",
+          name: "lastname",
+          label: {
+            text: "Last name"
+          },
+          classes: "govuk-!-width-two-thirds",
+          autocomplete: "name",
+          attributes: {
+            spellcheck: "false"
+          }
+        }) }}
+
+        {{ govukButton({
+          text: "Continue"
+        }) }}
+
+      </form>
+    </div>
+  </div>
+{% endblock %}

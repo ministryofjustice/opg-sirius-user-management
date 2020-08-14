@@ -1,0 +1,84 @@
+{% extends "layout.html" %}
+
+{% from "moj/components/page-header-actions/macro.njk" import mojPageHeaderActions %}
+
+{% block pageTitle %}
+  My details - Sirius
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-xl">My details</h1>
+
+      <h2 class="govuk-heading-m">Personal details</h2>
+      {{ govukSummaryList({
+        rows: [
+          {
+            key: {
+              text: "Name"
+            },
+            value: {
+              text: "Sarah Philips"
+            }
+          },
+          {
+            key: {
+              text: "Email"
+            },
+            value: {
+              text: "sarah.philips@opgtest.com"
+            }
+          },
+          {
+            key: {
+              text: "Phone number"
+            },
+            value: {
+              html: "03004560300"
+            },
+            actions: {
+              items: [
+                {
+                  href: "/edit-my-details",
+                  text: "Change",
+                  visuallyHiddenText: "phone number"
+                }
+              ]
+            }
+          }
+        ]
+      }) }}
+
+      <h2 class="govuk-heading-m">Permissions</h2>
+      {{ govukSummaryList({
+        rows: [
+          {
+            key: {
+              text: "Organisation"
+            },
+            value: {
+              text: "OPG User"
+            }
+          },
+          {
+            key: {
+              text: "Team"
+            },
+            value: {
+              text: "Attorneyship Investigation Team"
+            }
+          },
+          {
+            key: {
+              text: "Roles"
+            },
+            value: {
+              text: "System Admin, Finance Manager, Reporting User"
+            }
+          }
+        ]
+      }) }}
+    </div>
+  </div>
+{% endblock %}

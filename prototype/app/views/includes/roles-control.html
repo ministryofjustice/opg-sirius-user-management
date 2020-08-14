@@ -1,0 +1,33 @@
+{% if selected is not defined %}
+  {% set selected = [] %}
+{% endif %}
+
+{{ govukCheckboxes({
+  idPrefix: "roles",
+  name: "roles",
+  classes: "govuk-checkboxes--small",
+  fieldset: {
+    legend: {
+      text: "Roles",
+      classes: "govuk-fieldset__legend--m"
+    }
+  },
+  items: [
+    { text: "Case Manager", checked: 'Case Manager' in selected },
+    { text: "Contact Centre User", checked: 'Contact Centre User' in selected },
+    { text: "Corporate Finance", checked: 'Corporate Finance' in selected },
+    { text: "DDC", checked: 'DDC' in selected },
+    { text: "Finance Manager", checked: 'Finance Manager' in selected },
+    { text: "Finance Reporting", checked: 'Finance Reporting' in selected },
+    { text: "Finance User", checked: 'Finance User' in selected },
+    { text: "Investigations User", checked: 'Investigations User' in selected },
+    { text: "Manager", checked: 'Manager' in selected },
+    { text: "POA User", checked: 'POA User' in selected },
+    { text: "Panel Deputy User", checked: 'Panel Deputy User' in selected },
+    { text: "Public API", checked: 'Public API' in selected },
+    { text: "Reporting User", checked: 'Reporting User' in selected },
+    { text: "System Admin", checked: 'System Admin' in selected, hint: { text: "System Admins can add and edit other users" } },
+    { text: "Unit Manager", checked: 'Unit Manager' in selected },
+    { text: "Visits Team User", checked: 'Visits Team User' in selected }
+  ]
+}) }}
