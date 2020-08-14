@@ -1,5 +1,5 @@
 {
-  "name": "opg-sirius-users-prototype",
+  "name": "opg-sirius-user-management-prototype",
   "description": "Rapidly create HTML prototypes of GOV.UK services",
   "version": "1.0.0",
   "private": true,
