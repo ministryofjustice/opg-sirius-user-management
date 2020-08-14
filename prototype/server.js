@@ -20,7 +20,6 @@ const middleware = [
   require('./lib/middleware/extensions/extensions.js')
 ]
 const config = require('./app/config.js')
-const documentationRoutes = require('./docs/documentation_routes.js')
 const packageJson = require('./package.json')
 const routes = require('./app/routes.js')
 const utils = require('./lib/utils.js')
