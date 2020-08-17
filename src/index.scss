@@ -1,4 +1,6 @@
 $govuk-assets-path: 'govuk-frontend/govuk/assets/';
-
 @import 'govuk-frontend/govuk/all.scss';
+
+$moj-assets-path: '@ministryofjustice/frontend/moj/assets/';
+@import "@ministryofjustice/frontend/moj/all.scss";
 
