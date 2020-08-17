@@ -1,0 +1,6 @@
+version: "3.6"
+
+services:
+  app:
+    build: .
+    ports: ["3784:80"]
