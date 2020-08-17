@@ -5,6 +5,6 @@
     "postinstall": "yarn --cwd prototype install",
     "start:prototype": "yarn --cwd prototype start",
     "test": "yarn --cwd prototype test",
-    "copy-assets": "cp -R prototype/public web/static/public"
+    "copy-assets": "rm -rf web/static/public && cp -R prototype/public web/static/public && rm -rf web/static/public/sass"
   }
 }
