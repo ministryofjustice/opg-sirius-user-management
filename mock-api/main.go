@@ -16,7 +16,6 @@ func main() {
 
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/auth/change-password", ChangePassword).Methods(http.MethodPost, http.MethodOptions)
-	router.Use(mux.CORSMethodMiddleware(router))
 
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
@@ -35,6 +34,8 @@ func validate(existingPassword, password, confirmPassword string) (string, bool)
 
 func ChangePassword(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST,OPTIONS")
+
 	if r.Method == http.MethodOptions {
 		return
 	}
