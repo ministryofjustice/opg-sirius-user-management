@@ -1,6 +1,6 @@
 import React from "react";
 
-const AppHeader = () => (
+const AppHeader = ({ serviceLabel, items }) => (
   <header class="moj-header" role="banner">
     <div class="moj-header__container">
       <div class="moj-header__logo">
@@ -28,38 +28,23 @@ const AppHeader = () => (
           />
         </svg>
 
-        <a class="moj-header__link moj-header__link--service-name" href="/home">
-          Sirius User Management
+        <a
+          class="moj-header__link moj-header__link--service-name"
+          href={serviceLabel.href}
+        >
+          {serviceLabel.text}
         </a>
       </div>
       <div class="moj-header__content">
         <nav class="moj-header__navigation" aria-label="Account navigation">
           <ul class="moj-header__navigation-list">
-            <li class="moj-header__navigation-item">
-              <a
-                class="moj-header__navigation-link"
-                href="#"
-                onclick="alert('Switches to Supervision front-end application')"
-              >
-                Supervision
-              </a>
-            </li>
-
-            <li class="moj-header__navigation-item">
-              <a
-                class="moj-header__navigation-link"
-                href="#"
-                onclick="alert('Switches to LPA front-end application')"
-              >
-                LPA
-              </a>
-            </li>
-
-            <li class="moj-header__navigation-item">
-              <a class="moj-header__navigation-link" href="/login">
-                Logout
-              </a>
-            </li>
+            {items.map((item) => (
+              <li class="moj-header__navigation-item">
+                <a class="moj-header__navigation-link" href={item.href}>
+                  {item.text}
+                </a>
+              </li>
+            ))}
           </ul>
         </nav>
       </div>

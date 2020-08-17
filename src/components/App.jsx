@@ -1,7 +1,7 @@
 import React from "react";
 
-import AppHeader from "./AppHeader";
-import AppNavigation from "./AppNavigation";
+import Header from "./moj/Header";
+import PrimaryNavigation from "./moj/PrimaryNavigation";
 import ChangePassword from "../pages/ChangePassword";
 import { Footer } from "govuk-react-jsx";
 
@@ -10,8 +10,44 @@ const App = () => (
     <a href="#main-content" className="govuk-skip-link">
       Skip to main content
     </a>
-    <AppHeader></AppHeader>
-    <AppNavigation></AppNavigation>
+    <Header
+      serviceLabel={{ text: "Sirius User Management", href: "/" }}
+      items={[
+        {
+          text: "Supervision",
+          href: "#",
+        },
+        {
+          text: "LPA",
+          href: "#",
+        },
+        {
+          text: "Logout",
+          href: "#",
+        },
+      ]}
+    ></Header>
+    <PrimaryNavigation
+      items={[
+        {
+          text: "Users",
+          href: "/users",
+        },
+        {
+          text: "Teams",
+          href: "/teams",
+        },
+        {
+          text: "My details",
+          href: "/my-details",
+        },
+        {
+          text: "Change password",
+          href: "/change-password",
+          active: true,
+        },
+      ]}
+    ></PrimaryNavigation>
     <div class="govuk-width-container ">
       <main
         class="govuk-main-wrapper govuk-main-wrapper--auto-spacing"
@@ -25,4 +61,4 @@ const App = () => (
   </>
 );
 
-export default App
+export default App;
