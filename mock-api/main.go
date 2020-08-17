@@ -46,7 +46,5 @@ func ChangePassword(w http.ResponseWriter, r *http.Request) {
 
 	response := Response{Errors: errors}
 
-	if err := json.NewEncoder(w).Encode(response); err != nil {
-		panic(err)
-	}
+	json.NewEncoder(w).Encode(response)
 }
