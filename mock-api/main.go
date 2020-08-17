@@ -21,6 +21,18 @@ func main() {
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
 
+func validate(existingPassword, password, confirmPassword string) (string, bool) {
+	if existingPassword == "" || password == "" || confirmPassword == "" {
+		return "Missing required field", false
+	} else if existingPassword != "Password1" {
+		return "Password supplied was incorrect or user is not active", false
+	} else if password != confirmPassword {
+		return "Confirmation did not match new password", false
+	}
+
+	return "", true
+}
+
 func ChangePassword(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	if r.Method == http.MethodOptions {
@@ -31,20 +43,11 @@ func ChangePassword(w http.ResponseWriter, r *http.Request) {
 	password := r.FormValue("password")
 	confirmPassword := r.FormValue("confirmPassword")
 
-	errors := ""
+	errorMessage, ok := validate(existingPassword, password, confirmPassword)
 
-	if existingPassword == "" || password == "" || confirmPassword == "" {
+	if !ok {
 		w.WriteHeader(http.StatusBadRequest)
-		errors = "Missing required field"
-	} else if existingPassword != "Password1" {
-		w.WriteHeader(http.StatusBadRequest)
-		errors = "Password supplied was incorrect or user is not active"
-	} else if password != confirmPassword {
-		w.WriteHeader(http.StatusBadRequest)
-		errors = "Confirmation did not match new password"
 	}
 
-	response := Response{Errors: errors}
-
-	json.NewEncoder(w).Encode(response)
+	json.NewEncoder(w).Encode(Response{Errors: errorMessage})
 }
