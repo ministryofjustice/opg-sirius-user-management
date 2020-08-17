@@ -6,4 +6,4 @@ COPY . .
 RUN go get
 RUN go install
 
-CMD ["app"]
+CMD ["opg-sirius-user-management"]
