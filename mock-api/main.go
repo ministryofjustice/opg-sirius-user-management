@@ -4,20 +4,45 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-
-	"github.com/gorilla/mux"
 )
 
-type Response struct {
+func main() {
+	http.HandleFunc("/auth/change-password", changePassword)
+
+	log.Println("Running at :8080")
+	if err := http.ListenAndServe(":8080", nil); err != nil {
+		log.Println(err)
+	}
+}
+
+type errorsResponse struct {
 	Errors string `json:"errors"`
 }
 
-func main() {
+func changePassword(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "POST,OPTIONS")
+		return
+	}
 
-	router := mux.NewRouter().StrictSlash(true)
-	router.HandleFunc("/auth/change-password", ChangePassword).Methods(http.MethodPost, http.MethodOptions)
+	if r.Method != http.MethodPost {
+		http.Error(w, "", http.StatusMethodNotAllowed)
+		return
+	}
 
-	log.Fatal(http.ListenAndServe(":8080", router))
+	existingPassword := r.FormValue("existingPassword")
+	password := r.FormValue("password")
+	confirmPassword := r.FormValue("confirmPassword")
+
+	errorMessage, ok := validate(existingPassword, password, confirmPassword)
+
+	w.Header().Set("Content-Type", "application/json")
+	if !ok {
+		w.WriteHeader(http.StatusBadRequest)
+	}
+
+	json.NewEncoder(w).Encode(errorsResponse{Errors: errorMessage})
 }
 
 func validate(existingPassword, password, confirmPassword string) (string, bool) {
@@ -30,25 +55,4 @@ func validate(existingPassword, password, confirmPassword string) (string, bool)
 	}
 
 	return "", true
-}
-
-func ChangePassword(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "POST,OPTIONS")
-
-	if r.Method == http.MethodOptions {
-		return
-	}
-
-	existingPassword := r.FormValue("existingPassword")
-	password := r.FormValue("password")
-	confirmPassword := r.FormValue("confirmPassword")
-
-	errorMessage, ok := validate(existingPassword, password, confirmPassword)
-
-	if !ok {
-		w.WriteHeader(http.StatusBadRequest)
-	}
-
-	json.NewEncoder(w).Encode(Response{Errors: errorMessage})
 }
