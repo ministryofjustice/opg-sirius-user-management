@@ -4,6 +4,7 @@
   "scripts": {
     "postinstall": "yarn --cwd prototype install",
     "start:prototype": "yarn --cwd prototype start",
-    "test": "yarn --cwd prototype test"
+    "test": "yarn --cwd prototype test",
+    "copy-assets": "cp -R prototype/public web/static/public"
   }
 }
