@@ -48,9 +48,9 @@ const App = () => (
         },
       ]}
     ></PrimaryNavigation>
-    <div class="govuk-width-container ">
+    <div className="govuk-width-container ">
       <main
-        class="govuk-main-wrapper govuk-main-wrapper--auto-spacing"
+        className="govuk-main-wrapper govuk-main-wrapper--auto-spacing"
         id="main-content"
         role="main"
       >

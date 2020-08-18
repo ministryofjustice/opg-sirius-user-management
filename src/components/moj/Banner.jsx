@@ -42,9 +42,9 @@ const Banner = ({
       )}
     </svg>
 
-    <div class="moj-banner__message">
+    <div className="moj-banner__message">
       {iconFallbackText && (
-        <span class="moj-banner__assistive">{iconFallbackText}</span>
+        <span classNames="moj-banner__assistive">{iconFallbackText}</span>
       )}
       {children}
     </div>
