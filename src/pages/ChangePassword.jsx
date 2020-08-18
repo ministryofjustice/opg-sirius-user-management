@@ -1,45 +1,78 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button, Fieldset, Input } from "govuk-react-jsx";
 
-const ChangePassword = () => (
-  <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
-      <h1 class="govuk-heading-xl">Change password</h1>
+const ChangePassword = () => {
+  const [existingPassword, setExistingPassword] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-      <form
-        class="form"
-        action="/my-details"
-        method="post"
-        data-bitwarden-watching="1"
-      >
-        <Input
-          id="currentPassword"
-          label={{
-            children: "Current password",
-            className: "govuk-label--m",
-          }}
-        ></Input>
+  const submit = async (e) => {
+    e.preventDefault();
 
-        <Fieldset
-          legend={{
-            children: "New password",
-            className: "govuk-fieldset__legend--m",
-          }}
-        >
+    const body = new URLSearchParams({
+      existingPassword,
+      password,
+      confirmPassword
+    });
+
+    const response = await fetch("http://localhost:8081/auth/change-password", {
+      method: "POST",
+      body,
+    });
+
+    const json = await response.json();
+
+    if (response.status === 200) {
+      // success
+    } else {
+      // failure
+    }
+  };
+
+  return (
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-xl">Change password</h1>
+
+        <form class="form" action="/my-details" method="post" onSubmit={submit}>
           <Input
-            id="password"
-            label={{ children: "Create your new password" }}
+            id="existingPassword"
+            type="password"
+            label={{
+              children: "Current password",
+              className: "govuk-label--m",
+            }}
+            value={existingPassword}
+            onChange={(e) => setExistingPassword(e.target.value)}
           ></Input>
-          <Input
-            id="confirmPassword"
-            label={{ children: "Confirm new password" }}
-          ></Input>
-        </Fieldset>
 
-        <Button>Save changes</Button>
-      </form>
+          <Fieldset
+            legend={{
+              children: "New password",
+              className: "govuk-fieldset__legend--m",
+            }}
+          >
+            <Input
+              id="password"
+              type="password"
+              label={{ children: "Create your new password" }}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            ></Input>
+            <Input
+              id="confirmPassword"
+              type="password"
+              label={{ children: "Confirm new password" }}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            ></Input>
+          </Fieldset>
+
+          <Button type="submit">Save changes</Button>
+        </form>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default ChangePassword;
