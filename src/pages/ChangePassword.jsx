@@ -1,49 +1,66 @@
-import React, { useReducer } from "react";
+import React, { useEffect, useReducer, useMemo, useState } from "react";
 import { Button, Fieldset, Input } from "govuk-react-jsx";
+import Banner from "../components/moj/Banner";
+import { ErrorSummary } from "govuk-react-jsx/govuk/components/error-summary";
+import changePassword from "../api/changePassword";
 
 const initialState = {
-  existingPassword: '',
-  password: '',
-  confirmPassword: ''
-}
+  existingPassword: "",
+  password: "",
+  confirmPassword: "",
+};
 
-const reducer = (state, {field, value}) => ({
+const reducer = (state, { field, value }) => ({
   ...state,
-  [field]: value
-})
+  [field]: value,
+});
 
 const ChangePassword = () => {
-  const [state, dispatch] = useReducer(reducer, initialState)
+  const [state, dispatch] = useReducer(reducer, initialState);
+  const [success, setSuccess] = useState(null);
+  const [error, setError] = useState(null);
+  const errorList = useMemo(() => [{ children: error }], [error]);
 
   const onSubmit = async (e) => {
     e.preventDefault();
 
-    const body = new URLSearchParams(state);
-
-    const response = await fetch("http://localhost:8081/auth/change-password", {
-      method: "POST",
-      body,
-    });
-
-    const json = await response.json();
-
-    if (response.status === 200) {
-      // success
-    } else {
-      // failure
-    }
+    const { status, error } = await changePassword(
+      state.existingPassword,
+      state.password,
+      state.confirmPassword
+    );
+    setSuccess(status < 400);
+    setError(error);
   };
 
   const onChange = (e) => {
-    dispatch({ field: e.target.name, value: e.target.value })
-  }
+    dispatch({ field: e.target.name, value: e.target.value });
+  };
+
+  useEffect(() => {
+    if (success) {
+      Object.keys(state).forEach((field) => {
+        dispatch({ field, value: "" });
+      });
+    }
+  }, [success]);
 
   return (
-    <div class="govuk-grid-row">
-      <div class="govuk-grid-column-two-thirds">
-        <h1 class="govuk-heading-xl">Change password</h1>
+    <div className="govuk-grid-row">
+      <div className="govuk-grid-column-two-thirds">
+        {error && <ErrorSummary errorList={errorList} />}
+        {success && (
+          <Banner type="success">Password changed successfully</Banner>
+        )}
 
-        <form class="form" action="/my-details" method="post" onSubmit={onSubmit}>
+        <h1 className="govuk-heading-xl">Change password</h1>
+
+        <form
+          className="form"
+          action="/my-details"
+          method="post"
+          onSubmit={onSubmit}
+        >
           <Input
             id="existingPassword"
             name="existingPassword"
