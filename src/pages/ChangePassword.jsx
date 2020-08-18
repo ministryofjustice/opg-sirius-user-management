@@ -1,19 +1,24 @@
-import React, { useState } from "react";
+import React, { useReducer } from "react";
 import { Button, Fieldset, Input } from "govuk-react-jsx";
 
-const ChangePassword = () => {
-  const [existingPassword, setExistingPassword] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+const initialState = {
+  existingPassword: '',
+  password: '',
+  confirmPassword: ''
+}
 
-  const submit = async (e) => {
+const reducer = (state, {field, value}) => ({
+  ...state,
+  [field]: value
+})
+
+const ChangePassword = () => {
+  const [state, dispatch] = useReducer(reducer, initialState)
+
+  const onSubmit = async (e) => {
     e.preventDefault();
 
-    const body = new URLSearchParams({
-      existingPassword,
-      password,
-      confirmPassword
-    });
+    const body = new URLSearchParams(state);
 
     const response = await fetch("http://localhost:8081/auth/change-password", {
       method: "POST",
@@ -29,21 +34,26 @@ const ChangePassword = () => {
     }
   };
 
+  const onChange = (e) => {
+    dispatch({ field: e.target.name, value: e.target.value })
+  }
+
   return (
     <div class="govuk-grid-row">
       <div class="govuk-grid-column-two-thirds">
         <h1 class="govuk-heading-xl">Change password</h1>
 
-        <form class="form" action="/my-details" method="post" onSubmit={submit}>
+        <form class="form" action="/my-details" method="post" onSubmit={onSubmit}>
           <Input
             id="existingPassword"
+            name="existingPassword"
             type="password"
             label={{
               children: "Current password",
               className: "govuk-label--m",
             }}
-            value={existingPassword}
-            onChange={(e) => setExistingPassword(e.target.value)}
+            value={state.existingPassword}
+            onChange={onChange}
           ></Input>
 
           <Fieldset
@@ -54,17 +64,19 @@ const ChangePassword = () => {
           >
             <Input
               id="password"
+              name="password"
               type="password"
               label={{ children: "Create your new password" }}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              value={state.password}
+              onChange={onChange}
             ></Input>
             <Input
               id="confirmPassword"
+              name="confirmPassword"
               type="password"
               label={{ children: "Confirm new password" }}
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              value={state.confirmPassword}
+              onChange={onChange}
             ></Input>
           </Fieldset>
 
