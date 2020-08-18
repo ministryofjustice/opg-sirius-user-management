@@ -7,12 +7,21 @@
       "@babel/preset-react"
     ]
   },
+  "jest": {
+    "setupFilesAfterEnv": [
+      "<rootDir>/jest.setup.js"
+    ],
+    "moduleNameMapper": {
+      "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|ico)$": "<rootDir>/__mocks__/fileMock.js",
+      "\\.(css|less)$": "<rootDir>/__mocks__/styleMock.js"
+    }
+  },
   "scripts": {
     "postinstall": "yarn --cwd prototype install",
     "start:prototype": "yarn --cwd prototype start",
     "start": "webpack-dev-server --mode development --open --hot",
     "build": "webpack --mode production",
-    "test": "yarn --cwd prototype test"
+    "test": "jest"
   },
   "dependencies": {
     "@ministryofjustice/frontend": "^0.0.19-alpha",
@@ -32,8 +41,11 @@
     "@babel/core": "^7.11.1",
     "@babel/preset-env": "^7.11.0",
     "@babel/preset-react": "^7.10.4",
+    "@testing-library/jest-dom": "^5.11.3",
+    "@testing-library/react": "^10.4.8",
     "babel-loader": "^8.1.0",
     "html-webpack-plugin": "^4.3.0",
+    "jest": "^26.4.0",
     "style-loader": "^1.2.1",
     "svg-inline-loader": "^0.8.2",
     "webpack": "^4.44.1",
