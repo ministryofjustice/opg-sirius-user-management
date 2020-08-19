@@ -1,32 +1,35 @@
 <template>
-  <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
+  <a href="#main-content" class="govuk-skip-link">Skip to main content</a>
+  
+  <div class="moj-primary-navigation">
+    <div class="moj-primary-navigation__container">
+      <div class="moj-primary-navigation__nav">
+        <nav class="moj-primary-navigation" aria-label="Primary navigation">
+          <ul class="moj-primary-navigation__list">
+            <li class="moj-primary-navigation__item">
+              <router-link class="moj-primary-navigation__link" to="/home">Users</router-link>
+            </li>
+            
+            <li class="moj-primary-navigation__item">
+              <router-link class="moj-primary-navigation__link" to="/teams">Teams</router-link>
+            </li>
+            
+            <li class="moj-primary-navigation__item">
+              <router-link class="moj-primary-navigation__link" to="/my-details">My details</router-link>
+            </li>
+            
+            <li class="moj-primary-navigation__item">
+              <router-link class="moj-primary-navigation__link" to="/change-password">Change password</router-link>
+            </li>
+          </ul>
+        </nav>
+      </div>
     </div>
-    <router-view/>
+  </div>
+
+  <div class="govuk-width-container ">
+    <main class="govuk-main-wrapper govuk-main-wrapper--auto-spacing" id="main-content" role="main">
+      <router-view />
+    </main>
   </div>
 </template>
-
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
-
-#nav {
-  padding: 30px;
-}
-
-#nav a {
-  font-weight: bold;
-  color: #2c3e50;
-}
-
-#nav a.router-link-exact-active {
-  color: #42b983;
-}
-</style>
