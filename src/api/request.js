@@ -4,7 +4,8 @@ export default async function request(
   body = null,
   headers = {}
 ) {
-  const response = await fetch(`http://localhost:8081${path}`, {
+  const baseUrl = globalThis.baseUrl || "http://localhost:8081";
+  const response = await fetch(`${baseUrl}${path}`, {
     headers,
     body,
     method,

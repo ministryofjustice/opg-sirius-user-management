@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { ErrorSummary } from "govuk-react-jsx";
-import ChangePasswordForm from '../forms/ChangePassword'
+import ChangePasswordForm from "../forms/ChangePassword";
 import Banner from "../components/moj/Banner";
-import request from "../request";
+import changePassword from "../api/changePassword";
 
 const ChangePassword = () => {
   const [success, setSuccess] = useState(null);
@@ -10,13 +10,13 @@ const ChangePassword = () => {
   const errorList = useMemo(() => [{ children: error }], [error]);
 
   const onSubmit = async (existingPassword, password, confirmPassword) => {
-    const { status, body } = await request(
-      "/auth/change-password",
-      "POST",
-      new URLSearchParams({ existingPassword, password, confirmPassword })
+    const { status, error } = await changePassword(
+      existingPassword,
+      password,
+      confirmPassword
     );
     setSuccess(status < 400);
-    setError((body && body.errors) || null);
+    setError(error);
   };
 
   return (
