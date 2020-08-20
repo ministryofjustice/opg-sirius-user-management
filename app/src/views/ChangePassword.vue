@@ -41,6 +41,7 @@
 
 <script lang="ts">
   import { defineComponent } from 'vue';
+  import { changePassword } from '@/services/change-password';
 
   export default defineComponent({
     name: 'ChangePassword',
@@ -58,28 +59,13 @@
         this.error = '';
         this.loading = true;
         
-        const data = new URLSearchParams();
-        data.append('existingPassword', this.currentPassword);
-        data.append('password', this.newPassword);
-        data.append('confirmPassword', this.newPasswordConfirm);
+        const { ok, error } = await changePassword(this.currentPassword, this.newPassword, this.newPasswordConfirm);
+        this.loading = false;
 
-        try {
-          const resp = await fetch(`${process.env.VUE_APP_SIRIUS_URL}/auth/change-password`, {
-            mode: 'cors',
-            method: 'POST',
-            headers: new Headers({'Content-Type': 'application/x-www-form-urlencoded'}),
-            body: data.toString(),
-          });
-          this.loading = false;
-          
-          if (resp.ok) {
-            (this as any).$router.push('/my-details');
-          } else {
-            this.error = await resp.json().then(body => body.errors);
-          }
-        } catch (err) {
-          this.loading = false;
-          this.error = 'something unexpected happened, try again?';
+        if (ok) {
+          (this as any).$router.push('/my-details');
+        } else {
+          this.error = error;
         }
       },
     },
