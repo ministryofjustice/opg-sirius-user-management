@@ -29,7 +29,8 @@ func TestMyDetails(t *testing.T) {
 			headers: r.Header,
 		}
 
-		io.WriteString(w, `{"id":47,"name":"system","phoneNumber":"03004560300","teams":[{"id":10,"name":"Allocations - (Supervision)","phoneNumber":"0123456789","teams":[],"displayName":"Allocations - (Supervision)","deleted":false,"tasks":[],"email":"allocations.team@opgtest.com"}],"displayName":"system admin","deleted":false,"tasks":[],"email":"system.admin@opgtest.com","firstname":"system","surname":"admin","roles":["OPG User","System Admin"],"locked":false,"suspended":false}`)
+		_, err := io.WriteString(w, `{"id":47,"name":"system","phoneNumber":"03004560300","teams":[{"id":10,"name":"Allocations - (Supervision)","phoneNumber":"0123456789","teams":[],"displayName":"Allocations - (Supervision)","deleted":false,"tasks":[],"email":"allocations.team@opgtest.com"}],"displayName":"system admin","deleted":false,"tasks":[],"email":"system.admin@opgtest.com","firstname":"system","surname":"admin","roles":["OPG User","System Admin"],"locked":false,"suspended":false}`)
+		assert.Nil(err)
 	}))
 	defer s.Close()
 
