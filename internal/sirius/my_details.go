@@ -29,19 +29,10 @@ type MyDetailsTeam struct {
 func (c *Client) MyDetails(ctx context.Context, cookies []*http.Cookie) (MyDetails, error) {
 	var v MyDetails
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.url("/api/v1/users/current"), nil)
+	req, err := c.newRequest(ctx, http.MethodGet, "/api/v1/users/current", nil, cookies)
 	if err != nil {
 		return v, err
 	}
-	var xsrfToken string
-	for _, c := range cookies {
-		req.AddCookie(c)
-		if c.Name == "XSRF-TOKEN" {
-			xsrfToken = c.Value
-		}
-	}
-	req.Header.Add("OPG-Bypass-Membrane", "1")
-	req.Header.Add("X-XSRF-TOKEN", xsrfToken)
 
 	resp, err := c.http.Do(req)
 	if err != nil {

@@ -1,8 +1,9 @@
 package sirius
 
 import (
+	"context"
+	"io"
 	"net/http"
-	"net/url"
 )
 
 const ErrUnauthorized ClientError = "unauthorized"
@@ -14,24 +15,31 @@ func (e ClientError) Error() string {
 }
 
 func NewClient(httpClient *http.Client, baseURL string) (*Client, error) {
-	parsed, err := url.Parse(baseURL)
-	if err != nil {
-		return nil, err
-	}
-
 	return &Client{
 		http:    httpClient,
-		baseURL: parsed,
+		baseURL: baseURL,
 	}, nil
 }
 
 type Client struct {
 	http    *http.Client
-	baseURL *url.URL
+	baseURL string
 }
 
-func (c *Client) url(path string) string {
-	partial, _ := url.Parse(path)
+func (c *Client) newRequest(ctx context.Context, method, path string, body io.Reader, cookies []*http.Cookie) (*http.Request, error) {
+	req, err := http.NewRequestWithContext(ctx, method, c.baseURL+path, body)
+	if err != nil {
+		return nil, err
+	}
+	var xsrfToken string
+	for _, c := range cookies {
+		req.AddCookie(c)
+		if c.Name == "XSRF-TOKEN" {
+			xsrfToken = c.Value
+		}
+	}
+	req.Header.Add("OPG-Bypass-Membrane", "1")
+	req.Header.Add("X-XSRF-TOKEN", xsrfToken)
 
-	return c.baseURL.ResolveReference(partial).String()
+	return req, err
 }
