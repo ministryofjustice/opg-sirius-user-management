@@ -10,13 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type request struct {
-	method, path string
-	cookies      []*http.Cookie
-	headers      http.Header
-}
-
-type MyDetailsResponse struct {
+type myDetailsResponse struct {
 	ID          int    `json:"id" pact:"example=47"`
 	Name        string `json:"name" pact:"example=system"`
 	PhoneNumber string `json:"phoneNumber" pact:"example=03004560300"`
@@ -68,7 +62,7 @@ func TestMyDetails(t *testing.T) {
 					WillRespondWith(dsl.Response{
 						Status:  http.StatusOK,
 						Headers: dsl.MapMatcher{"Content-Type": dsl.String("application/json")},
-						Body:    dsl.Match(MyDetailsResponse{}),
+						Body:    dsl.Match(myDetailsResponse{}),
 					})
 			},
 			cookies: []*http.Cookie{
