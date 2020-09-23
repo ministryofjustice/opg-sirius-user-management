@@ -11,13 +11,13 @@
       <nav class="moj-header__navigation" aria-label="Account navigation">
         <ul class="moj-header__navigation-list">
           <li class="moj-header__navigation-item">
-            <a class="moj-header__navigation-link" href="/lpa" aria-current="page">LPA</a>
+            <a class="moj-header__navigation-link" href="{{ .SiriusURL }}/lpa" aria-current="page">LPA</a>
           </li>
           <li class="moj-header__navigation-item">
-            <a class="moj-header__navigation-link" href="/supervision" aria-current="page">Supervision</a>
+            <a class="moj-header__navigation-link" href="{{ .SiriusURL }}/supervision" aria-current="page">Supervision</a>
           </li>
           <li class="moj-header__navigation-item">
-            <a class="moj-header__navigation-link" href="/auth">Sign out</a>
+            <a class="moj-header__navigation-link" href="{{ .SiriusURL }}/auth/logout">Sign out</a>
           </li>
         </ul>
       </nav>

@@ -38,7 +38,7 @@ func main() {
 
 	server := &http.Server{
 		Addr:    ":" + port,
-		Handler: server.New(logger, client, templates, webDir),
+		Handler: server.New(logger, client, templates, siriusURL, webDir),
 	}
 
 	go func() {

@@ -14,7 +14,6 @@ import (
 )
 
 type mockMyDetailsClient struct {
-	mockAuthenticateClient
 	count       int
 	lastCookies []*http.Cookie
 	err         error
@@ -46,10 +45,10 @@ func TestGetMyDetails(t *testing.T) {
 	templates := &mockTemplates{}
 
 	w := httptest.NewRecorder()
-	r, _ := http.NewRequest("GET", "", nil)
+	r, _ := http.NewRequest("GET", "/path", nil)
 	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	myDetails(nil, client, templates).ServeHTTP(w, r)
+	myDetails(nil, client, templates, "http://sirius").ServeHTTP(w, r)
 
 	resp := w.Result()
 	assert.Equal(http.StatusOK, resp.StatusCode)
@@ -58,7 +57,8 @@ func TestGetMyDetails(t *testing.T) {
 	assert.Equal(1, templates.count)
 	assert.Equal("my-details.gotmpl", templates.lastName)
 	assert.Equal(myDetailsVars{
-		Path:         "",
+		Path:         "/path",
+		SiriusURL:    "http://sirius",
 		ID:           123,
 		Firstname:    "John",
 		Surname:      "Doe",
@@ -79,12 +79,13 @@ func TestGetMyDetailsUnauthenticated(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "", nil)
 
-	myDetails(nil, client, templates).ServeHTTP(w, r)
+	myDetails(nil, client, templates, "http://sirius").ServeHTTP(w, r)
 
 	resp := w.Result()
-	assert.Equal(http.StatusOK, resp.StatusCode)
+	assert.Equal(http.StatusFound, resp.StatusCode)
+	assert.Equal("http://sirius/auth", resp.Header.Get("Location"))
+
 	assert.Equal(0, templates.count)
-	assert.True(client.authenticated)
 }
 
 func TestGetMyDetailsSiriusErrors(t *testing.T) {
@@ -97,7 +98,7 @@ func TestGetMyDetailsSiriusErrors(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "", nil)
 
-	myDetails(logger, client, templates).ServeHTTP(w, r)
+	myDetails(logger, client, templates, "http://sirius").ServeHTTP(w, r)
 
 	resp := w.Result()
 	assert.Equal(http.StatusInternalServerError, resp.StatusCode)
@@ -111,7 +112,7 @@ func TestPostMyDetails(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "", nil)
 
-	myDetails(nil, nil, templates).ServeHTTP(w, r)
+	myDetails(nil, nil, templates, "http://sirius").ServeHTTP(w, r)
 
 	resp := w.Result()
 	assert.Equal(http.StatusMethodNotAllowed, resp.StatusCode)

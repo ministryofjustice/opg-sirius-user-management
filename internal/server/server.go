@@ -18,10 +18,10 @@ type Templates interface {
 	ExecuteTemplate(io.Writer, string, interface{}) error
 }
 
-func New(logger *log.Logger, client Client, templates Templates, webDir string) http.Handler {
+func New(logger *log.Logger, client Client, templates Templates, siriusURL, webDir string) http.Handler {
 	mux := http.NewServeMux()
 	mux.Handle("/", http.RedirectHandler("/my-details", http.StatusFound))
-	mux.Handle("/my-details", myDetails(logger, client, templates))
+	mux.Handle("/my-details", myDetails(logger, client, templates, siriusURL))
 
 	static := http.FileServer(http.Dir(webDir + "/static"))
 	mux.Handle("/assets/", static)

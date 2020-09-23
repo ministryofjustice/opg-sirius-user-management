@@ -10,11 +10,12 @@ import (
 
 type MyDetailsClient interface {
 	MyDetails(context.Context, []*http.Cookie) (sirius.MyDetails, error)
-	AuthenticateClient
 }
 
 type myDetailsVars struct {
-	Path         string
+	Path      string
+	SiriusURL string
+
 	ID           int
 	Firstname    string
 	Surname      string
@@ -25,7 +26,7 @@ type myDetailsVars struct {
 	Teams        []string
 }
 
-func myDetails(logger *log.Logger, client MyDetailsClient, templates Templates) http.Handler {
+func myDetails(logger *log.Logger, client MyDetailsClient, templates Templates, siriusURL string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
 			http.Error(w, "", http.StatusMethodNotAllowed)
@@ -34,7 +35,7 @@ func myDetails(logger *log.Logger, client MyDetailsClient, templates Templates) 
 
 		myDetails, err := client.MyDetails(r.Context(), r.Cookies())
 		if err == sirius.ErrUnauthorized {
-			client.Authenticate(w, r)
+			http.Redirect(w, r, siriusURL+"/auth", http.StatusFound)
 			return
 		} else if err != nil {
 			logger.Println("myDetails:", err)
@@ -44,6 +45,7 @@ func myDetails(logger *log.Logger, client MyDetailsClient, templates Templates) 
 
 		vars := myDetailsVars{
 			Path:        r.URL.Path,
+			SiriusURL:   siriusURL,
 			ID:          myDetails.ID,
 			Firstname:   myDetails.Firstname,
 			Surname:     myDetails.Surname,
