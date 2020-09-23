@@ -10,10 +10,6 @@ type Client interface {
 	MyDetailsClient
 }
 
-type AuthenticateClient interface {
-	Authenticate(http.ResponseWriter, *http.Request)
-}
-
 type Templates interface {
 	ExecuteTemplate(io.Writer, string, interface{}) error
 }
