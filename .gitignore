@@ -13,3 +13,5 @@ node_modules
 package-lock.json
 
 web/static
+logs
+pacts
