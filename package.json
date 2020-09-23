@@ -1,6 +1,7 @@
 {
   "name": "opg-sirius-user-management",
   "version": "0.1.0",
+  "license": "MIT",
   "scripts": {
     "build": "webpack"
   },
