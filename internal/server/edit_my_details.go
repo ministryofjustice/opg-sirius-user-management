@@ -1,7 +1,6 @@
 package server
 
 import (
-	"html/template"
 	"log"
 	"net/http"
 
@@ -15,7 +14,7 @@ type editMyDetailsVars struct {
 	PhoneNumber string
 }
 
-func editMyDetails(logger *log.Logger, client MyDetailsClient, tmpl *template.Template, siriusURL string) http.Handler {
+func editMyDetails(logger *log.Logger, client MyDetailsClient, tmpl Template, siriusURL string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
 			http.Error(w, "", http.StatusMethodNotAllowed)

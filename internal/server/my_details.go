@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"html/template"
 	"log"
 	"net/http"
 
@@ -27,7 +26,7 @@ type myDetailsVars struct {
 	Teams        []string
 }
 
-func myDetails(logger *log.Logger, client MyDetailsClient, tmpl *template.Template, siriusURL string) http.Handler {
+func myDetails(logger *log.Logger, client MyDetailsClient, tmpl Template, siriusURL string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
 			http.Error(w, "", http.StatusMethodNotAllowed)

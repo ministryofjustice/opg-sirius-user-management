@@ -11,7 +11,7 @@ type Client interface {
 	MyDetailsClient
 }
 
-type Templates interface {
+type Template interface {
 	ExecuteTemplate(io.Writer, string, interface{}) error
 }
 

@@ -42,20 +42,20 @@ func TestGetMyDetails(t *testing.T) {
 		},
 	}
 	client := &mockMyDetailsClient{data: data}
-	templates := &mockTemplates{}
+	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
 	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	myDetails(nil, client, templates, "http://sirius").ServeHTTP(w, r)
+	myDetails(nil, client, template, "http://sirius").ServeHTTP(w, r)
 
 	resp := w.Result()
 	assert.Equal(http.StatusOK, resp.StatusCode)
 	assert.Equal(r.Cookies(), client.lastCookies)
 
-	assert.Equal(1, templates.count)
-	assert.Equal("my-details.gotmpl", templates.lastName)
+	assert.Equal(1, template.count)
+	assert.Equal("page", template.lastName)
 	assert.Equal(myDetailsVars{
 		Path:         "/path",
 		SiriusURL:    "http://sirius",
@@ -67,25 +67,25 @@ func TestGetMyDetails(t *testing.T) {
 		Organisation: "COP User",
 		Roles:        []string{"A", "B"},
 		Teams:        []string{"A Team"},
-	}, templates.lastVars)
+	}, template.lastVars)
 }
 
 func TestGetMyDetailsUnauthenticated(t *testing.T) {
 	assert := assert.New(t)
 
 	client := &mockMyDetailsClient{err: sirius.ErrUnauthorized}
-	templates := &mockTemplates{}
+	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "", nil)
 
-	myDetails(nil, client, templates, "http://sirius").ServeHTTP(w, r)
+	myDetails(nil, client, template, "http://sirius").ServeHTTP(w, r)
 
 	resp := w.Result()
 	assert.Equal(http.StatusFound, resp.StatusCode)
 	assert.Equal("http://sirius/auth", resp.Header.Get("Location"))
 
-	assert.Equal(0, templates.count)
+	assert.Equal(0, template.count)
 }
 
 func TestGetMyDetailsSiriusErrors(t *testing.T) {
@@ -93,28 +93,28 @@ func TestGetMyDetailsSiriusErrors(t *testing.T) {
 
 	logger := log.New(ioutil.Discard, "", 0)
 	client := &mockMyDetailsClient{err: errors.New("err")}
-	templates := &mockTemplates{}
+	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "", nil)
 
-	myDetails(logger, client, templates, "http://sirius").ServeHTTP(w, r)
+	myDetails(logger, client, template, "http://sirius").ServeHTTP(w, r)
 
 	resp := w.Result()
 	assert.Equal(http.StatusInternalServerError, resp.StatusCode)
-	assert.Equal(0, templates.count)
+	assert.Equal(0, template.count)
 }
 
 func TestPostMyDetails(t *testing.T) {
 	assert := assert.New(t)
-	templates := &mockTemplates{}
+	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "", nil)
 
-	myDetails(nil, nil, templates, "http://sirius").ServeHTTP(w, r)
+	myDetails(nil, nil, template, "http://sirius").ServeHTTP(w, r)
 
 	resp := w.Result()
 	assert.Equal(http.StatusMethodNotAllowed, resp.StatusCode)
-	assert.Equal(0, templates.count)
+	assert.Equal(0, template.count)
 }
