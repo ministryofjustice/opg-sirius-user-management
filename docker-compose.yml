@@ -1,0 +1,8 @@
+version: "3.6"
+
+services:
+  app:
+    build: .
+    ports: ["8888:8080"]
+    environment:
+      SIRIUS_URL: http://docker.for.mac.localhost:8080
