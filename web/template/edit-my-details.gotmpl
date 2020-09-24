@@ -1,0 +1,28 @@
+{{ template "page" . }}
+
+{{ define "backlink" }}
+  <a class="govuk-back-link" href="/my-details">Back</a>
+{{ end }}
+
+{{ define "title" }}Edit my details{{ end }}
+
+{{ define "main" }}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-xl">Edit my details</h1>
+      <form class="form" method="post">
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="f-phonenumber">
+            Telephone
+          </label>
+
+          <input class="govuk-input govuk-!-width-two-thirds" id="f-phonenumber" name="phonenumber" type="text" value="{{ .PhoneNumber }}">
+        </div>
+
+        <button type="submit" class="govuk-button" data-module="govuk-button">
+          Save changes
+        </button>
+      </form>
+    </div>
+  </div>
+{{ end }}
