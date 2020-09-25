@@ -6,6 +6,7 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 type MyDetails struct {
@@ -60,13 +61,13 @@ func (c *Client) EditMyDetails(ctx context.Context, cookies []*http.Cookie, id i
 		ValidationErrors map[string][]string `json:"validation_errors"`
 	}
 
-	// var body = []byte(`{"phoneNumber":"` + phoneNumber + `"}`)
+	var body = strings.NewReader("{\"phoneNumber\":\"" + phoneNumber + "\"}")
 
 	req, err := c.newRequest(
 		ctx,
 		http.MethodPut,
 		"/api/v1/users/"+strconv.Itoa(id)+"/updateTelephoneNumber",
-		nil, //bytes.NewBuffer(body),
+		body,
 		cookies,
 	)
 	if err != nil {
