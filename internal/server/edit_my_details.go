@@ -16,6 +16,17 @@ type editMyDetailsVars struct {
 
 func editMyDetails(logger *log.Logger, client MyDetailsClient, tmpl Template, siriusURL string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost {
+			err := submitMyDetails(r, client, 32, "035893042")
+
+			if err == nil {
+				http.Redirect(w, r, "/my-details", http.StatusFound)
+				return
+			}
+
+			panic(err)
+		}
+
 		if r.Method != http.MethodGet {
 			http.Error(w, "", http.StatusMethodNotAllowed)
 			return
@@ -41,4 +52,8 @@ func editMyDetails(logger *log.Logger, client MyDetailsClient, tmpl Template, si
 			logger.Println("editMyDetails:", err)
 		}
 	})
+}
+
+func submitMyDetails(r *http.Request, client MyDetailsClient, id int, phoneNumber string) error {
+	return client.EditMyDetails(r.Context(), r.Cookies(), id, phoneNumber)
 }

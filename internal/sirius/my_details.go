@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strconv"
 )
 
 type MyDetails struct {
@@ -45,9 +46,47 @@ func (c *Client) MyDetails(ctx context.Context, cookies []*http.Cookie) (MyDetai
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return v, errors.New("returned non-2XX response")
+		return v, errors.New("returned non-2XX response: " + strconv.Itoa(resp.StatusCode))
 	}
 
 	err = json.NewDecoder(resp.Body).Decode(&v)
 	return v, err
+}
+
+func (c *Client) EditMyDetails(ctx context.Context, cookies []*http.Cookie, id int, phoneNumber string) error {
+	var v struct {
+		Status           int                 `json:"status"`
+		Detail           string              `json:"detail"`
+		ValidationErrors map[string][]string `json:"validation_errors"`
+	}
+
+	// var body = []byte(`{"phoneNumber":"` + phoneNumber + `"}`)
+
+	req, err := c.newRequest(
+		ctx,
+		http.MethodPut,
+		"/api/v1/users/"+strconv.Itoa(id)+"/updateTelephoneNumber",
+		nil, //bytes.NewBuffer(body),
+		cookies,
+	)
+	if err != nil {
+		return err
+	}
+
+	resp, err := c.http.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusUnauthorized {
+		return ErrUnauthorized
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return errors.New("returned non-2XX response: " + strconv.Itoa(resp.StatusCode))
+	}
+
+	err = json.NewDecoder(resp.Body).Decode(&v)
+	return err
 }
