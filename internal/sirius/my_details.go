@@ -85,9 +85,9 @@ func (c *Client) EditMyDetails(ctx context.Context, cookies []*http.Cookie, id i
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return errors.New("returned non-2XX response: " + strconv.Itoa(resp.StatusCode))
+		json.NewDecoder(resp.Body).Decode(&v)
+		return errors.New(v.Detail)
 	}
 
-	err = json.NewDecoder(resp.Body).Decode(&v)
-	return err
+	return nil
 }
