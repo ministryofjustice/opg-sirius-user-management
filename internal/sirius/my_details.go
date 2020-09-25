@@ -9,6 +9,8 @@ import (
 	"strings"
 )
 
+type ValidationErrors map[string]map[string]string
+
 type MyDetails struct {
 	ID          int             `json:"id"`
 	Name        string          `json:"name"`
@@ -54,11 +56,11 @@ func (c *Client) MyDetails(ctx context.Context, cookies []*http.Cookie) (MyDetai
 	return v, err
 }
 
-func (c *Client) EditMyDetails(ctx context.Context, cookies []*http.Cookie, id int, phoneNumber string) (map[string]map[string]string, error) {
+func (c *Client) EditMyDetails(ctx context.Context, cookies []*http.Cookie, id int, phoneNumber string) (ValidationErrors, error) {
 	var v struct {
-		Status           int                          `json:"status"`
-		Detail           string                       `json:"detail"`
-		ValidationErrors map[string]map[string]string `json:"validation_errors"`
+		Status           int              `json:"status"`
+		Detail           string           `json:"detail"`
+		ValidationErrors ValidationErrors `json:"validation_errors"`
 	}
 
 	var body = strings.NewReader("{\"phoneNumber\":\"" + phoneNumber + "\"}")

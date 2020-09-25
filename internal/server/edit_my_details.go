@@ -8,9 +8,9 @@ import (
 )
 
 type editMyDetailsVars struct {
-	Path             string
-	SiriusURL        string
-	ValidationErrors map[string]map[string]string
+	Path      string
+	SiriusURL string
+	Errors    sirius.ValidationErrors
 
 	PhoneNumber string
 }
@@ -18,7 +18,7 @@ type editMyDetailsVars struct {
 func editMyDetails(logger *log.Logger, client MyDetailsClient, tmpl Template, siriusURL string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var phoneNumber string
-		var validationErrors map[string]map[string]string
+		var validationErrors sirius.ValidationErrors
 
 		if r.Method != http.MethodGet && r.Method != http.MethodPost {
 			http.Error(w, "", http.StatusMethodNotAllowed)
@@ -60,10 +60,10 @@ func editMyDetails(logger *log.Logger, client MyDetailsClient, tmpl Template, si
 		}
 
 		vars := editMyDetailsVars{
-			Path:             r.URL.Path,
-			SiriusURL:        siriusURL,
-			ValidationErrors: validationErrors,
-			PhoneNumber:      phoneNumber,
+			Path:        r.URL.Path,
+			SiriusURL:   siriusURL,
+			Errors:      validationErrors,
+			PhoneNumber: phoneNumber,
 		}
 
 		if err := tmpl.ExecuteTemplate(w, "page", vars); err != nil {
