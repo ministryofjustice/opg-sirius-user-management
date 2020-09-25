@@ -8,9 +8,9 @@ import (
 )
 
 type editMyDetailsVars struct {
-	Path      string
-	SiriusURL string
-	Error     string
+	Path             string
+	SiriusURL        string
+	ValidationErrors map[string]map[string]string
 
 	PhoneNumber string
 }
@@ -18,7 +18,7 @@ type editMyDetailsVars struct {
 func editMyDetails(logger *log.Logger, client MyDetailsClient, tmpl Template, siriusURL string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var phoneNumber string
-		var userErr string
+		var validationErrors map[string]map[string]string
 
 		if r.Method != http.MethodGet && r.Method != http.MethodPost {
 			http.Error(w, "", http.StatusMethodNotAllowed)
@@ -26,15 +26,24 @@ func editMyDetails(logger *log.Logger, client MyDetailsClient, tmpl Template, si
 		}
 
 		if r.Method == http.MethodPost {
-			phoneNumber = r.FormValue("phonenumber")
-			err := client.EditMyDetails(r.Context(), r.Cookies(), 32, r.FormValue("phonenumber"))
+			var err error
 
-			if err == nil {
-				http.Redirect(w, r, "/my-details", http.StatusFound)
+			phoneNumber = r.FormValue("phonenumber")
+			validationErrors, err = client.EditMyDetails(r.Context(), r.Cookies(), 32, r.FormValue("phonenumber"))
+
+			if err == sirius.ErrUnauthorized {
+				http.Redirect(w, r, siriusURL+"/auth", http.StatusFound)
+				return
+			} else if err != nil {
+				logger.Println("editMyDetails:", err)
+				http.Error(w, "Could not connect to Sirius", http.StatusInternalServerError)
 				return
 			}
 
-			userErr = err.Error()
+			if validationErrors == nil {
+				http.Redirect(w, r, "/my-details", http.StatusFound)
+				return
+			}
 		} else {
 			myDetails, err := client.MyDetails(r.Context(), r.Cookies())
 
@@ -51,10 +60,10 @@ func editMyDetails(logger *log.Logger, client MyDetailsClient, tmpl Template, si
 		}
 
 		vars := editMyDetailsVars{
-			Path:        r.URL.Path,
-			SiriusURL:   siriusURL,
-			Error:       userErr,
-			PhoneNumber: phoneNumber,
+			Path:             r.URL.Path,
+			SiriusURL:        siriusURL,
+			ValidationErrors: validationErrors,
+			PhoneNumber:      phoneNumber,
 		}
 
 		if err := tmpl.ExecuteTemplate(w, "page", vars); err != nil {

@@ -54,11 +54,11 @@ func (c *Client) MyDetails(ctx context.Context, cookies []*http.Cookie) (MyDetai
 	return v, err
 }
 
-func (c *Client) EditMyDetails(ctx context.Context, cookies []*http.Cookie, id int, phoneNumber string) error {
+func (c *Client) EditMyDetails(ctx context.Context, cookies []*http.Cookie, id int, phoneNumber string) (map[string]map[string]string, error) {
 	var v struct {
-		Status           int                 `json:"status"`
-		Detail           string              `json:"detail"`
-		ValidationErrors map[string][]string `json:"validation_errors"`
+		Status           int                          `json:"status"`
+		Detail           string                       `json:"detail"`
+		ValidationErrors map[string]map[string]string `json:"validation_errors"`
 	}
 
 	var body = strings.NewReader("{\"phoneNumber\":\"" + phoneNumber + "\"}")
@@ -71,23 +71,23 @@ func (c *Client) EditMyDetails(ctx context.Context, cookies []*http.Cookie, id i
 		cookies,
 	)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	resp, err := c.http.Do(req)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusUnauthorized {
-		return ErrUnauthorized
+		return nil, ErrUnauthorized
 	}
 
 	if resp.StatusCode != http.StatusOK {
 		json.NewDecoder(resp.Body).Decode(&v)
-		return errors.New(v.Detail)
+		return v.ValidationErrors, nil
 	}
 
-	return nil
+	return nil, nil
 }

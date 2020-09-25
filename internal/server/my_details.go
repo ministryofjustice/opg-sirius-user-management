@@ -10,7 +10,7 @@ import (
 
 type MyDetailsClient interface {
 	MyDetails(context.Context, []*http.Cookie) (sirius.MyDetails, error)
-	EditMyDetails(context.Context, []*http.Cookie, int, string) error
+	EditMyDetails(context.Context, []*http.Cookie, int, string) (map[string]map[string]string, error)
 }
 
 type myDetailsVars struct {
