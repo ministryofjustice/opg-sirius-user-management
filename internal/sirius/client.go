@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"net/http"
+	"net/url"
 )
 
 const ErrUnauthorized ClientError = "unauthorized"
@@ -39,7 +40,8 @@ func (c *Client) newRequest(ctx context.Context, method, path string, body io.Re
 		}
 	}
 	req.Header.Add("OPG-Bypass-Membrane", "1")
-	req.Header.Add("X-XSRF-TOKEN", xsrfToken)
+	headerToken, _ := url.QueryUnescape(xsrfToken)
+	req.Header.Add("X-XSRF-TOKEN", headerToken)
 
 	return req, err
 }
