@@ -22,10 +22,9 @@ type ValidationError struct {
 	Errors  ValidationErrors
 }
 
-func (ve *ValidationError) Error() string {
+func (ve ValidationError) Error() string {
 	return ve.Message
 }
-
 
 func NewClient(httpClient *http.Client, baseURL string) (*Client, error) {
 	return &Client{
