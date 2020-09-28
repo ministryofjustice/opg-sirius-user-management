@@ -4,12 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"strconv"
 	"strings"
 )
-
-type ValidationErrors map[string]map[string]string
 
 type MyDetails struct {
 	ID          int             `json:"id"`
@@ -56,7 +55,7 @@ func (c *Client) MyDetails(ctx context.Context, cookies []*http.Cookie) (MyDetai
 	return v, err
 }
 
-func (c *Client) EditMyDetails(ctx context.Context, cookies []*http.Cookie, id int, phoneNumber string) (ValidationErrors, error) {
+func (c *Client) EditMyDetails(ctx context.Context, cookies []*http.Cookie, id int, phoneNumber string) error {
 	var v struct {
 		Status           int              `json:"status"`
 		Detail           string           `json:"detail"`
@@ -73,25 +72,36 @@ func (c *Client) EditMyDetails(ctx context.Context, cookies []*http.Cookie, id i
 		cookies,
 	)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	req.Header.Add("Content-type", "application/json")
 
 	resp, err := c.http.Do(req)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusUnauthorized {
-		return nil, ErrUnauthorized
+		return ErrUnauthorized
 	}
 
 	if resp.StatusCode != http.StatusOK {
 		err = json.NewDecoder(resp.Body).Decode(&v)
-		return v.ValidationErrors, err
+		if err == nil {
+			return &ValidationError{
+				Message: v.Detail,
+				Errors:  v.ValidationErrors,
+			}
+		}
+
+		if err == io.EOF {
+			return fmt.Errorf("returned non-2XX response: %d", resp.StatusCode)
+		}
+
+		return err
 	}
 
-	return nil, nil
+	return nil
 }

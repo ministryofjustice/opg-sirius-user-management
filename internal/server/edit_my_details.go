@@ -10,7 +10,7 @@ import (
 
 type EditMyDetailsClient interface {
 	MyDetails(context.Context, []*http.Cookie) (sirius.MyDetails, error)
-	EditMyDetails(context.Context, []*http.Cookie, int, string) (sirius.ValidationErrors, error)
+	EditMyDetails(context.Context, []*http.Cookie, int, string) error
 }
 
 type editMyDetailsVars struct {
@@ -50,23 +50,22 @@ func editMyDetails(logger *log.Logger, client EditMyDetailsClient, tmpl Template
 			var err error
 
 			phoneNumber = r.FormValue("phonenumber")
-			validationErrors, err = client.EditMyDetails(r.Context(), r.Cookies(), myDetails.ID, phoneNumber)
+			err = client.EditMyDetails(r.Context(), r.Cookies(), myDetails.ID, phoneNumber)
 
 			if err == sirius.ErrUnauthorized {
 				http.Redirect(w, r, siriusURL+"/auth", http.StatusFound)
 				return
+			} else if e, ok := err.(*sirius.ValidationError); ok {
+				validationErrors = e.Errors
+				w.WriteHeader(http.StatusBadRequest)
 			} else if err != nil {
 				logger.Println("editMyDetails:", err)
 				http.Error(w, "Could not connect to Sirius", http.StatusInternalServerError)
 				return
-			}
-
-			if validationErrors == nil {
+			} else {
 				http.Redirect(w, r, "/my-details", http.StatusFound)
 				return
 			}
-
-			w.WriteHeader(http.StatusBadRequest)
 		}
 
 		vars := editMyDetailsVars{

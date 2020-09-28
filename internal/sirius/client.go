@@ -15,6 +15,18 @@ func (e ClientError) Error() string {
 	return string(e)
 }
 
+type ValidationErrors map[string]map[string]string
+
+type ValidationError struct {
+	Message string
+	Errors  ValidationErrors
+}
+
+func (ve *ValidationError) Error() string {
+	return ve.Message
+}
+
+
 func NewClient(httpClient *http.Client, baseURL string) (*Client, error) {
 	return &Client{
 		http:    httpClient,

@@ -146,11 +146,10 @@ func TestEditMyDetails(t *testing.T) {
 	defer pact.Teardown()
 
 	testCases := map[string]struct {
-		phoneNumber              string
-		setup                    func()
-		cookies                  []*http.Cookie
-		expectedValidationErrors ValidationErrors
-		expectedError            error
+		phoneNumber   string
+		setup         func()
+		cookies       []*http.Cookie
+		expectedError error
 	}{
 		"OK": {
 			phoneNumber: "01210930320",
@@ -182,7 +181,6 @@ func TestEditMyDetails(t *testing.T) {
 				{Name: "XSRF-TOKEN", Value: "abcde"},
 				{Name: "Other", Value: "other"},
 			},
-			expectedValidationErrors: nil,
 		},
 
 		"BadRequest": {
@@ -214,9 +212,12 @@ func TestEditMyDetails(t *testing.T) {
 				{Name: "XSRF-TOKEN", Value: "abcde"},
 				{Name: "Other", Value: "other"},
 			},
-			expectedValidationErrors: ValidationErrors{
-				"phoneNumber": {
-					"stringLengthTooLong": "The input is more than 255 characters long",
+			expectedError: &ValidationError{
+				Message: "Payload failed validation",
+				Errors: ValidationErrors{
+					"phoneNumber": {
+						"stringLengthTooLong": "The input is more than 255 characters long",
+					},
 				},
 			},
 		},
@@ -253,8 +254,7 @@ func TestEditMyDetails(t *testing.T) {
 			assert.Nil(t, pact.Verify(func() error {
 				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
 
-				validationErrors, err := client.EditMyDetails(context.Background(), tc.cookies, 47, tc.phoneNumber)
-				assert.Equal(t, tc.expectedValidationErrors, validationErrors)
+				err := client.EditMyDetails(context.Background(), tc.cookies, 47, tc.phoneNumber)
 				assert.Equal(t, tc.expectedError, err)
 				return nil
 			}))

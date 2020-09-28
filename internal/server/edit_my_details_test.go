@@ -19,8 +19,8 @@ type mockEditMyDetailsClient struct {
 	lastCookies []*http.Cookie
 	lastRequest string
 	err         error
+	errSave     error
 	data        sirius.MyDetails
-	errors      sirius.ValidationErrors
 }
 
 func (m *mockEditMyDetailsClient) MyDetails(ctx context.Context, cookies []*http.Cookie) (sirius.MyDetails, error) {
@@ -31,12 +31,12 @@ func (m *mockEditMyDetailsClient) MyDetails(ctx context.Context, cookies []*http
 	return m.data, m.err
 }
 
-func (m *mockEditMyDetailsClient) EditMyDetails(ctx context.Context, cookies []*http.Cookie, id int, phoneNumber string) (sirius.ValidationErrors, error) {
+func (m *mockEditMyDetailsClient) EditMyDetails(ctx context.Context, cookies []*http.Cookie, id int, phoneNumber string) error {
 	m.count += 1
 	m.lastCookies = cookies
 	m.lastRequest = "EditMyDetails"
 
-	return m.errors, m.err
+	return m.errSave
 }
 
 func TestGetEditMyDetails(t *testing.T) {
@@ -133,7 +133,7 @@ func TestPostEditMyDetails(t *testing.T) {
 func TestPostEditMyDetailsUnauthenticated(t *testing.T) {
 	assert := assert.New(t)
 
-	client := &mockEditMyDetailsClient{err: sirius.ErrUnauthorized}
+	client := &mockEditMyDetailsClient{errSave: sirius.ErrUnauthorized}
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
@@ -152,7 +152,7 @@ func TestPostEditMyDetailsSiriusErrors(t *testing.T) {
 	assert := assert.New(t)
 
 	logger := log.New(ioutil.Discard, "", 0)
-	client := &mockEditMyDetailsClient{err: errors.New("err")}
+	client := &mockEditMyDetailsClient{errSave: errors.New("err")}
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
@@ -168,13 +168,15 @@ func TestPostEditMyDetailsSiriusErrors(t *testing.T) {
 func TestPostEditMyDetailsInvalidRequest(t *testing.T) {
 	assert := assert.New(t)
 
-	validationErrors := sirius.ValidationErrors{
-		"phoneNumber": {
-			"invalidNumber": "Phone number is not in valid format",
+	validationError := &sirius.ValidationError{
+		Errors: sirius.ValidationErrors{
+			"phoneNumber": {
+				"invalidNumber": "Phone number is not in valid format",
+			},
 		},
 	}
 
-	client := &mockEditMyDetailsClient{errors: validationErrors}
+	client := &mockEditMyDetailsClient{errSave: validationError}
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
