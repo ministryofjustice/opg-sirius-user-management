@@ -43,9 +43,5 @@ func (c *Client) newRequest(ctx context.Context, method, path string, body io.Re
 	headerToken, _ := url.QueryUnescape(xsrfToken)
 	req.Header.Add("X-XSRF-TOKEN", headerToken)
 
-	if method == http.MethodPut || method == http.MethodPost {
-		req.Header.Add("Content-type", "application/json")
-	}
-
 	return req, err
 }

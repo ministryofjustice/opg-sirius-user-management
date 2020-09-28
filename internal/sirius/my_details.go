@@ -76,6 +76,8 @@ func (c *Client) EditMyDetails(ctx context.Context, cookies []*http.Cookie, id i
 		return nil, err
 	}
 
+	req.Header.Add("Content-type", "application/json")
+
 	resp, err := c.http.Do(req)
 	if err != nil {
 		return nil, err
