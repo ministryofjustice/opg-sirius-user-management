@@ -10,14 +10,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type permissionsResponse struct {
-	Data *struct {
-		User *struct {
-			Permissions []string `json:"permissions" pact:"min=1,contents=GET|POST|PATCH"`
-		} `json:"user"`
-	} `json:"data"`
-}
-
 func TestPermissions(t *testing.T) {
 	pact := &dsl.Pact{
 		Consumer:          "sirius-user-management",

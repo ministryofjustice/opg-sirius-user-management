@@ -32,7 +32,7 @@ type myDetailsVars struct {
 
 func hasPermission(group string, method string, list sirius.PermissionSet) bool {
 	for _, b := range list[group].Permissions {
-		if strings.ToLower(b) == strings.ToLower(method) {
+		if strings.EqualFold(b, method) {
 			return true
 		}
 	}
