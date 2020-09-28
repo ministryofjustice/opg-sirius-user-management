@@ -14,10 +14,13 @@ import (
 )
 
 type mockMyDetailsClient struct {
-	count       int
-	lastCookies []*http.Cookie
-	err         error
-	data        sirius.MyDetails
+	count            int
+	permissionsCount int
+	lastCookies      []*http.Cookie
+	err              error
+	permissionsErr   error
+	data             sirius.MyDetails
+	permissions      sirius.PermissionSet
 }
 
 func (m *mockMyDetailsClient) MyDetails(ctx context.Context, cookies []*http.Cookie) (sirius.MyDetails, error) {
@@ -25,6 +28,13 @@ func (m *mockMyDetailsClient) MyDetails(ctx context.Context, cookies []*http.Coo
 	m.lastCookies = cookies
 
 	return m.data, m.err
+}
+
+func (m *mockMyDetailsClient) MyPermissions(ctx context.Context, cookies []*http.Cookie) (sirius.PermissionSet, error) {
+	m.permissionsCount += 1
+	m.lastCookies = cookies
+
+	return m.permissions, m.permissionsErr
 }
 
 func TestGetMyDetails(t *testing.T) {
@@ -54,19 +64,75 @@ func TestGetMyDetails(t *testing.T) {
 	assert.Equal(http.StatusOK, resp.StatusCode)
 	assert.Equal(r.Cookies(), client.lastCookies)
 
+	assert.Equal(1, client.count)
+	assert.Equal(1, client.permissionsCount)
+
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
 	assert.Equal(myDetailsVars{
-		Path:         "/path",
-		SiriusURL:    "http://sirius",
-		ID:           123,
-		Firstname:    "John",
-		Surname:      "Doe",
-		Email:        "john@doe.com",
-		PhoneNumber:  "123",
-		Organisation: "COP User",
-		Roles:        []string{"A", "B"},
-		Teams:        []string{"A Team"},
+		Path:               "/path",
+		SiriusURL:          "http://sirius",
+		ID:                 123,
+		Firstname:          "John",
+		Surname:            "Doe",
+		Email:              "john@doe.com",
+		PhoneNumber:        "123",
+		Organisation:       "COP User",
+		Roles:              []string{"A", "B"},
+		Teams:              []string{"A Team"},
+		CanEditPhoneNumber: false,
+	}, template.lastVars)
+}
+
+func TestGetMyDetailsUsesPermission(t *testing.T) {
+	assert := assert.New(t)
+
+	data := sirius.MyDetails{
+		ID:          123,
+		Firstname:   "John",
+		Surname:     "Doe",
+		Email:       "john@doe.com",
+		PhoneNumber: "123",
+		Roles:       []string{"A", "COP User", "B"},
+		Teams: []sirius.MyDetailsTeam{
+			{DisplayName: "A Team"},
+		},
+	}
+	permissions := sirius.PermissionSet{
+		"user": sirius.PermissionGroup{
+			Permissions: []string{"PATCH"},
+		},
+	}
+	client := &mockMyDetailsClient{data: data, permissions: permissions}
+	template := &mockTemplate{}
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("GET", "/path", nil)
+	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
+
+	myDetails(nil, client, template, "http://sirius").ServeHTTP(w, r)
+
+	resp := w.Result()
+	assert.Equal(http.StatusOK, resp.StatusCode)
+	assert.Equal(r.Cookies(), client.lastCookies)
+
+	assert.Equal(1, client.count)
+	assert.Equal(1, client.permissionsCount)
+
+	assert.Equal(1, template.count)
+	assert.Equal("page", template.lastName)
+	assert.Equal(myDetailsVars{
+		Path:               "/path",
+		SiriusURL:          "http://sirius",
+		ID:                 123,
+		Firstname:          "John",
+		Surname:            "Doe",
+		Email:              "john@doe.com",
+		PhoneNumber:        "123",
+		Organisation:       "COP User",
+		Roles:              []string{"A", "B"},
+		Teams:              []string{"A Team"},
+		CanEditPhoneNumber: true,
 	}, template.lastVars)
 }
 
