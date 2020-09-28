@@ -36,7 +36,7 @@ func main() {
 	tmpls := map[string]*template.Template{}
 
 	for _, file := range files {
-		tmpls[filepath.Base(file)], _ = template.Must(layouts.Clone()).ParseFiles(file)
+		tmpls[filepath.Base(file)] = template.Must(template.Must(layouts.Clone()).ParseFiles(file))
 	}
 
 	client, err := sirius.NewClient(http.DefaultClient, siriusURL)
