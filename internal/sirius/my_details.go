@@ -3,7 +3,7 @@ package sirius
 import (
 	"context"
 	"encoding/json"
-	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -49,7 +49,7 @@ func (c *Client) MyDetails(ctx context.Context, cookies []*http.Cookie) (MyDetai
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return v, errors.New("returned non-2XX response: " + strconv.Itoa(resp.StatusCode))
+		return v, fmt.Errorf("returned non-2XX response: %d", resp.StatusCode)
 	}
 
 	err = json.NewDecoder(resp.Body).Decode(&v)
