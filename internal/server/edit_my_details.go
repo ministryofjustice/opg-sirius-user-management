@@ -1,11 +1,17 @@
 package server
 
 import (
+	"context"
 	"log"
 	"net/http"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
 )
+
+type EditMyDetailsClient interface {
+	MyDetails(context.Context, []*http.Cookie) (sirius.MyDetails, error)
+	EditMyDetails(context.Context, []*http.Cookie, int, string) (sirius.ValidationErrors, error)
+}
 
 type editMyDetailsVars struct {
 	Path      string
@@ -15,7 +21,7 @@ type editMyDetailsVars struct {
 	PhoneNumber string
 }
 
-func editMyDetails(logger *log.Logger, client MyDetailsClient, tmpl Template, siriusURL string) http.Handler {
+func editMyDetails(logger *log.Logger, client EditMyDetailsClient, tmpl Template, siriusURL string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var validationErrors sirius.ValidationErrors
 

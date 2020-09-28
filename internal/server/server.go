@@ -9,6 +9,7 @@ import (
 
 type Client interface {
 	MyDetailsClient
+	EditMyDetailsClient
 }
 
 type Template interface {

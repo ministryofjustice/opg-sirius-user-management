@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"errors"
 	"io/ioutil"
 	"log"
@@ -12,6 +13,31 @@ import (
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
 	"github.com/stretchr/testify/assert"
 )
+
+type mockEditMyDetailsClient struct {
+	count       int
+	lastCookies []*http.Cookie
+	lastRequest string
+	err         error
+	data        sirius.MyDetails
+	errors      sirius.ValidationErrors
+}
+
+func (m *mockEditMyDetailsClient) MyDetails(ctx context.Context, cookies []*http.Cookie) (sirius.MyDetails, error) {
+	m.count += 1
+	m.lastCookies = cookies
+	m.lastRequest = "MyDetails"
+
+	return m.data, m.err
+}
+
+func (m *mockEditMyDetailsClient) EditMyDetails(ctx context.Context, cookies []*http.Cookie, id int, phoneNumber string) (sirius.ValidationErrors, error) {
+	m.count += 1
+	m.lastCookies = cookies
+	m.lastRequest = "EditMyDetails"
+
+	return m.errors, m.err
+}
 
 func TestGetEditMyDetails(t *testing.T) {
 	assert := assert.New(t)
@@ -27,7 +53,7 @@ func TestGetEditMyDetails(t *testing.T) {
 			{DisplayName: "A Team"},
 		},
 	}
-	client := &mockMyDetailsClient{data: data}
+	client := &mockEditMyDetailsClient{data: data}
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
@@ -52,7 +78,7 @@ func TestGetEditMyDetails(t *testing.T) {
 func TestGetEditMyDetailsUnauthenticated(t *testing.T) {
 	assert := assert.New(t)
 
-	client := &mockMyDetailsClient{err: sirius.ErrUnauthorized}
+	client := &mockEditMyDetailsClient{err: sirius.ErrUnauthorized}
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
@@ -71,7 +97,7 @@ func TestGetEditMyDetailsSiriusErrors(t *testing.T) {
 	assert := assert.New(t)
 
 	logger := log.New(ioutil.Discard, "", 0)
-	client := &mockMyDetailsClient{err: errors.New("err")}
+	client := &mockEditMyDetailsClient{err: errors.New("err")}
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
@@ -87,7 +113,7 @@ func TestGetEditMyDetailsSiriusErrors(t *testing.T) {
 func TestPostEditMyDetails(t *testing.T) {
 	assert := assert.New(t)
 
-	client := &mockMyDetailsClient{}
+	client := &mockEditMyDetailsClient{}
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
@@ -107,7 +133,7 @@ func TestPostEditMyDetails(t *testing.T) {
 func TestPostEditMyDetailsUnauthenticated(t *testing.T) {
 	assert := assert.New(t)
 
-	client := &mockMyDetailsClient{err: sirius.ErrUnauthorized}
+	client := &mockEditMyDetailsClient{err: sirius.ErrUnauthorized}
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
@@ -126,7 +152,7 @@ func TestPostEditMyDetailsSiriusErrors(t *testing.T) {
 	assert := assert.New(t)
 
 	logger := log.New(ioutil.Discard, "", 0)
-	client := &mockMyDetailsClient{err: errors.New("err")}
+	client := &mockEditMyDetailsClient{err: errors.New("err")}
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
@@ -148,7 +174,7 @@ func TestPostEditMyDetailsInvalidRequest(t *testing.T) {
 		},
 	}
 
-	client := &mockMyDetailsClient{errors: validationErrors}
+	client := &mockEditMyDetailsClient{errors: validationErrors}
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()

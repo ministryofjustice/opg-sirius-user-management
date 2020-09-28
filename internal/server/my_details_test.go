@@ -30,14 +30,6 @@ func (m *mockMyDetailsClient) MyDetails(ctx context.Context, cookies []*http.Coo
 	return m.data, m.err
 }
 
-func (m *mockMyDetailsClient) EditMyDetails(ctx context.Context, cookies []*http.Cookie, id int, phoneNumber string) (sirius.ValidationErrors, error) {
-	m.count += 1
-	m.lastCookies = cookies
-	m.lastRequest = "EditMyDetails"
-
-	return m.errors, m.err
-}
-
 func TestGetMyDetails(t *testing.T) {
 	assert := assert.New(t)
 
