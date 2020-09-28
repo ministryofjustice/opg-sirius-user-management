@@ -20,7 +20,10 @@ func editMyDetails(logger *log.Logger, client MyDetailsClient, tmpl Template, si
 		var phoneNumber string
 		var validationErrors sirius.ValidationErrors
 
-		if r.Method != http.MethodGet && r.Method != http.MethodPost {
+		switch r.Method {
+		case http.MethodGet, http.MethodPost:
+			break
+		default:
 			http.Error(w, "", http.StatusMethodNotAllowed)
 			return
 		}
