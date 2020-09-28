@@ -15,12 +15,17 @@ import (
 )
 
 type mockEditMyDetailsClient struct {
-	count       int
-	lastCookies []*http.Cookie
-	lastRequest string
-	err         error
-	errSave     error
-	data        sirius.MyDetails
+	count         int
+	saveCount     int
+	lastCookies   []*http.Cookie
+	lastRequest   string
+	err           error
+	errSave       error
+	data          sirius.MyDetails
+	lastArguments struct {
+		ID          int
+		PhoneNumber string
+	}
 }
 
 func (m *mockEditMyDetailsClient) MyDetails(ctx context.Context, cookies []*http.Cookie) (sirius.MyDetails, error) {
@@ -32,9 +37,11 @@ func (m *mockEditMyDetailsClient) MyDetails(ctx context.Context, cookies []*http
 }
 
 func (m *mockEditMyDetailsClient) EditMyDetails(ctx context.Context, cookies []*http.Cookie, id int, phoneNumber string) error {
-	m.count += 1
+	m.saveCount += 1
 	m.lastCookies = cookies
 	m.lastRequest = "EditMyDetails"
+	m.lastArguments.ID = id
+	m.lastArguments.PhoneNumber = phoneNumber
 
 	return m.errSave
 }
@@ -113,19 +120,30 @@ func TestGetEditMyDetailsSiriusErrors(t *testing.T) {
 func TestPostEditMyDetails(t *testing.T) {
 	assert := assert.New(t)
 
-	client := &mockEditMyDetailsClient{}
+	client := &mockEditMyDetailsClient{
+		data: sirius.MyDetails{
+			ID: 31,
+		},
+	}
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
-	r, _ := http.NewRequest("POST", "/path", strings.NewReader("phoneNumber=0189202"))
+	r, _ := http.NewRequest("POST", "/path", strings.NewReader("phonenumber=0189202"))
+	r.Header.Add("Content-type", "application/x-www-form-urlencoded")
 	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
 	editMyDetails(nil, client, template, "http://sirius").ServeHTTP(w, r)
 
 	resp := w.Result()
 	assert.Equal(http.StatusFound, resp.StatusCode)
+
+	assert.Equal(1, client.count)
+	assert.Equal(1, client.saveCount)
+
 	assert.Equal(r.Cookies(), client.lastCookies)
 	assert.Equal("EditMyDetails", client.lastRequest)
+	assert.Equal(31, client.lastArguments.ID)
+	assert.Equal("0189202", client.lastArguments.PhoneNumber)
 
 	assert.Equal(0, template.count)
 }
@@ -137,13 +155,16 @@ func TestPostEditMyDetailsUnauthenticated(t *testing.T) {
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
-	r, _ := http.NewRequest("POST", "/path", strings.NewReader("phoneNumber=0189202"))
+	r, _ := http.NewRequest("POST", "/path", strings.NewReader("phonenumber=0189202"))
 
 	editMyDetails(nil, client, template, "http://sirius").ServeHTTP(w, r)
 
 	resp := w.Result()
 	assert.Equal(http.StatusFound, resp.StatusCode)
 	assert.Equal("http://sirius/auth", resp.Header.Get("Location"))
+
+	assert.Equal(1, client.count)
+	assert.Equal(1, client.saveCount)
 
 	assert.Equal(0, template.count)
 }
@@ -156,12 +177,17 @@ func TestPostEditMyDetailsSiriusErrors(t *testing.T) {
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
-	r, _ := http.NewRequest("POST", "/path", strings.NewReader("phoneNumber=0189202"))
+	r, _ := http.NewRequest("POST", "/path", strings.NewReader("phonenumber=0189202"))
+	r.Header.Add("Content-type", "application/x-www-form-urlencoded")
 
 	editMyDetails(logger, client, template, "http://sirius").ServeHTTP(w, r)
 
 	resp := w.Result()
 	assert.Equal(http.StatusInternalServerError, resp.StatusCode)
+
+	assert.Equal(1, client.count)
+	assert.Equal(1, client.saveCount)
+
 	assert.Equal(0, template.count)
 }
 
@@ -188,6 +214,10 @@ func TestPostEditMyDetailsInvalidRequest(t *testing.T) {
 
 	resp := w.Result()
 	assert.Equal(http.StatusBadRequest, resp.StatusCode)
+
+	assert.Equal(1, client.count)
+	assert.Equal(1, client.saveCount)
+
 	assert.Equal(r.Cookies(), client.lastCookies)
 	assert.Equal("EditMyDetails", client.lastRequest)
 
