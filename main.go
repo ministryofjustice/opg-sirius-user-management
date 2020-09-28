@@ -36,7 +36,6 @@ func main() {
 	tmpls := map[string]*template.Template{}
 
 	for _, file := range files {
-		logger.Println(file)
 		tmpls[filepath.Base(file)], _ = template.Must(layouts.Clone()).ParseFiles(file)
 	}
 
