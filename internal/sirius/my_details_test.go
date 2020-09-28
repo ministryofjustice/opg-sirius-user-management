@@ -204,7 +204,7 @@ func TestEditMyDetails(t *testing.T) {
 					}).
 					WillRespondWith(dsl.Response{
 						Status:  http.StatusBadRequest,
-						Headers: dsl.MapMatcher{"Content-Type": dsl.String("application/json")},
+						Headers: dsl.MapMatcher{"Content-Type": dsl.String("application/problem+json")},
 						Body:    dsl.Match(editMyDetailsBadRequestResponse{}),
 					})
 			},
