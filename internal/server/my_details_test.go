@@ -19,7 +19,6 @@ type mockMyDetailsClient struct {
 	lastRequest string
 	err         error
 	data        sirius.MyDetails
-	errors      sirius.ValidationErrors
 }
 
 func (m *mockMyDetailsClient) MyDetails(ctx context.Context, cookies []*http.Cookie) (sirius.MyDetails, error) {
