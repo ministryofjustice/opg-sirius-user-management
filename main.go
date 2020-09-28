@@ -23,21 +23,21 @@ func main() {
 	webDir := getEnv("WEB_DIR", "web")
 	siriusURL := getEnv("SIRIUS_URL", "http://localhost:9001")
 
-	layouts, _ := template.New("").ParseGlob(webDir + "/template/layout/*.gotmpl")
+	layouts, _ := template.
+		New("").
+		Funcs(map[string]interface{}{
+			"join": func(sep string, items []string) string {
+				return strings.Join(items, sep)
+			},
+		}).
+		ParseGlob(webDir + "/template/layout/*.gotmpl")
 
 	files, _ := filepath.Glob(webDir + "/template/*.gotmpl")
 	tmpls := map[string]*template.Template{}
 
 	for _, file := range files {
 		logger.Println(file)
-		tmpls[filepath.Base(file)], _ = template.
-			Must(layouts.Clone()).
-			Funcs(map[string]interface{}{
-				"join": func(sep string, items []string) string {
-					return strings.Join(items, sep)
-				},
-			}).
-			ParseFiles(file)
+		tmpls[filepath.Base(file)], _ = template.Must(layouts.Clone()).ParseFiles(file)
 	}
 
 	client, err := sirius.NewClient(http.DefaultClient, siriusURL)
