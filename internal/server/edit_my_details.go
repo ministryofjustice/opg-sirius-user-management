@@ -44,7 +44,7 @@ func editMyDetails(logger *log.Logger, client MyDetailsClient, tmpl Template, si
 			var err error
 
 			phoneNumber = r.FormValue("phonenumber")
-			validationErrors, err = client.EditMyDetails(r.Context(), r.Cookies(), myDetails.ID, r.FormValue("phonenumber"))
+			validationErrors, err = client.EditMyDetails(r.Context(), r.Cookies(), myDetails.ID, phoneNumber)
 
 			if err == sirius.ErrUnauthorized {
 				http.Redirect(w, r, siriusURL+"/auth", http.StatusFound)
