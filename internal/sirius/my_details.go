@@ -87,8 +87,8 @@ func (c *Client) EditMyDetails(ctx context.Context, cookies []*http.Cookie, id i
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		json.NewDecoder(resp.Body).Decode(&v)
-		return v.ValidationErrors, nil
+		err = json.NewDecoder(resp.Body).Decode(&v)
+		return v.ValidationErrors, err
 	}
 
 	return nil, nil
