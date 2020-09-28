@@ -16,6 +16,7 @@ import (
 type mockMyDetailsClient struct {
 	count       int
 	lastCookies []*http.Cookie
+	lastRequest string
 	err         error
 	data        sirius.MyDetails
 	errors      sirius.ValidationErrors
@@ -24,12 +25,17 @@ type mockMyDetailsClient struct {
 func (m *mockMyDetailsClient) MyDetails(ctx context.Context, cookies []*http.Cookie) (sirius.MyDetails, error) {
 	m.count += 1
 	m.lastCookies = cookies
+	m.lastRequest = "MyDetails"
 
 	return m.data, m.err
 }
 
 func (m *mockMyDetailsClient) EditMyDetails(ctx context.Context, cookies []*http.Cookie, id int, phoneNumber string) (sirius.ValidationErrors, error) {
-	return nil, nil
+	m.count += 1
+	m.lastCookies = cookies
+	m.lastRequest = "EditMyDetails"
+
+	return m.errors, m.err
 }
 
 func TestGetMyDetails(t *testing.T) {

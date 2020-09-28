@@ -44,6 +44,8 @@ func editMyDetails(logger *log.Logger, client MyDetailsClient, tmpl Template, si
 				http.Redirect(w, r, "/my-details", http.StatusFound)
 				return
 			}
+
+			w.WriteHeader(http.StatusBadRequest)
 		} else {
 			myDetails, err := client.MyDetails(r.Context(), r.Cookies())
 
