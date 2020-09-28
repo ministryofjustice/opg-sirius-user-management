@@ -27,6 +27,16 @@ type myDetailsResponse struct {
 	Suspended   bool     `json:"suspended" pact:"example=false"`
 }
 
+type editMyDetailsBadRequestResponse struct {
+	Status           int    `json:"status" pact:"example=400"`
+	Detail           string `json:"detail" pact:"example=Payload failed validation"`
+	ValidationErrors *struct {
+		PhoneNumber *struct {
+			StringLengthTooLong string `json:"stringLengthTooLong" pact:"example=The input is more than 255 characters long"`
+		} `json:"phoneNumber"`
+	} `json:"validation_errors"`
+}
+
 func TestMyDetails(t *testing.T) {
 	pact := &dsl.Pact{
 		Consumer:          "sirius-user-management",
@@ -117,6 +127,134 @@ func TestMyDetails(t *testing.T) {
 
 				myDetails, err := client.MyDetails(context.Background(), tc.cookies)
 				assert.Equal(t, tc.expectedMyDetails, myDetails)
+				assert.Equal(t, tc.expectedError, err)
+				return nil
+			}))
+		})
+	}
+}
+
+func TestEditMyDetails(t *testing.T) {
+	pact := &dsl.Pact{
+		Consumer:          "sirius-user-management",
+		Provider:          "sirius",
+		Host:              "localhost",
+		PactFileWriteMode: "merge",
+		LogDir:            "../../logs",
+		PactDir:           "../../pacts",
+	}
+	defer pact.Teardown()
+
+	testCases := map[string]struct {
+		phoneNumber              string
+		setup                    func()
+		cookies                  []*http.Cookie
+		expectedValidationErrors ValidationErrors
+		expectedError            error
+	}{
+		"OK": {
+			phoneNumber: "01210930320",
+			setup: func() {
+				pact.
+					AddInteraction().
+					Given("User exists").
+					UponReceiving("A request to change my phone number").
+					WithRequest(dsl.Request{
+						Method: http.MethodPut,
+						Path:   dsl.String("/api/v1/users/47/updateTelephoneNumber"),
+						Headers: dsl.MapMatcher{
+							"Content-type":        dsl.String("application/json"),
+							"X-XSRF-TOKEN":        dsl.String("abcde"),
+							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
+							"OPG-Bypass-Membrane": dsl.String("1"),
+						},
+						Body: map[string]string{
+							"phoneNumber": "01210930320",
+						},
+					}).
+					WillRespondWith(dsl.Response{
+						Status:  http.StatusOK,
+						Headers: dsl.MapMatcher{"Content-Type": dsl.String("application/json")},
+						Body:    dsl.Match(myDetailsResponse{}),
+					})
+			},
+			cookies: []*http.Cookie{
+				{Name: "XSRF-TOKEN", Value: "abcde"},
+				{Name: "Other", Value: "other"},
+			},
+			expectedValidationErrors: nil,
+		},
+
+		"BadRequest": {
+			phoneNumber: "invalid phone number",
+			setup: func() {
+				pact.
+					AddInteraction().
+					Given("User exists").
+					UponReceiving("An invalid request to change my phone number").
+					WithRequest(dsl.Request{
+						Method: http.MethodPut,
+						Path:   dsl.String("/api/v1/users/47/updateTelephoneNumber"),
+						Headers: dsl.MapMatcher{
+							"X-XSRF-TOKEN":        dsl.String("abcde"),
+							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
+							"OPG-Bypass-Membrane": dsl.String("1"),
+						},
+						Body: map[string]string{
+							"phoneNumber": "invalid phone number",
+						},
+					}).
+					WillRespondWith(dsl.Response{
+						Status:  http.StatusBadRequest,
+						Headers: dsl.MapMatcher{"Content-Type": dsl.String("application/json")},
+						Body:    dsl.Match(editMyDetailsBadRequestResponse{}),
+					})
+			},
+			cookies: []*http.Cookie{
+				{Name: "XSRF-TOKEN", Value: "abcde"},
+				{Name: "Other", Value: "other"},
+			},
+			expectedValidationErrors: ValidationErrors{
+				"phoneNumber": {
+					"stringLengthTooLong": "The input is more than 255 characters long",
+				},
+			},
+		},
+
+		"Unauthorized": {
+			phoneNumber: "01210930320",
+			setup: func() {
+				pact.
+					AddInteraction().
+					Given("User exists").
+					UponReceiving("A request to get my details without cookies").
+					WithRequest(dsl.Request{
+						Method: http.MethodPut,
+						Path:   dsl.String("/api/v1/users/47/updateTelephoneNumber"),
+						Headers: dsl.MapMatcher{
+							"OPG-Bypass-Membrane": dsl.String("1"),
+						},
+						Body: map[string]string{
+							"phoneNumber": "01210930320",
+						},
+					}).
+					WillRespondWith(dsl.Response{
+						Status: http.StatusUnauthorized,
+					})
+			},
+			expectedError: ErrUnauthorized,
+		},
+	}
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			tc.setup()
+
+			assert.Nil(t, pact.Verify(func() error {
+				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
+
+				validationErrors, err := client.EditMyDetails(context.Background(), tc.cookies, 47, tc.phoneNumber)
+				assert.Equal(t, tc.expectedValidationErrors, validationErrors)
 				assert.Equal(t, tc.expectedError, err)
 				return nil
 			}))
