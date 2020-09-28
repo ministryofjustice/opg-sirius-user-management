@@ -7,37 +7,44 @@
     <div class="govuk-grid-column-two-thirds">
       <h1 class="govuk-heading-xl">My details</h1>
       <h2 class="govuk-heading-m">Personal details</h2>
-      
+
       <dl class="govuk-summary-list">
         <div class="govuk-summary-list__row">
           <dt class="govuk-summary-list__key">Name</dt>
           <dd class="govuk-summary-list__value">{{ .Firstname }} {{ .Surname }}</dd>
+          <span class="govuk-summary-list__actions"></span>
         </div>
-        
+
         <div class="govuk-summary-list__row">
           <dt class="govuk-summary-list__key">Email</dt>
           <dd class="govuk-summary-list__value">{{ .Email }}</dd>
+          <span class="govuk-summary-list__actions"></span>
         </div>
-        
+
         <div class="govuk-summary-list__row">
           <dt class="govuk-summary-list__key">Phone number</dt>
           <dd class="govuk-summary-list__value">{{ .PhoneNumber }}</dd>
+          <dd class="govuk-summary-list__actions">
+              <a class="govuk-link" href="/my-details/edit">
+                Change<span class="govuk-visually-hidden"> phone number</span>
+              </a>
+          </dd>
         </div>
       </dl>
 
       <h2 class="govuk-heading-m">Permissions</h2>
-      
+
       <dl class="govuk-summary-list">
         <div class="govuk-summary-list__row">
           <dt class="govuk-summary-list__key">Organisation</dt>
           <dd class="govuk-summary-list__value">{{ .Organisation }}</dd>
         </div>
-        
+
         <div class="govuk-summary-list__row">
           <dt class="govuk-summary-list__key">Team</dt>
           <dd class="govuk-summary-list__value">{{ .Teams | join ", " }}</dd>
         </div>
-        
+
         <div class="govuk-summary-list__row">
           <dt class="govuk-summary-list__key">Roles</dt>
           <dd class="govuk-summary-list__value">{{ .Roles | join ", " }}</dd>

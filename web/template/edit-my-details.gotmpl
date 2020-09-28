@@ -1,0 +1,51 @@
+{{ template "page" . }}
+
+{{ define "backlink" }}
+  <a class="govuk-back-link" href="/my-details">Back</a>
+{{ end }}
+
+{{ define "title" }}Edit my details{{ end }}
+
+{{ define "main" }}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {{ if .Errors }}
+        <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" tabindex="-1" data-module="govuk-error-summary">
+          <h2 class="govuk-error-summary__title" id="error-summary-title">
+            There is a problem
+          </h2>
+          <div class="govuk-error-summary__body">
+            <ul class="govuk-list govuk-error-summary__list">
+              {{ range .Errors.phoneNumber }}
+                <li>
+                    <a href="#f-phonenumber">{{ . }}</a>
+                </li>
+              {{ end }}
+            </ul>
+          </div>
+        </div>
+      {{ end }}
+
+      <h1 class="govuk-heading-xl">Edit my details</h1>
+      <form class="form" method="post">
+        <div class="govuk-form-group {{ if .Errors.phoneNumber }}govuk-form-group--error{{ end }}">
+          <label class="govuk-label" for="f-phonenumber">
+            Telephone
+          </label>
+
+          {{ range .Errors.phoneNumber }}
+            <span id="name-error" class="govuk-error-message">
+              <span class="govuk-visually-hidden">Error:</span> {{ . }}
+            </span>
+          {{ end }}
+
+          <input class="govuk-input govuk-!-width-two-thirds" id="f-phonenumber" name="phonenumber" type="text" value="{{ .PhoneNumber }}">
+        </div>
+
+        <button type="submit" class="govuk-button" data-module="govuk-button">
+          Save changes
+        </button>
+      </form>
+    </div>
+  </div>
+{{ end }}

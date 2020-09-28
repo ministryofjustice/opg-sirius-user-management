@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"strings"
 	"syscall"
 	"time"
@@ -22,13 +23,20 @@ func main() {
 	webDir := getEnv("WEB_DIR", "web")
 	siriusURL := getEnv("SIRIUS_URL", "http://localhost:9001")
 
-	templates, err := template.New("").Funcs(map[string]interface{}{
-		"join": func(sep string, items []string) string {
-			return strings.Join(items, sep)
-		},
-	}).ParseGlob(webDir + "/template/*.gotmpl")
-	if err != nil {
-		logger.Fatalln(err)
+	layouts, _ := template.
+		New("").
+		Funcs(map[string]interface{}{
+			"join": func(sep string, items []string) string {
+				return strings.Join(items, sep)
+			},
+		}).
+		ParseGlob(webDir + "/template/layout/*.gotmpl")
+
+	files, _ := filepath.Glob(webDir + "/template/*.gotmpl")
+	tmpls := map[string]*template.Template{}
+
+	for _, file := range files {
+		tmpls[filepath.Base(file)] = template.Must(template.Must(layouts.Clone()).ParseFiles(file))
 	}
 
 	client, err := sirius.NewClient(http.DefaultClient, siriusURL)
@@ -38,7 +46,7 @@ func main() {
 
 	server := &http.Server{
 		Addr:    ":" + port,
-		Handler: server.New(logger, client, templates, siriusURL, webDir),
+		Handler: server.New(logger, client, tmpls, siriusURL, webDir),
 	}
 
 	go func() {

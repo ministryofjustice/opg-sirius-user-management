@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"net/http"
+	"net/url"
 )
 
 const ErrUnauthorized ClientError = "unauthorized"
@@ -12,6 +13,17 @@ type ClientError string
 
 func (e ClientError) Error() string {
 	return string(e)
+}
+
+type ValidationErrors map[string]map[string]string
+
+type ValidationError struct {
+	Message string
+	Errors  ValidationErrors
+}
+
+func (ve ValidationError) Error() string {
+	return ve.Message
 }
 
 func NewClient(httpClient *http.Client, baseURL string) (*Client, error) {
@@ -38,8 +50,15 @@ func (c *Client) newRequest(ctx context.Context, method, path string, body io.Re
 			xsrfToken = c.Value
 		}
 	}
+
+	headerToken, err := url.QueryUnescape(xsrfToken)
+
+	if err != nil {
+		return nil, ErrUnauthorized
+	}
+
 	req.Header.Add("OPG-Bypass-Membrane", "1")
-	req.Header.Add("X-XSRF-TOKEN", xsrfToken)
+	req.Header.Add("X-XSRF-TOKEN", headerToken)
 
 	return req, err
 }

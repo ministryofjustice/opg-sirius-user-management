@@ -3,8 +3,11 @@ package sirius
 import (
 	"context"
 	"encoding/json"
-	"errors"
+	"fmt"
+	"io"
 	"net/http"
+	"strconv"
+	"strings"
 )
 
 type MyDetails struct {
@@ -45,9 +48,60 @@ func (c *Client) MyDetails(ctx context.Context, cookies []*http.Cookie) (MyDetai
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return v, errors.New("returned non-2XX response")
+		return v, fmt.Errorf("returned non-2XX response: %d", resp.StatusCode)
 	}
 
 	err = json.NewDecoder(resp.Body).Decode(&v)
 	return v, err
+}
+
+func (c *Client) EditMyDetails(ctx context.Context, cookies []*http.Cookie, id int, phoneNumber string) error {
+	var v struct {
+		Status           int              `json:"status"`
+		Detail           string           `json:"detail"`
+		ValidationErrors ValidationErrors `json:"validation_errors"`
+	}
+
+	var body = strings.NewReader("{\"phoneNumber\":\"" + phoneNumber + "\"}")
+
+	req, err := c.newRequest(
+		ctx,
+		http.MethodPut,
+		"/api/v1/users/"+strconv.Itoa(id)+"/updateTelephoneNumber",
+		body,
+		cookies,
+	)
+	if err != nil {
+		return err
+	}
+
+	req.Header.Add("Content-type", "application/json")
+
+	resp, err := c.http.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusUnauthorized {
+		return ErrUnauthorized
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		err = json.NewDecoder(resp.Body).Decode(&v)
+		if err == nil {
+			return &ValidationError{
+				Message: v.Detail,
+				Errors:  v.ValidationErrors,
+			}
+		}
+
+		if err == io.EOF {
+			return fmt.Errorf("returned non-2XX response: %d", resp.StatusCode)
+		}
+
+		return err
+	}
+
+	return nil
 }
