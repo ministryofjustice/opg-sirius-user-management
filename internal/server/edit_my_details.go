@@ -16,12 +16,13 @@ type EditMyDetailsClient interface {
 type editMyDetailsVars struct {
 	Path      string
 	SiriusURL string
+	Prefix    string
 	Errors    sirius.ValidationErrors
 
 	PhoneNumber string
 }
 
-func editMyDetails(logger *log.Logger, client EditMyDetailsClient, tmpl Template, siriusURL string) http.Handler {
+func editMyDetails(logger *log.Logger, client EditMyDetailsClient, tmpl Template, prefix, siriusURL string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var validationErrors sirius.ValidationErrors
 
@@ -63,7 +64,7 @@ func editMyDetails(logger *log.Logger, client EditMyDetailsClient, tmpl Template
 				http.Error(w, "Could not connect to Sirius", http.StatusInternalServerError)
 				return
 			} else {
-				http.Redirect(w, r, "/my-details", http.StatusFound)
+				http.Redirect(w, r, prefix+"/my-details", http.StatusFound)
 				return
 			}
 		}
@@ -71,6 +72,7 @@ func editMyDetails(logger *log.Logger, client EditMyDetailsClient, tmpl Template
 		vars := editMyDetailsVars{
 			Path:        r.URL.Path,
 			SiriusURL:   siriusURL,
+			Prefix:      prefix,
 			Errors:      validationErrors,
 			PhoneNumber: phoneNumber,
 		}

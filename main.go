@@ -22,6 +22,7 @@ func main() {
 	port := getEnv("PORT", "8080")
 	webDir := getEnv("WEB_DIR", "web")
 	siriusURL := getEnv("SIRIUS_URL", "http://localhost:9001")
+	prefix := getEnv("PREFIX", "")
 
 	layouts, _ := template.
 		New("").
@@ -46,7 +47,7 @@ func main() {
 
 	server := &http.Server{
 		Addr:    ":" + port,
-		Handler: server.New(logger, client, tmpls, siriusURL, webDir),
+		Handler: server.New(logger, client, tmpls, prefix, siriusURL, webDir),
 	}
 
 	go func() {

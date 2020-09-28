@@ -16,16 +16,18 @@ type ChangePasswordClient interface {
 type changePasswordVars struct {
 	Path      string
 	SiriusURL string
+	Prefix    string
 	Error     string
 }
 
-func changePassword(logger *log.Logger, client ChangePasswordClient, tmpl Template, siriusURL string) http.Handler {
+func changePassword(logger *log.Logger, client ChangePasswordClient, tmpl Template, prefix, siriusURL string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
 			vars := changePasswordVars{
 				Path:      r.URL.Path,
 				SiriusURL: siriusURL,
+				Prefix:    prefix,
 				Error:     r.FormValue("error"),
 			}
 
@@ -46,15 +48,15 @@ func changePassword(logger *log.Logger, client ChangePasswordClient, tmpl Templa
 				http.Redirect(w, r, siriusURL+"/auth", http.StatusFound)
 				return
 			} else if _, ok := err.(sirius.ClientError); ok {
-				http.Redirect(w, r, "/change-password?error="+url.QueryEscape(err.Error()), http.StatusFound)
+				http.Redirect(w, r, prefix+"/change-password?error="+url.QueryEscape(err.Error()), http.StatusFound)
 				return
 			} else if err != nil {
 				logger.Println("changePassword:", err)
-				http.Redirect(w, r, "/change-password", http.StatusFound)
+				http.Redirect(w, r, prefix+"/change-password", http.StatusFound)
 				return
 			}
 
-			http.Redirect(w, r, "/my-details", http.StatusFound)
+			http.Redirect(w, r, prefix+"/my-details", http.StatusFound)
 
 		default:
 			http.Error(w, "", http.StatusMethodNotAllowed)
