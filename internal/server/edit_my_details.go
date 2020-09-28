@@ -17,7 +17,6 @@ type editMyDetailsVars struct {
 
 func editMyDetails(logger *log.Logger, client MyDetailsClient, tmpl Template, siriusURL string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var phoneNumber string
 		var validationErrors sirius.ValidationErrors
 
 		switch r.Method {
@@ -39,7 +38,7 @@ func editMyDetails(logger *log.Logger, client MyDetailsClient, tmpl Template, si
 			return
 		}
 
-		phoneNumber = myDetails.PhoneNumber
+		phoneNumber := myDetails.PhoneNumber
 
 		if r.Method == http.MethodPost {
 			var err error
