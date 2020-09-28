@@ -50,8 +50,14 @@ func (c *Client) newRequest(ctx context.Context, method, path string, body io.Re
 			xsrfToken = c.Value
 		}
 	}
+
+	headerToken, err := url.QueryUnescape(xsrfToken)
+
+	if err != nil {
+		return nil, ErrUnauthorized
+	}
+
 	req.Header.Add("OPG-Bypass-Membrane", "1")
-	headerToken, _ := url.QueryUnescape(xsrfToken)
 	req.Header.Add("X-XSRF-TOKEN", headerToken)
 
 	return req, err
