@@ -4,12 +4,14 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
 )
 
 type MyDetailsClient interface {
 	MyDetails(context.Context, []*http.Cookie) (sirius.MyDetails, error)
+	MyPermissions(context.Context, []*http.Cookie) (sirius.PermissionSet, error)
 }
 
 type myDetailsVars struct {
@@ -24,6 +26,17 @@ type myDetailsVars struct {
 	Organisation string
 	Roles        []string
 	Teams        []string
+
+	CanEditPhoneNumber bool
+}
+
+func hasPermission(group string, method string, list sirius.PermissionSet) bool {
+	for _, b := range list[group].Permissions {
+		if strings.ToLower(b) == strings.ToLower(method) {
+			return true
+		}
+	}
+	return false
 }
 
 func myDetails(logger *log.Logger, client MyDetailsClient, tmpl Template, siriusURL string) http.Handler {
@@ -43,14 +56,25 @@ func myDetails(logger *log.Logger, client MyDetailsClient, tmpl Template, sirius
 			return
 		}
 
+		myPermissions, err := client.MyPermissions(r.Context(), r.Cookies())
+		if err == sirius.ErrUnauthorized {
+			http.Redirect(w, r, siriusURL+"/auth", http.StatusFound)
+			return
+		} else if err != nil {
+			logger.Println("myDetails:", err)
+			http.Error(w, "Could not connect to Sirius", http.StatusInternalServerError)
+			return
+		}
+
 		vars := myDetailsVars{
-			Path:        r.URL.Path,
-			SiriusURL:   siriusURL,
-			ID:          myDetails.ID,
-			Firstname:   myDetails.Firstname,
-			Surname:     myDetails.Surname,
-			Email:       myDetails.Email,
-			PhoneNumber: myDetails.PhoneNumber,
+			Path:               r.URL.Path,
+			SiriusURL:          siriusURL,
+			ID:                 myDetails.ID,
+			Firstname:          myDetails.Firstname,
+			Surname:            myDetails.Surname,
+			Email:              myDetails.Email,
+			PhoneNumber:        myDetails.PhoneNumber,
+			CanEditPhoneNumber: hasPermission("user", "patch", myPermissions),
 		}
 
 		for _, role := range myDetails.Roles {

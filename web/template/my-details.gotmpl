@@ -25,9 +25,11 @@
           <dt class="govuk-summary-list__key">Phone number</dt>
           <dd class="govuk-summary-list__value">{{ .PhoneNumber }}</dd>
           <dd class="govuk-summary-list__actions">
+            {{ if .CanEditPhoneNumber }}
               <a class="govuk-link" href="{{ prefix "/my-details/edit" }}">
                 Change<span class="govuk-visually-hidden"> phone number</span>
               </a>
+            {{ end }}
           </dd>
         </div>
       </dl>
