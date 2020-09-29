@@ -56,30 +56,6 @@ func TestGetChangePassword(t *testing.T) {
 	}, template.lastVars)
 }
 
-func TestGetChangePasswordWithError(t *testing.T) {
-	assert := assert.New(t)
-
-	template := &mockTemplate{}
-
-	w := httptest.NewRecorder()
-	r, _ := http.NewRequest("GET", "/path?error=Something+happened", nil)
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
-
-	changePassword(nil, nil, template, "/prefix", "http://sirius").ServeHTTP(w, r)
-
-	resp := w.Result()
-	assert.Equal(http.StatusOK, resp.StatusCode)
-
-	assert.Equal(1, template.count)
-	assert.Equal("page", template.lastName)
-	assert.Equal(changePasswordVars{
-		Path:      "/path",
-		SiriusURL: "http://sirius",
-		Prefix:    "/prefix",
-		Error:     "Something happened",
-	}, template.lastVars)
-}
-
 func TestPostChangePassword(t *testing.T) {
 	assert := assert.New(t)
 
@@ -134,10 +110,16 @@ func TestPostChangePasswordSiriusError(t *testing.T) {
 	changePassword(nil, client, template, "/prefix", "http://sirius").ServeHTTP(w, r)
 
 	resp := w.Result()
-	assert.Equal(http.StatusFound, resp.StatusCode)
-	assert.Equal("/prefix/change-password?error=Something+happened", resp.Header.Get("Location"))
+	assert.Equal(http.StatusBadRequest, resp.StatusCode)
 
-	assert.Equal(0, template.count)
+	assert.Equal(1, template.count)
+	assert.Equal("page", template.lastName)
+	assert.Equal(changePasswordVars{
+		Path:      "/path",
+		SiriusURL: "http://sirius",
+		Prefix:    "/prefix",
+		Error:     "Something happened",
+	}, template.lastVars)
 }
 
 func TestPostChangePasswordOtherError(t *testing.T) {
@@ -153,8 +135,14 @@ func TestPostChangePasswordOtherError(t *testing.T) {
 	changePassword(logger, client, template, "/prefix", "http://sirius").ServeHTTP(w, r)
 
 	resp := w.Result()
-	assert.Equal(http.StatusFound, resp.StatusCode)
-	assert.Equal("/prefix/change-password", resp.Header.Get("Location"))
+	assert.Equal(http.StatusBadRequest, resp.StatusCode)
 
-	assert.Equal(0, template.count)
+	assert.Equal(1, template.count)
+	assert.Equal("page", template.lastName)
+	assert.Equal(changePasswordVars{
+		Path:      "/path",
+		SiriusURL: "http://sirius",
+		Prefix:    "/prefix",
+		Error:     "Could not connect to Sirius",
+	}, template.lastVars)
 }
