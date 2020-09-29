@@ -77,11 +77,16 @@ func errorHandler(name string, logger *log.Logger, tmpl403 Template, prefix, sir
 					}
 
 					w.WriteHeader(http.StatusForbidden)
-					tmpl403.ExecuteTemplate(w, "page", v{
+					err = tmpl403.ExecuteTemplate(w, "page", v{
 						SiriusURL: siriusURL,
 						Path:      "",
 					})
-					return
+
+					if err == nil {
+						return
+					}
+
+					logger.Printf("%s: %v\n", name, err)
 				}
 
 				http.Error(w, "", status.Code())
