@@ -130,7 +130,7 @@ func TestGetEditMyDetailsNotPermitted(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "", nil)
 
-	editMyDetails(nil, client, template, "http://sirius").ServeHTTP(w, r)
+	editMyDetails(nil, client, template, "/prefix", "http://sirius").ServeHTTP(w, r)
 
 	resp := w.Result()
 	assert.Equal(http.StatusFound, resp.StatusCode)
