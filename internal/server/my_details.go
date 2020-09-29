@@ -46,19 +46,15 @@ func myDetails(logger *log.Logger, client MyDetailsClient, tmpl Template, sirius
 			return
 		}
 
-		CanEditPhoneNumber := true
+		canEditPhoneNumber, err := client.HasPermission(r.Context(), r.Cookies(), "user", "patch");
 
-		if ok, err := client.HasPermission(r.Context(), r.Cookies(), "user", "patch"); !ok {
-			if err == sirius.ErrUnauthorized {
-				http.Redirect(w, r, siriusURL+"/auth", http.StatusFound)
-				return
-			} else if err != nil {
-				logger.Println("myDetails:", err)
-				http.Error(w, "Could not connect to Sirius", http.StatusInternalServerError)
-				return
-			}
-
-			CanEditPhoneNumber = false
+		if err == sirius.ErrUnauthorized {
+			http.Redirect(w, r, siriusURL+"/auth", http.StatusFound)
+			return
+		} else if err != nil {
+			logger.Println("myDetails:", err)
+			http.Error(w, "Could not connect to Sirius", http.StatusInternalServerError)
+			return
 		}
 
 		vars := myDetailsVars{
@@ -69,7 +65,7 @@ func myDetails(logger *log.Logger, client MyDetailsClient, tmpl Template, sirius
 			Surname:            myDetails.Surname,
 			Email:              myDetails.Email,
 			PhoneNumber:        myDetails.PhoneNumber,
-			CanEditPhoneNumber: CanEditPhoneNumber,
+			CanEditPhoneNumber: canEditPhoneNumber,
 		}
 
 		for _, role := range myDetails.Roles {
