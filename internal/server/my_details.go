@@ -10,7 +10,7 @@ import (
 
 type MyDetailsClient interface {
 	MyDetails(context.Context, []*http.Cookie) (sirius.MyDetails, error)
-	MyPermissions(context.Context, []*http.Cookie) (sirius.PermissionSet, error)
+	HasPermission(context.Context, []*http.Cookie, string, string) (bool, error)
 }
 
 type myDetailsVars struct {
@@ -46,14 +46,19 @@ func myDetails(logger *log.Logger, client MyDetailsClient, tmpl Template, sirius
 			return
 		}
 
-		myPermissions, err := client.MyPermissions(r.Context(), r.Cookies())
-		if err == sirius.ErrUnauthorized {
-			http.Redirect(w, r, siriusURL+"/auth", http.StatusFound)
-			return
-		} else if err != nil {
-			logger.Println("myDetails:", err)
-			http.Error(w, "Could not connect to Sirius", http.StatusInternalServerError)
-			return
+		CanEditPhoneNumber := true
+
+		if ok, err := client.HasPermission(r.Context(), r.Cookies(), "user", "patch"); !ok {
+			if err == sirius.ErrUnauthorized {
+				http.Redirect(w, r, siriusURL+"/auth", http.StatusFound)
+				return
+			} else if err != nil {
+				logger.Println("myDetails:", err)
+				http.Error(w, "Could not connect to Sirius", http.StatusInternalServerError)
+				return
+			}
+
+			CanEditPhoneNumber = false
 		}
 
 		vars := myDetailsVars{
@@ -64,7 +69,7 @@ func myDetails(logger *log.Logger, client MyDetailsClient, tmpl Template, sirius
 			Surname:            myDetails.Surname,
 			Email:              myDetails.Email,
 			PhoneNumber:        myDetails.PhoneNumber,
-			CanEditPhoneNumber: myPermissions.HasPermission("user", "patch"),
+			CanEditPhoneNumber: CanEditPhoneNumber,
 		}
 
 		for _, role := range myDetails.Roles {

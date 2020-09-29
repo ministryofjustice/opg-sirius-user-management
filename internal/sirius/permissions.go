@@ -28,28 +28,33 @@ type myPermissions struct {
 	Data PermissionSet `json:"data"`
 }
 
-func (c *Client) MyPermissions(ctx context.Context, cookies []*http.Cookie) (PermissionSet, error) {
+func (c *Client) HasPermission(ctx context.Context, cookies []*http.Cookie, group string, method string) (bool, error) {
 	var v myPermissions
 
 	req, err := c.newRequest(ctx, http.MethodGet, "/api/permission", nil, cookies)
 	if err != nil {
-		return nil, err
+		return false, err
 	}
 
 	resp, err := c.http.Do(req)
 	if err != nil {
-		return nil, err
+		return false, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusUnauthorized {
-		return nil, ErrUnauthorized
+		return false, ErrUnauthorized
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, errors.New("returned non-2XX response: " + strconv.Itoa(resp.StatusCode))
+		return false, errors.New("returned non-2XX response: " + strconv.Itoa(resp.StatusCode))
 	}
 
 	err = json.NewDecoder(resp.Body).Decode(&v)
-	return v.Data, err
+
+	if err != nil {
+		return false, err
+	}
+
+	return v.Data.HasPermission(group, method), nil
 }

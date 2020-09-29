@@ -20,7 +20,11 @@ type mockMyDetailsClient struct {
 	err              error
 	permissionsErr   error
 	data             sirius.MyDetails
-	permissions      sirius.PermissionSet
+	hasPermission    bool
+	lastPermission   struct {
+		Group  string
+		Method string
+	}
 }
 
 func (m *mockMyDetailsClient) MyDetails(ctx context.Context, cookies []*http.Cookie) (sirius.MyDetails, error) {
@@ -30,11 +34,13 @@ func (m *mockMyDetailsClient) MyDetails(ctx context.Context, cookies []*http.Coo
 	return m.data, m.err
 }
 
-func (m *mockMyDetailsClient) MyPermissions(ctx context.Context, cookies []*http.Cookie) (sirius.PermissionSet, error) {
+func (m *mockMyDetailsClient) HasPermission(ctx context.Context, cookies []*http.Cookie, group string, method string) (bool, error) {
 	m.permissionsCount += 1
 	m.lastCookies = cookies
+	m.lastPermission.Group = group
+	m.lastPermission.Method = method
 
-	return m.permissions, m.permissionsErr
+	return m.hasPermission, m.permissionsErr
 }
 
 func TestGetMyDetails(t *testing.T) {
@@ -98,12 +104,7 @@ func TestGetMyDetailsUsesPermission(t *testing.T) {
 			{DisplayName: "A Team"},
 		},
 	}
-	permissions := sirius.PermissionSet{
-		"user": sirius.PermissionGroup{
-			Permissions: []string{"PATCH"},
-		},
-	}
-	client := &mockMyDetailsClient{data: data, permissions: permissions}
+	client := &mockMyDetailsClient{data: data, hasPermission: true}
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
@@ -115,6 +116,8 @@ func TestGetMyDetailsUsesPermission(t *testing.T) {
 	resp := w.Result()
 	assert.Equal(http.StatusOK, resp.StatusCode)
 	assert.Equal(r.Cookies(), client.lastCookies)
+	assert.Equal("user", client.lastPermission.Group)
+	assert.Equal("patch", client.lastPermission.Method)
 
 	assert.Equal(1, client.count)
 	assert.Equal(1, client.permissionsCount)
