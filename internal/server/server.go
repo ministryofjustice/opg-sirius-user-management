@@ -66,16 +66,17 @@ func (e StatusError) Code() int {
 
 type Handler func(w http.ResponseWriter, r *http.Request) error
 
+type errorVars struct {
+	SiriusURL string
+	Path      string
+
+	Code  int
+	Error string
+}
+
 func errorHandler(name string, logger *log.Logger, tmplError Template, prefix, siriusURL string, next Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if err := next(w, r); err != nil {
-			type v struct {
-				SiriusURL string
-				Path      string
-				Code      int
-				Error     string
-			}
-
 			if err == sirius.ErrUnauthorized {
 				http.Redirect(w, r, siriusURL+"/auth", http.StatusFound)
 				return
@@ -100,7 +101,7 @@ func errorHandler(name string, logger *log.Logger, tmplError Template, prefix, s
 			}
 
 			w.WriteHeader(code)
-			err = tmplError.ExecuteTemplate(w, "page", v{
+			err = tmplError.ExecuteTemplate(w, "page", errorVars{
 				SiriusURL: siriusURL,
 				Path:      "",
 				Code:      code,
