@@ -107,7 +107,7 @@ func TestPermissions(t *testing.T) {
 	}
 }
 
-func TestpermissionSetChecksPermission(t *testing.T) {
+func TestPermissionSetChecksPermission(t *testing.T) {
 	permissions := permissionSet{
 		"user": {
 			Permissions: []string{"GET", "PATCH"},
