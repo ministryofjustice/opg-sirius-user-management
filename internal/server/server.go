@@ -92,13 +92,10 @@ func errorHandler(name string, logger *log.Logger, tmplError Template, prefix, s
 			if status, ok := err.(StatusError); ok {
 				if status.Code() == http.StatusForbidden || status.Code() == http.StatusNotFound {
 					code = status.Code()
-				} else {
-					http.Error(w, "", status.Code())
-					return
 				}
-			} else {
-				logger.Printf("%s: %v\n", name, err)
 			}
+
+			logger.Printf("%s: %v\n", name, err)
 
 			w.WriteHeader(code)
 			err = tmplError.ExecuteTemplate(w, "page", errorVars{
