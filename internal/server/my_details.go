@@ -29,32 +29,27 @@ type myDetailsVars struct {
 	CanEditPhoneNumber bool
 }
 
-func myDetails(logger *log.Logger, client MyDetailsClient, tmpl Template, siriusURL string) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func myDetails(logger *log.Logger, client MyDetailsClient, tmpl Template, siriusURL string) Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		if r.Method != http.MethodGet {
-			http.Error(w, "", http.StatusMethodNotAllowed)
-			return
+			return StatusError(http.StatusMethodNotAllowed)
 		}
 
 		myDetails, err := client.MyDetails(r.Context(), r.Cookies())
 		if err == sirius.ErrUnauthorized {
-			http.Redirect(w, r, siriusURL+"/auth", http.StatusFound)
-			return
+			return err
 		} else if err != nil {
 			logger.Println("myDetails:", err)
-			http.Error(w, "Could not connect to Sirius", http.StatusInternalServerError)
-			return
+			return StatusError(http.StatusInternalServerError)
 		}
 
-		canEditPhoneNumber, err := client.HasPermission(r.Context(), r.Cookies(), "user", "patch");
+		canEditPhoneNumber, err := client.HasPermission(r.Context(), r.Cookies(), "user", "patch")
 
 		if err == sirius.ErrUnauthorized {
-			http.Redirect(w, r, siriusURL+"/auth", http.StatusFound)
-			return
+			return err
 		} else if err != nil {
 			logger.Println("myDetails:", err)
-			http.Error(w, "Could not connect to Sirius", http.StatusInternalServerError)
-			return
+			return StatusError(http.StatusInternalServerError)
 		}
 
 		vars := myDetailsVars{
@@ -80,8 +75,6 @@ func myDetails(logger *log.Logger, client MyDetailsClient, tmpl Template, sirius
 			vars.Teams = append(vars.Teams, team.DisplayName)
 		}
 
-		if err := tmpl.ExecuteTemplate(w, "page", vars); err != nil {
-			logger.Println("myDetails:", err)
-		}
-	})
+		return tmpl.ExecuteTemplate(w, "page", vars)
+	}
 }
