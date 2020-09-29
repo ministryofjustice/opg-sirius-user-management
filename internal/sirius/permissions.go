@@ -14,12 +14,12 @@ type PermissionGroup struct {
 
 type PermissionSet map[string]PermissionGroup
 
-type MyPermissions struct {
+type myPermissions struct {
 	Data PermissionSet `json:"data"`
 }
 
 func (c *Client) MyPermissions(ctx context.Context, cookies []*http.Cookie) (PermissionSet, error) {
-	var v MyPermissions
+	var v myPermissions
 
 	req, err := c.newRequest(ctx, http.MethodGet, "/api/permission", nil, cookies)
 	if err != nil {
