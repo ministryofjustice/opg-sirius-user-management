@@ -44,7 +44,7 @@ func editMyDetails(logger *log.Logger, client EditMyDetailsClient, tmpl Template
 			return
 		}
 
-		if !hasPermission("user", "patch", myPermissions) {
+		if !myPermissions.HasPermission("user", "patch") {
 			http.Redirect(w, r, "/my-details", http.StatusFound)
 			return
 		}

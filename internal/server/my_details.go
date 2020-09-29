@@ -4,7 +4,6 @@ import (
 	"context"
 	"log"
 	"net/http"
-	"strings"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
 )
@@ -28,15 +27,6 @@ type myDetailsVars struct {
 	Teams        []string
 
 	CanEditPhoneNumber bool
-}
-
-func hasPermission(group string, method string, list sirius.PermissionSet) bool {
-	for _, b := range list[group].Permissions {
-		if strings.EqualFold(b, method) {
-			return true
-		}
-	}
-	return false
 }
 
 func myDetails(logger *log.Logger, client MyDetailsClient, tmpl Template, siriusURL string) http.Handler {
@@ -74,7 +64,7 @@ func myDetails(logger *log.Logger, client MyDetailsClient, tmpl Template, sirius
 			Surname:            myDetails.Surname,
 			Email:              myDetails.Email,
 			PhoneNumber:        myDetails.PhoneNumber,
-			CanEditPhoneNumber: hasPermission("user", "patch", myPermissions),
+			CanEditPhoneNumber: myPermissions.HasPermission("user", "patch"),
 		}
 
 		for _, role := range myDetails.Roles {

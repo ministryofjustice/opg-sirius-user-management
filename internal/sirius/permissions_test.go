@@ -102,3 +102,18 @@ func TestPermissions(t *testing.T) {
 		})
 	}
 }
+
+func TestPermissionSetChecksPermission(t *testing.T) {
+	permissions := PermissionSet{
+		"user": {
+			Permissions: []string{"GET", "PATCH"},
+		},
+		"team": {
+			Permissions: []string{"GET"},
+		},
+	}
+
+	assert.True(t, permissions.HasPermission("user", "PATCH"))
+	assert.True(t, permissions.HasPermission("team", "GET"))
+	assert.False(t, permissions.HasPermission("team", "PATCHs"))
+}

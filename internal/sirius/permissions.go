@@ -6,6 +6,7 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 type PermissionGroup struct {
@@ -13,6 +14,15 @@ type PermissionGroup struct {
 }
 
 type PermissionSet map[string]PermissionGroup
+
+func (ps PermissionSet) HasPermission(group string, method string) bool {
+	for _, b := range ps[group].Permissions {
+		if strings.EqualFold(b, method) {
+			return true
+		}
+	}
+	return false
+}
 
 type myPermissions struct {
 	Data PermissionSet `json:"data"`
