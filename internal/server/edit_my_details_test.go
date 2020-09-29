@@ -67,7 +67,7 @@ func TestGetEditMyDetails(t *testing.T) {
 	r, _ := http.NewRequest("GET", "/path", nil)
 	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	editMyDetails(nil, client, template, "http://sirius").ServeHTTP(w, r)
+	editMyDetails(nil, client, template, "/prefix", "http://sirius").ServeHTTP(w, r)
 
 	resp := w.Result()
 	assert.Equal(http.StatusOK, resp.StatusCode)
@@ -91,7 +91,7 @@ func TestGetEditMyDetailsUnauthenticated(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "", nil)
 
-	editMyDetails(nil, client, template, "http://sirius").ServeHTTP(w, r)
+	editMyDetails(nil, client, template, "/prefix", "http://sirius").ServeHTTP(w, r)
 
 	resp := w.Result()
 	assert.Equal(http.StatusFound, resp.StatusCode)
@@ -110,7 +110,7 @@ func TestGetEditMyDetailsSiriusErrors(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "", nil)
 
-	editMyDetails(logger, client, template, "http://sirius").ServeHTTP(w, r)
+	editMyDetails(logger, client, template, "/prefix", "http://sirius").ServeHTTP(w, r)
 
 	resp := w.Result()
 	assert.Equal(http.StatusInternalServerError, resp.StatusCode)
@@ -132,7 +132,7 @@ func TestPostEditMyDetails(t *testing.T) {
 	r.Header.Add("Content-type", "application/x-www-form-urlencoded")
 	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	editMyDetails(nil, client, template, "http://sirius").ServeHTTP(w, r)
+	editMyDetails(nil, client, template, "/prefix", "http://sirius").ServeHTTP(w, r)
 
 	resp := w.Result()
 	assert.Equal(http.StatusFound, resp.StatusCode)
@@ -157,7 +157,7 @@ func TestPostEditMyDetailsUnauthenticated(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", strings.NewReader("phonenumber=0189202"))
 
-	editMyDetails(nil, client, template, "http://sirius").ServeHTTP(w, r)
+	editMyDetails(nil, client, template, "/prefix", "http://sirius").ServeHTTP(w, r)
 
 	resp := w.Result()
 	assert.Equal(http.StatusFound, resp.StatusCode)
@@ -180,7 +180,7 @@ func TestPostEditMyDetailsSiriusErrors(t *testing.T) {
 	r, _ := http.NewRequest("POST", "/path", strings.NewReader("phonenumber=0189202"))
 	r.Header.Add("Content-type", "application/x-www-form-urlencoded")
 
-	editMyDetails(logger, client, template, "http://sirius").ServeHTTP(w, r)
+	editMyDetails(logger, client, template, "/prefix", "http://sirius").ServeHTTP(w, r)
 
 	resp := w.Result()
 	assert.Equal(http.StatusInternalServerError, resp.StatusCode)
@@ -210,7 +210,7 @@ func TestPostEditMyDetailsInvalidRequest(t *testing.T) {
 	r.Header.Add("Content-type", "application/x-www-form-urlencoded")
 	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	editMyDetails(nil, client, template, "http://sirius").ServeHTTP(w, r)
+	editMyDetails(nil, client, template, "/prefix", "http://sirius").ServeHTTP(w, r)
 
 	resp := w.Result()
 	assert.Equal(http.StatusBadRequest, resp.StatusCode)

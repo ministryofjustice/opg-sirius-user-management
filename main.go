@@ -22,12 +22,16 @@ func main() {
 	port := getEnv("PORT", "8080")
 	webDir := getEnv("WEB_DIR", "web")
 	siriusURL := getEnv("SIRIUS_URL", "http://localhost:9001")
+	prefix := getEnv("PREFIX", "")
 
 	layouts, _ := template.
 		New("").
 		Funcs(map[string]interface{}{
 			"join": func(sep string, items []string) string {
 				return strings.Join(items, sep)
+			},
+			"prefix": func(s string) string {
+				return prefix + s
 			},
 		}).
 		ParseGlob(webDir + "/template/layout/*.gotmpl")
@@ -46,7 +50,7 @@ func main() {
 
 	server := &http.Server{
 		Addr:    ":" + port,
-		Handler: server.New(logger, client, tmpls, siriusURL, webDir),
+		Handler: server.New(logger, client, tmpls, prefix, siriusURL, webDir),
 	}
 
 	go func() {
