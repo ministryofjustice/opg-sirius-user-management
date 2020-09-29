@@ -42,10 +42,10 @@ func TestGetChangePassword(t *testing.T) {
 	r, _ := http.NewRequest("GET", "/path", nil)
 	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	changePassword(nil, nil, template, "/prefix", "http://sirius").ServeHTTP(w, r)
+	handler := changePassword(nil, nil, template, "http://sirius")
+	err := handler(w, r)
 
-	resp := w.Result()
-	assert.Equal(http.StatusOK, resp.StatusCode)
+	assert.Nil(err)
 
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
@@ -66,11 +66,11 @@ func TestPostChangePassword(t *testing.T) {
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	changePassword(nil, client, template, "/prefix", "http://sirius").ServeHTTP(w, r)
+	handler := changePassword(nil, client, template, "http://sirius")
+	err := handler(w, r)
 
-	resp := w.Result()
-	assert.Equal(http.StatusFound, resp.StatusCode)
-	assert.Equal("/prefix/my-details", resp.Header.Get("Location"))
+	assert.Equal(RedirectError("/my-details"), err)
+
 	assert.Equal(r.Cookies(), client.lastCookies)
 	assert.Equal("a", client.lastExistingPassword)
 	assert.Equal("b", client.lastNewPassword)
@@ -88,11 +88,10 @@ func TestPostChangePasswordUnauthenticated(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", nil)
 
-	changePassword(nil, client, template, "/prefix", "http://sirius").ServeHTTP(w, r)
+	handler := changePassword(nil, client, template, "http://sirius")
+	err := handler(w, r)
 
-	resp := w.Result()
-	assert.Equal(http.StatusFound, resp.StatusCode)
-	assert.Equal("http://sirius/auth", resp.Header.Get("Location"))
+	assert.Equal(sirius.ErrUnauthorized, err)
 
 	assert.Equal(0, template.count)
 }
@@ -106,7 +105,10 @@ func TestPostChangePasswordSiriusError(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", nil)
 
-	changePassword(nil, client, template, "/prefix", "http://sirius").ServeHTTP(w, r)
+	handler := changePassword(nil, client, template, "http://sirius")
+	err := handler(w, r)
+
+	assert.Nil(err)
 
 	resp := w.Result()
 	assert.Equal(http.StatusBadRequest, resp.StatusCode)
@@ -130,7 +132,10 @@ func TestPostChangePasswordOtherError(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", nil)
 
-	changePassword(logger, client, template, "/prefix", "http://sirius").ServeHTTP(w, r)
+	handler := changePassword(logger, client, template, "http://sirius")
+	err := handler(w, r)
+
+	assert.Nil(err)
 
 	resp := w.Result()
 	assert.Equal(http.StatusBadRequest, resp.StatusCode)

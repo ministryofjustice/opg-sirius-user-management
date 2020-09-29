@@ -3,8 +3,6 @@ package server
 import (
 	"context"
 	"errors"
-	"io/ioutil"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -64,7 +62,10 @@ func TestGetMyDetails(t *testing.T) {
 	r, _ := http.NewRequest("GET", "/path", nil)
 	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	myDetails(nil, client, template, "http://sirius").ServeHTTP(w, r)
+	handler := myDetails(nil, client, template, "http://sirius")
+	err := handler(w, r)
+
+	assert.Nil(err)
 
 	resp := w.Result()
 	assert.Equal(http.StatusOK, resp.StatusCode)
@@ -111,7 +112,10 @@ func TestGetMyDetailsUsesPermission(t *testing.T) {
 	r, _ := http.NewRequest("GET", "/path", nil)
 	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	myDetails(nil, client, template, "http://sirius").ServeHTTP(w, r)
+	handler := myDetails(nil, client, template, "http://sirius")
+	err := handler(w, r)
+
+	assert.Nil(err)
 
 	resp := w.Result()
 	assert.Equal(http.StatusOK, resp.StatusCode)
@@ -148,11 +152,10 @@ func TestGetMyDetailsUnauthenticated(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "", nil)
 
-	myDetails(nil, client, template, "http://sirius").ServeHTTP(w, r)
+	handler := myDetails(nil, client, template, "http://sirius")
+	err := handler(w, r)
 
-	resp := w.Result()
-	assert.Equal(http.StatusFound, resp.StatusCode)
-	assert.Equal("http://sirius/auth", resp.Header.Get("Location"))
+	assert.Equal(sirius.ErrUnauthorized, err)
 
 	assert.Equal(0, template.count)
 }
@@ -160,17 +163,17 @@ func TestGetMyDetailsUnauthenticated(t *testing.T) {
 func TestGetMyDetailsSiriusErrors(t *testing.T) {
 	assert := assert.New(t)
 
-	logger := log.New(ioutil.Discard, "", 0)
 	client := &mockMyDetailsClient{err: errors.New("err")}
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "", nil)
 
-	myDetails(logger, client, template, "http://sirius").ServeHTTP(w, r)
+	handler := myDetails(nil, client, template, "http://sirius")
+	err := handler(w, r)
 
-	resp := w.Result()
-	assert.Equal(http.StatusInternalServerError, resp.StatusCode)
+	assert.Equal("err", err.Error())
+
 	assert.Equal(0, template.count)
 }
 
@@ -181,9 +184,10 @@ func TestPostMyDetails(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "", nil)
 
-	myDetails(nil, nil, template, "http://sirius").ServeHTTP(w, r)
+	handler := myDetails(nil, nil, template, "http://sirius")
+	err := handler(w, r)
 
-	resp := w.Result()
-	assert.Equal(http.StatusMethodNotAllowed, resp.StatusCode)
+	assert.Equal(StatusError(http.StatusMethodNotAllowed), err)
+
 	assert.Equal(0, template.count)
 }

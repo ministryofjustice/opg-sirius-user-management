@@ -18,8 +18,8 @@ type changePasswordVars struct {
 	Error     string
 }
 
-func changePassword(logger *log.Logger, client ChangePasswordClient, tmpl Template, prefix, siriusURL string) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func changePassword(logger *log.Logger, client ChangePasswordClient, tmpl Template, siriusURL string) Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		vars := changePasswordVars{
 			Path:      r.URL.Path,
 			SiriusURL: siriusURL,
@@ -27,9 +27,7 @@ func changePassword(logger *log.Logger, client ChangePasswordClient, tmpl Templa
 
 		switch r.Method {
 		case http.MethodGet:
-			if err := tmpl.ExecuteTemplate(w, "page", vars); err != nil {
-				logger.Println("changePassword:", err)
-			}
+			return tmpl.ExecuteTemplate(w, "page", vars)
 
 		case http.MethodPost:
 			var (
@@ -41,7 +39,7 @@ func changePassword(logger *log.Logger, client ChangePasswordClient, tmpl Templa
 			err := client.ChangePassword(r.Context(), r.Cookies(), currentPassword, password1, password2)
 
 			if err == sirius.ErrUnauthorized {
-				http.Redirect(w, r, siriusURL+"/auth", http.StatusFound)
+				return err
 
 			} else if err != nil {
 				if _, ok := err.(sirius.ClientError); ok {
@@ -52,16 +50,14 @@ func changePassword(logger *log.Logger, client ChangePasswordClient, tmpl Templa
 				}
 
 				w.WriteHeader(http.StatusBadRequest)
-				if err := tmpl.ExecuteTemplate(w, "page", vars); err != nil {
-					logger.Println("changePassword:", err)
-				}
+				return tmpl.ExecuteTemplate(w, "page", vars)
 
 			} else {
-				http.Redirect(w, r, prefix+"/my-details", http.StatusFound)
+				return RedirectError("/my-details")
 			}
 
 		default:
-			http.Error(w, "", http.StatusMethodNotAllowed)
+			return StatusError(http.StatusMethodNotAllowed)
 		}
-	})
+	}
 }
