@@ -30,6 +30,9 @@ func main() {
 			"join": func(sep string, items []string) string {
 				return strings.Join(items, sep)
 			},
+			"prefix": func(s string) string {
+				return prefix + s
+			},
 		}).
 		ParseGlob(webDir + "/template/layout/*.gotmpl")
 

@@ -52,7 +52,6 @@ func TestGetChangePassword(t *testing.T) {
 	assert.Equal(changePasswordVars{
 		Path:      "/path",
 		SiriusURL: "http://sirius",
-		Prefix:    "/prefix",
 	}, template.lastVars)
 }
 
@@ -117,7 +116,6 @@ func TestPostChangePasswordSiriusError(t *testing.T) {
 	assert.Equal(changePasswordVars{
 		Path:      "/path",
 		SiriusURL: "http://sirius",
-		Prefix:    "/prefix",
 		Error:     "Something happened",
 	}, template.lastVars)
 }
@@ -142,7 +140,6 @@ func TestPostChangePasswordOtherError(t *testing.T) {
 	assert.Equal(changePasswordVars{
 		Path:      "/path",
 		SiriusURL: "http://sirius",
-		Prefix:    "/prefix",
 		Error:     "Could not connect to Sirius",
 	}, template.lastVars)
 }

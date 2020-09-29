@@ -78,7 +78,6 @@ func TestGetEditMyDetails(t *testing.T) {
 	assert.Equal(editMyDetailsVars{
 		Path:        "/path",
 		SiriusURL:   "http://sirius",
-		Prefix:      "/prefix",
 		PhoneNumber: "123",
 	}, template.lastVars)
 }
@@ -226,7 +225,6 @@ func TestPostEditMyDetailsInvalidRequest(t *testing.T) {
 	assert.Equal(editMyDetailsVars{
 		Path:        "/path",
 		SiriusURL:   "http://sirius",
-		Prefix:      "/prefix",
 		PhoneNumber: "invalid phone number",
 		Errors: map[string]map[string]string{
 			"phoneNumber": {

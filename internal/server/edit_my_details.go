@@ -16,7 +16,6 @@ type EditMyDetailsClient interface {
 type editMyDetailsVars struct {
 	Path      string
 	SiriusURL string
-	Prefix    string
 	Errors    sirius.ValidationErrors
 
 	PhoneNumber string
@@ -72,7 +71,6 @@ func editMyDetails(logger *log.Logger, client EditMyDetailsClient, tmpl Template
 		vars := editMyDetailsVars{
 			Path:        r.URL.Path,
 			SiriusURL:   siriusURL,
-			Prefix:      prefix,
 			Errors:      validationErrors,
 			PhoneNumber: phoneNumber,
 		}

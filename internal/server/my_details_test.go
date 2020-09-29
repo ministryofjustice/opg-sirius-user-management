@@ -48,7 +48,7 @@ func TestGetMyDetails(t *testing.T) {
 	r, _ := http.NewRequest("GET", "/path", nil)
 	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	myDetails(nil, client, template, "/prefix", "http://sirius").ServeHTTP(w, r)
+	myDetails(nil, client, template, "http://sirius").ServeHTTP(w, r)
 
 	resp := w.Result()
 	assert.Equal(http.StatusOK, resp.StatusCode)
@@ -59,7 +59,6 @@ func TestGetMyDetails(t *testing.T) {
 	assert.Equal(myDetailsVars{
 		Path:         "/path",
 		SiriusURL:    "http://sirius",
-		Prefix:       "/prefix",
 		ID:           123,
 		Firstname:    "John",
 		Surname:      "Doe",
@@ -80,7 +79,7 @@ func TestGetMyDetailsUnauthenticated(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "", nil)
 
-	myDetails(nil, client, template, "/prefix", "http://sirius").ServeHTTP(w, r)
+	myDetails(nil, client, template, "http://sirius").ServeHTTP(w, r)
 
 	resp := w.Result()
 	assert.Equal(http.StatusFound, resp.StatusCode)
@@ -99,7 +98,7 @@ func TestGetMyDetailsSiriusErrors(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "", nil)
 
-	myDetails(logger, client, template, "/prefix", "http://sirius").ServeHTTP(w, r)
+	myDetails(logger, client, template, "http://sirius").ServeHTTP(w, r)
 
 	resp := w.Result()
 	assert.Equal(http.StatusInternalServerError, resp.StatusCode)
@@ -113,7 +112,7 @@ func TestPostMyDetails(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "", nil)
 
-	myDetails(nil, nil, template, "/prefix", "http://sirius").ServeHTTP(w, r)
+	myDetails(nil, nil, template, "http://sirius").ServeHTTP(w, r)
 
 	resp := w.Result()
 	assert.Equal(http.StatusMethodNotAllowed, resp.StatusCode)

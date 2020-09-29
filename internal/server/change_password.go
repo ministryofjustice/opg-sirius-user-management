@@ -15,7 +15,6 @@ type ChangePasswordClient interface {
 type changePasswordVars struct {
 	Path      string
 	SiriusURL string
-	Prefix    string
 	Error     string
 }
 
@@ -24,7 +23,6 @@ func changePassword(logger *log.Logger, client ChangePasswordClient, tmpl Templa
 		vars := changePasswordVars{
 			Path:      r.URL.Path,
 			SiriusURL: siriusURL,
-			Prefix:    prefix,
 		}
 
 		switch r.Method {
