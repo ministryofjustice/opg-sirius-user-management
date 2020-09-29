@@ -11,6 +11,7 @@ import (
 type EditMyDetailsClient interface {
 	MyDetails(context.Context, []*http.Cookie) (sirius.MyDetails, error)
 	EditMyDetails(context.Context, []*http.Cookie, int, string) error
+	HasPermission(context.Context, []*http.Cookie, string, string) (bool, error)
 }
 
 type editMyDetailsVars struct {
@@ -30,6 +31,20 @@ func editMyDetails(logger *log.Logger, client EditMyDetailsClient, tmpl Template
 			break
 		default:
 			http.Error(w, "", http.StatusMethodNotAllowed)
+			return
+		}
+
+		if ok, err := client.HasPermission(r.Context(), r.Cookies(), "user", "patch"); !ok {
+			if err == sirius.ErrUnauthorized {
+				http.Redirect(w, r, siriusURL+"/auth", http.StatusFound)
+				return
+			} else if err != nil {
+				logger.Println("myDetails:", err)
+				http.Error(w, "Could not connect to Sirius", http.StatusInternalServerError)
+				return
+			}
+
+			http.Redirect(w, r, "/my-details", http.StatusFound)
 			return
 		}
 
