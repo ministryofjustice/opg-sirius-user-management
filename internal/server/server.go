@@ -25,13 +25,13 @@ func New(logger *log.Logger, client Client, templates map[string]*template.Templ
 	mux.Handle("/", http.RedirectHandler(prefix+"/my-details", http.StatusFound))
 	mux.Handle("/health-check", healthCheck())
 	mux.Handle("/my-details",
-		errorHandler("myDetails", logger, templates["error-403.gotmpl"], prefix, siriusPublicURL,
+		errorHandler("myDetails", logger, templates["error.gotmpl"], prefix, siriusPublicURL,
 			myDetails(logger, client, templates["my-details.gotmpl"], siriusURL)))
 	mux.Handle("/my-details/edit",
-		errorHandler("editMyDetails", logger, templates["error-403.gotmpl"], prefix, siriusPublicURL,
+		errorHandler("editMyDetails", logger, templates["error.gotmpl"], prefix, siriusPublicURL,
 			editMyDetails(logger, client, templates["edit-my-details.gotmpl"], siriusURL)))
 	mux.Handle("/change-password",
-		errorHandler("changePassword", logger, templates["error-403.gotmpl"], prefix, siriusPublicURL,
+		errorHandler("changePassword", logger, templates["error.gotmpl"], prefix, siriusPublicURL,
 			changePassword(logger, client, templates["change-password.gotmpl"], siriusURL)))
 
 	static := http.FileServer(http.Dir(webDir + "/static"))
@@ -66,31 +66,14 @@ func (e StatusError) Code() int {
 
 type Handler func(w http.ResponseWriter, r *http.Request) error
 
-func errorHandler(name string, logger *log.Logger, tmpl403 Template, prefix, siriusURL string, next Handler) http.Handler {
+func errorHandler(name string, logger *log.Logger, tmplError Template, prefix, siriusURL string, next Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if err := next(w, r); err != nil {
-			if status, ok := err.(StatusError); ok {
-				if status.Code() == http.StatusForbidden {
-					type v struct {
-						SiriusURL string
-						Path      string
-					}
-
-					w.WriteHeader(http.StatusForbidden)
-					err = tmpl403.ExecuteTemplate(w, "page", v{
-						SiriusURL: siriusURL,
-						Path:      "",
-					})
-
-					if err == nil {
-						return
-					}
-
-					logger.Printf("%s: %v\n", name, err)
-				}
-
-				http.Error(w, "", status.Code())
-				return
+			type v struct {
+				SiriusURL string
+				Path      string
+				Code      int
+				Error     string
 			}
 
 			if err == sirius.ErrUnauthorized {
@@ -103,8 +86,31 @@ func errorHandler(name string, logger *log.Logger, tmpl403 Template, prefix, sir
 				return
 			}
 
-			logger.Printf("%s: %v\n", name, err)
-			http.Error(w, "Could not connect to Sirius", http.StatusInternalServerError)
+			code := http.StatusInternalServerError
+
+			if status, ok := err.(StatusError); ok {
+				if status.Code() == http.StatusForbidden || status.Code() == http.StatusNotFound {
+					code = status.Code()
+				} else {
+					http.Error(w, "", status.Code())
+					return
+				}
+			} else {
+				logger.Printf("%s: %v\n", name, err)
+			}
+
+			w.WriteHeader(code)
+			err = tmplError.ExecuteTemplate(w, "page", v{
+				SiriusURL: siriusURL,
+				Path:      "",
+				Code:      code,
+				Error:     err.Error(),
+			})
+
+			if err != nil {
+				logger.Printf("%s: %v\n", name, err)
+				http.Error(w, "Could not generate error template", http.StatusInternalServerError)
+			}
 		}
 	})
 }
