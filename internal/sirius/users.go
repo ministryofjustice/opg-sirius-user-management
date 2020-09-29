@@ -9,18 +9,11 @@ import (
 )
 
 type User struct {
-	ID          int             `json:"id"`
-	Name        string          `json:"name"`
-	PhoneNumber string          `json:"phoneNumber"`
-	Teams       []MyDetailsTeam `json:"teams"`
-	DisplayName string          `json:"displayName"`
-	Deleted     bool            `json:"deleted"`
-	Email       string          `json:"email"`
-	Firstname   string          `json:"firstname"`
-	Surname     string          `json:"surname"`
-	Roles       []string        `json:"roles"`
-	Locked      bool            `json:"locked"`
-	Suspended   bool            `json:"suspended"`
+	ID          int    `json:"id"`
+	DisplayName string `json:"displayName"`
+	Email       string `json:"email"`
+	Locked      bool   `json:"locked"`
+	Suspended   bool   `json:"suspended"`
 }
 
 func (c *Client) ListUsers(ctx context.Context, cookies []*http.Cookie) ([]User, error) {
