@@ -83,6 +83,7 @@ func errorHandler(name string, logger *log.Logger, prefix, siriusURL string, nex
 			}
 
 			logger.Printf("%s: %v\n", name, err)
+			http.Error(w, "Could not connect to Sirius", http.StatusInternalServerError)
 		}
 	})
 }

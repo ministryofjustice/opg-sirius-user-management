@@ -36,20 +36,13 @@ func myDetails(logger *log.Logger, client MyDetailsClient, tmpl Template, sirius
 		}
 
 		myDetails, err := client.MyDetails(r.Context(), r.Cookies())
-		if err == sirius.ErrUnauthorized {
+		if err != nil {
 			return err
-		} else if err != nil {
-			logger.Println("myDetails:", err)
-			return StatusError(http.StatusInternalServerError)
 		}
 
 		canEditPhoneNumber, err := client.HasPermission(r.Context(), r.Cookies(), "user", "patch")
-
-		if err == sirius.ErrUnauthorized {
+		if err != nil {
 			return err
-		} else if err != nil {
-			logger.Println("myDetails:", err)
-			return StatusError(http.StatusInternalServerError)
 		}
 
 		vars := myDetailsVars{

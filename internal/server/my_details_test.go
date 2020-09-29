@@ -175,9 +175,7 @@ func TestGetMyDetailsSiriusErrors(t *testing.T) {
 	handler := myDetails(logger, client, template, "http://sirius")
 	err := handler(w, r)
 
-	status, ok := err.(StatusError)
-	assert.True(ok)
-	assert.Equal(http.StatusInternalServerError, status.Code())
+	assert.Equal("err", err.Error())
 
 	assert.Equal(0, template.count)
 }
