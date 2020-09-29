@@ -20,18 +20,18 @@ type Template interface {
 	ExecuteTemplate(io.Writer, string, interface{}) error
 }
 
-func New(logger *log.Logger, client Client, templates map[string]*template.Template, prefix, siriusURL, webDir string) http.Handler {
+func New(logger *log.Logger, client Client, templates map[string]*template.Template, prefix, siriusURL, siriusPublicURL string, webDir string) http.Handler {
 	mux := http.NewServeMux()
 	mux.Handle("/", http.RedirectHandler(prefix+"/my-details", http.StatusFound))
 	mux.Handle("/health-check", healthCheck())
 	mux.Handle("/my-details",
-		errorHandler("myDetails", logger, templates["error-403.gotmpl"], prefix, siriusURL,
+		errorHandler("myDetails", logger, templates["error-403.gotmpl"], prefix, siriusPublicURL,
 			myDetails(logger, client, templates["my-details.gotmpl"], siriusURL)))
 	mux.Handle("/my-details/edit",
-		errorHandler("editMyDetails", logger, templates["error-403.gotmpl"], prefix, siriusURL,
+		errorHandler("editMyDetails", logger, templates["error-403.gotmpl"], prefix, siriusPublicURL,
 			editMyDetails(logger, client, templates["edit-my-details.gotmpl"], siriusURL)))
 	mux.Handle("/change-password",
-		errorHandler("changePassword", logger, templates["error-403.gotmpl"], prefix, siriusURL,
+		errorHandler("changePassword", logger, templates["error-403.gotmpl"], prefix, siriusPublicURL,
 			changePassword(logger, client, templates["change-password.gotmpl"], siriusURL)))
 
 	static := http.FileServer(http.Dir(webDir + "/static"))
