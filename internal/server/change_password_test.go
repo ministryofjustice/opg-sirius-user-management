@@ -69,9 +69,7 @@ func TestPostChangePassword(t *testing.T) {
 	handler := changePassword(nil, client, template, "http://sirius")
 	err := handler(w, r)
 
-	redirect, ok := err.(RedirectError)
-	assert.True(ok)
-	assert.Equal("/my-details", redirect.To())
+	assert.Equal(RedirectError("/my-details"), err)
 
 	assert.Equal(r.Cookies(), client.lastCookies)
 	assert.Equal("a", client.lastExistingPassword)

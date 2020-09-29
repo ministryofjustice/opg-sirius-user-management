@@ -187,9 +187,7 @@ func TestPostMyDetails(t *testing.T) {
 	handler := myDetails(nil, nil, template, "http://sirius")
 	err := handler(w, r)
 
-	status, ok := err.(StatusError)
-	assert.True(ok)
-	assert.Equal(http.StatusMethodNotAllowed, status.Code())
+	assert.Equal(StatusError(http.StatusMethodNotAllowed), err)
 
 	assert.Equal(0, template.count)
 }
