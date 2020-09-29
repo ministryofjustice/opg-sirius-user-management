@@ -10,6 +10,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+type PermissionRequest struct {
+	group  string
+	method string
+}
+
 func TestPermissions(t *testing.T) {
 	pact := &dsl.Pact{
 		Consumer:          "sirius-user-management",
@@ -22,10 +27,11 @@ func TestPermissions(t *testing.T) {
 	defer pact.Teardown()
 
 	testCases := map[string]struct {
-		setup               func()
-		cookies             []*http.Cookie
-		expectedPermissions PermissionSet
-		expectedError       error
+		setup            func()
+		cookies          []*http.Cookie
+		expectedResponse bool
+		expectedError    error
+		permission       PermissionRequest
 	}{
 		"OK": {
 			setup: func() {
@@ -58,13 +64,11 @@ func TestPermissions(t *testing.T) {
 				{Name: "XSRF-TOKEN", Value: "abcde"},
 				{Name: "Other", Value: "other"},
 			},
-			expectedPermissions: PermissionSet{
-				"user": {
-					Permissions: []string{
-						"GET",
-					},
-				},
+			permission: PermissionRequest{
+				group:  "user",
+				method: "GET",
 			},
+			expectedResponse: true,
 		},
 		"Unauthorized": {
 			setup: func() {
@@ -94,8 +98,8 @@ func TestPermissions(t *testing.T) {
 			assert.Nil(t, pact.Verify(func() error {
 				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
 
-				permissions, err := client.MyPermissions(context.Background(), tc.cookies)
-				assert.Equal(t, tc.expectedPermissions, permissions)
+				hasPermission, err := client.HasPermission(context.Background(), tc.cookies, tc.permission.group, tc.permission.method)
+				assert.Equal(t, tc.expectedResponse, hasPermission)
 				assert.Equal(t, tc.expectedError, err)
 				return nil
 			}))
@@ -103,8 +107,8 @@ func TestPermissions(t *testing.T) {
 	}
 }
 
-func TestPermissionSetChecksPermission(t *testing.T) {
-	permissions := PermissionSet{
+func TestpermissionSetChecksPermission(t *testing.T) {
+	permissions := permissionSet{
 		"user": {
 			Permissions: []string{"GET", "PATCH"},
 		},

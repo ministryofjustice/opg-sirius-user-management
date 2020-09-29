@@ -13,9 +13,9 @@ type PermissionGroup struct {
 	Permissions []string `json:"permissions"`
 }
 
-type PermissionSet map[string]PermissionGroup
+type permissionSet map[string]PermissionGroup
 
-func (ps PermissionSet) HasPermission(group string, method string) bool {
+func (ps permissionSet) HasPermission(group string, method string) bool {
 	for _, b := range ps[group].Permissions {
 		if strings.EqualFold(b, method) {
 			return true
@@ -25,7 +25,7 @@ func (ps PermissionSet) HasPermission(group string, method string) bool {
 }
 
 type myPermissions struct {
-	Data PermissionSet `json:"data"`
+	Data permissionSet `json:"data"`
 }
 
 func (c *Client) HasPermission(ctx context.Context, cookies []*http.Cookie, group string, method string) (bool, error) {
