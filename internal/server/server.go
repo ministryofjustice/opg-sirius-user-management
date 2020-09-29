@@ -25,13 +25,13 @@ func New(logger *log.Logger, client Client, templates map[string]*template.Templ
 	mux.Handle("/", http.RedirectHandler(prefix+"/my-details", http.StatusFound))
 	mux.Handle("/health-check", healthCheck())
 	mux.Handle("/my-details",
-		errorHandler("myDetails", logger, prefix, siriusURL,
+		errorHandler("myDetails", logger, templates["error-403.gotmpl"], prefix, siriusURL,
 			myDetails(logger, client, templates["my-details.gotmpl"], siriusURL)))
 	mux.Handle("/my-details/edit",
-		errorHandler("editMyDetails", logger, prefix, siriusURL,
+		errorHandler("editMyDetails", logger, templates["error-403.gotmpl"], prefix, siriusURL,
 			editMyDetails(logger, client, templates["edit-my-details.gotmpl"], siriusURL)))
 	mux.Handle("/change-password",
-		errorHandler("changePassword", logger, prefix, siriusURL,
+		errorHandler("changePassword", logger, templates["error-403.gotmpl"], prefix, siriusURL,
 			changePassword(logger, client, templates["change-password.gotmpl"], siriusURL)))
 
 	static := http.FileServer(http.Dir(webDir + "/static"))
@@ -66,10 +66,24 @@ func (e StatusError) Code() int {
 
 type Handler func(w http.ResponseWriter, r *http.Request) error
 
-func errorHandler(name string, logger *log.Logger, prefix, siriusURL string, next Handler) http.Handler {
+func errorHandler(name string, logger *log.Logger, tmpl403 Template, prefix, siriusURL string, next Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if err := next(w, r); err != nil {
 			if status, ok := err.(StatusError); ok {
+				if status.Code() == http.StatusForbidden {
+					type v struct {
+						SiriusURL string
+						Path      string
+					}
+
+					w.WriteHeader(http.StatusForbidden)
+					tmpl403.ExecuteTemplate(w, "page", v{
+						SiriusURL: siriusURL,
+						Path:      "",
+					})
+					return
+				}
+
 				http.Error(w, "", status.Code())
 				return
 			}

@@ -1,0 +1,17 @@
+{{ template "page" . }}
+
+{{ define "title" }}Forbidden{{ end }}
+
+{{ define "main" }}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+     <h1 class="govuk-heading-l">Forbidden</h1>
+      <p class="govuk-body">
+        You do not have access to view this page.
+      </p>
+      <p class="govuk-body">
+        Please use your browser to go back to the previous page, or return to the <a class="govuk-link" href="{{ prefix "/" }}">homepage</a>.
+      </p>
+    </div>
+  </div>
+{{ end }}

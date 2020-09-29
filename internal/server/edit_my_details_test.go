@@ -132,9 +132,9 @@ func TestGetEditMyDetailsNotPermitted(t *testing.T) {
 	handler := editMyDetails(nil, client, template, "http://sirius")
 	err := handler(w, r)
 
-	redirect, ok := err.(RedirectError)
+	status, ok := err.(StatusError)
 	assert.True(ok)
-	assert.Equal("/my-details", redirect.To())
+	assert.Equal(http.StatusForbidden, status.Code())
 
 	assert.Equal(0, template.count)
 }

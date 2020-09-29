@@ -38,7 +38,7 @@ func editMyDetails(logger *log.Logger, client EditMyDetailsClient, tmpl Template
 				return err
 			}
 
-			return RedirectError("/my-details")
+			return StatusError(http.StatusForbidden)
 		}
 
 		myDetails, err := client.MyDetails(r.Context(), r.Cookies())
