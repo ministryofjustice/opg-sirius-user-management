@@ -22,41 +22,28 @@ type editMyDetailsVars struct {
 	PhoneNumber string
 }
 
-func editMyDetails(logger *log.Logger, client EditMyDetailsClient, tmpl Template, prefix, siriusURL string) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func editMyDetails(logger *log.Logger, client EditMyDetailsClient, tmpl Template, siriusURL string) Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		var validationErrors sirius.ValidationErrors
 
 		switch r.Method {
 		case http.MethodGet, http.MethodPost:
 			break
 		default:
-			http.Error(w, "", http.StatusMethodNotAllowed)
-			return
+			return StatusError(http.StatusMethodNotAllowed)
 		}
 
 		if ok, err := client.HasPermission(r.Context(), r.Cookies(), "user", "patch"); !ok {
-			if err == sirius.ErrUnauthorized {
-				http.Redirect(w, r, siriusURL+"/auth", http.StatusFound)
-				return
-			} else if err != nil {
-				logger.Println("myDetails:", err)
-				http.Error(w, "Could not connect to Sirius", http.StatusInternalServerError)
-				return
+			if err != nil {
+				return err
 			}
 
-			http.Redirect(w, r, "/my-details", http.StatusFound)
-			return
+			return RedirectError("/my-details")
 		}
 
 		myDetails, err := client.MyDetails(r.Context(), r.Cookies())
-
-		if err == sirius.ErrUnauthorized {
-			http.Redirect(w, r, siriusURL+"/auth", http.StatusFound)
-			return
-		} else if err != nil {
-			logger.Println("editMyDetails:", err)
-			http.Error(w, "Could not connect to Sirius", http.StatusInternalServerError)
-			return
+		if err != nil {
+			return err
 		}
 
 		phoneNumber := myDetails.PhoneNumber
@@ -67,19 +54,13 @@ func editMyDetails(logger *log.Logger, client EditMyDetailsClient, tmpl Template
 			phoneNumber = r.FormValue("phonenumber")
 			err = client.EditMyDetails(r.Context(), r.Cookies(), myDetails.ID, phoneNumber)
 
-			if err == sirius.ErrUnauthorized {
-				http.Redirect(w, r, siriusURL+"/auth", http.StatusFound)
-				return
-			} else if e, ok := err.(*sirius.ValidationError); ok {
+			if e, ok := err.(*sirius.ValidationError); ok {
 				validationErrors = e.Errors
 				w.WriteHeader(http.StatusBadRequest)
 			} else if err != nil {
-				logger.Println("editMyDetails:", err)
-				http.Error(w, "Could not connect to Sirius", http.StatusInternalServerError)
-				return
+				return err
 			} else {
-				http.Redirect(w, r, prefix+"/my-details", http.StatusFound)
-				return
+				return RedirectError("/my-details")
 			}
 		}
 
@@ -90,8 +71,6 @@ func editMyDetails(logger *log.Logger, client EditMyDetailsClient, tmpl Template
 			PhoneNumber: phoneNumber,
 		}
 
-		if err := tmpl.ExecuteTemplate(w, "page", vars); err != nil {
-			logger.Println("editMyDetails:", err)
-		}
-	})
+		return tmpl.ExecuteTemplate(w, "page", vars)
+	}
 }

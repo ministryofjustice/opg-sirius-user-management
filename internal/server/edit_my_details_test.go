@@ -3,8 +3,6 @@ package server
 import (
 	"context"
 	"errors"
-	"io/ioutil"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -84,7 +82,10 @@ func TestGetEditMyDetails(t *testing.T) {
 	r, _ := http.NewRequest("GET", "/path", nil)
 	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	editMyDetails(nil, client, template, "/prefix", "http://sirius").ServeHTTP(w, r)
+	handler := editMyDetails(nil, client, template, "http://sirius")
+	err := handler(w, r)
+
+	assert.Nil(err)
 
 	resp := w.Result()
 	assert.Equal(http.StatusOK, resp.StatusCode)
@@ -111,11 +112,10 @@ func TestGetEditMyDetailsUnauthenticated(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "", nil)
 
-	editMyDetails(nil, client, template, "/prefix", "http://sirius").ServeHTTP(w, r)
+	handler := editMyDetails(nil, client, template, "http://sirius")
+	err := handler(w, r)
 
-	resp := w.Result()
-	assert.Equal(http.StatusFound, resp.StatusCode)
-	assert.Equal("http://sirius/auth", resp.Header.Get("Location"))
+	assert.Equal(sirius.ErrUnauthorized, err)
 
 	assert.Equal(0, template.count)
 }
@@ -129,11 +129,12 @@ func TestGetEditMyDetailsNotPermitted(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "", nil)
 
-	editMyDetails(nil, client, template, "/prefix", "http://sirius").ServeHTTP(w, r)
+	handler := editMyDetails(nil, client, template, "http://sirius")
+	err := handler(w, r)
 
-	resp := w.Result()
-	assert.Equal(http.StatusFound, resp.StatusCode)
-	assert.Equal("/my-details", resp.Header.Get("Location"))
+	redirect, ok := err.(RedirectError)
+	assert.True(ok)
+	assert.Equal("/my-details", redirect.To())
 
 	assert.Equal(0, template.count)
 }
@@ -141,17 +142,17 @@ func TestGetEditMyDetailsNotPermitted(t *testing.T) {
 func TestGetEditMyDetailsSiriusErrors(t *testing.T) {
 	assert := assert.New(t)
 
-	logger := log.New(ioutil.Discard, "", 0)
 	client := &mockEditMyDetailsClient{hasPermission: true, err: errors.New("err")}
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "", nil)
 
-	editMyDetails(logger, client, template, "/prefix", "http://sirius").ServeHTTP(w, r)
+	handler := editMyDetails(nil, client, template, "http://sirius")
+	err := handler(w, r)
 
-	resp := w.Result()
-	assert.Equal(http.StatusInternalServerError, resp.StatusCode)
+	assert.Equal("err", err.Error())
+
 	assert.Equal(0, template.count)
 }
 
@@ -171,10 +172,12 @@ func TestPostEditMyDetails(t *testing.T) {
 	r.Header.Add("Content-type", "application/x-www-form-urlencoded")
 	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	editMyDetails(nil, client, template, "/prefix", "http://sirius").ServeHTTP(w, r)
+	handler := editMyDetails(nil, client, template, "http://sirius")
+	err := handler(w, r)
 
-	resp := w.Result()
-	assert.Equal(http.StatusFound, resp.StatusCode)
+	redirect, ok := err.(RedirectError)
+	assert.True(ok)
+	assert.Equal("/my-details", redirect.To())
 
 	assert.Equal(1, client.count)
 	assert.Equal(1, client.saveCount)
@@ -196,11 +199,10 @@ func TestPostEditMyDetailsUnauthenticated(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", strings.NewReader("phonenumber=0189202"))
 
-	editMyDetails(nil, client, template, "/prefix", "http://sirius").ServeHTTP(w, r)
+	handler := editMyDetails(nil, client, template, "http://sirius")
+	err := handler(w, r)
 
-	resp := w.Result()
-	assert.Equal(http.StatusFound, resp.StatusCode)
-	assert.Equal("http://sirius/auth", resp.Header.Get("Location"))
+	assert.Equal(sirius.ErrUnauthorized, err)
 
 	assert.Equal(1, client.count)
 	assert.Equal(1, client.saveCount)
@@ -211,7 +213,6 @@ func TestPostEditMyDetailsUnauthenticated(t *testing.T) {
 func TestPostEditMyDetailsSiriusErrors(t *testing.T) {
 	assert := assert.New(t)
 
-	logger := log.New(ioutil.Discard, "", 0)
 	client := &mockEditMyDetailsClient{hasPermission: true, errSave: errors.New("err")}
 	template := &mockTemplate{}
 
@@ -219,10 +220,10 @@ func TestPostEditMyDetailsSiriusErrors(t *testing.T) {
 	r, _ := http.NewRequest("POST", "/path", strings.NewReader("phonenumber=0189202"))
 	r.Header.Add("Content-type", "application/x-www-form-urlencoded")
 
-	editMyDetails(logger, client, template, "/prefix", "http://sirius").ServeHTTP(w, r)
+	handler := editMyDetails(nil, client, template, "http://sirius")
+	err := handler(w, r)
 
-	resp := w.Result()
-	assert.Equal(http.StatusInternalServerError, resp.StatusCode)
+	assert.Equal("err", err.Error())
 
 	assert.Equal(1, client.count)
 	assert.Equal(1, client.saveCount)
@@ -249,7 +250,10 @@ func TestPostEditMyDetailsInvalidRequest(t *testing.T) {
 	r.Header.Add("Content-type", "application/x-www-form-urlencoded")
 	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	editMyDetails(nil, client, template, "/prefix", "http://sirius").ServeHTTP(w, r)
+	handler := editMyDetails(nil, client, template, "http://sirius")
+	err := handler(w, r)
+
+	assert.Nil(err)
 
 	resp := w.Result()
 	assert.Equal(http.StatusBadRequest, resp.StatusCode)

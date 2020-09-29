@@ -25,9 +25,11 @@ func New(logger *log.Logger, client Client, templates map[string]*template.Templ
 	mux.Handle("/", http.RedirectHandler(prefix+"/my-details", http.StatusFound))
 	mux.Handle("/health-check", healthCheck())
 	mux.Handle("/my-details",
-		errorHandler("changePassword", logger, prefix, siriusURL,
+		errorHandler("myDetails", logger, prefix, siriusURL,
 			myDetails(logger, client, templates["my-details.gotmpl"], siriusURL)))
-	mux.Handle("/my-details/edit", editMyDetails(logger, client, templates["edit-my-details.gotmpl"], prefix, siriusURL))
+	mux.Handle("/my-details/edit",
+		errorHandler("editMyDetails", logger, prefix, siriusURL,
+			editMyDetails(logger, client, templates["edit-my-details.gotmpl"], siriusURL)))
 	mux.Handle("/change-password",
 		errorHandler("changePassword", logger, prefix, siriusURL,
 			changePassword(logger, client, templates["change-password.gotmpl"], siriusURL)))

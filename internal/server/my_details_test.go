@@ -3,8 +3,6 @@ package server
 import (
 	"context"
 	"errors"
-	"io/ioutil"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -165,14 +163,13 @@ func TestGetMyDetailsUnauthenticated(t *testing.T) {
 func TestGetMyDetailsSiriusErrors(t *testing.T) {
 	assert := assert.New(t)
 
-	logger := log.New(ioutil.Discard, "", 0)
 	client := &mockMyDetailsClient{err: errors.New("err")}
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "", nil)
 
-	handler := myDetails(logger, client, template, "http://sirius")
+	handler := myDetails(nil, client, template, "http://sirius")
 	err := handler(w, r)
 
 	assert.Equal("err", err.Error())
