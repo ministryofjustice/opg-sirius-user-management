@@ -1,0 +1,52 @@
+{{ template "page" . }}
+
+{{ define "title" }}
+  Users
+{{ end }}
+
+{{ define "main" }}
+  <div class="moj-page-header-actions">
+    <div class="moj-page-header-actions__title">
+      <h1 class="govuk-heading-xl"></h1><h1 class="govuk-heading-xl">Users</h1>
+    </div>
+    <div class="moj-page-header-actions__actions">
+      <div class="moj-button-menu">
+        <div class="moj-button-menu__wrapper">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <table class="govuk-table">
+    <thead class="govuk-table__head">
+      <tr class="govuk-table__row">
+        <th scope="col" class="govuk-table__header">Name</th>
+        <th scope="col" class="govuk-table__header">Email</th>
+        <th scope="col" class="govuk-table__header">Status</th>
+      </tr>
+    </thead>
+    <tbody class="govuk-table__body">
+      {{ range .Users }}
+        <tr class="govuk-table__row">
+          <th scope="row" class="govuk-table__header">{{ .DisplayName }}</th>
+          <td class="govuk-table__cell">{{ .Email }}</td>
+          <td class="govuk-table__cell">
+            {{ if .Suspended }}
+              <strong class="govuk-tag govuk-tag--grey">
+                Suspended
+              </strong>
+            {{ else if .Locked }}
+              <strong class="govuk-tag govuk-tag--orange">
+                Locked
+              </strong>
+            {{ else }}
+              <strong class="govuk-tag">
+                Active
+              </strong>
+            {{ end }}
+          </td>
+        </tr>
+      {{ end }}
+    </tbody>
+  </table>
+{{ end }}
