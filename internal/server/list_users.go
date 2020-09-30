@@ -12,6 +12,7 @@ import (
 
 type ListUsersClient interface {
 	ListUsers(context.Context, []*http.Cookie) ([]sirius.User, error)
+	MyDetails(context.Context, []*http.Cookie) (sirius.MyDetails, error)
 }
 
 type listUsersVars struct {
@@ -32,6 +33,22 @@ func listUsers(logger *log.Logger, client ListUsersClient, tmpl Template, sirius
 	return func(w http.ResponseWriter, r *http.Request) error {
 		if r.Method != http.MethodGet {
 			return StatusError(http.StatusMethodNotAllowed)
+		}
+
+		myDetails, err := client.MyDetails(r.Context(), r.Cookies())
+		if err != nil {
+			return err
+		}
+
+		permitted := false
+		for _, role := range myDetails.Roles {
+			if role == "System Admin" {
+				permitted = true
+			}
+		}
+
+		if !permitted {
+			return StatusError(http.StatusForbidden)
 		}
 
 		users, err := client.ListUsers(r.Context(), r.Cookies())

@@ -13,10 +13,12 @@ import (
 )
 
 type mockListUsersClient struct {
-	count       int
-	lastCookies []*http.Cookie
-	err         error
-	data        []sirius.User
+	count          int
+	myDetailsCount int
+	lastCookies    []*http.Cookie
+	err            error
+	data           []sirius.User
+	myDetails      sirius.MyDetails
 }
 
 func (m *mockListUsersClient) ListUsers(ctx context.Context, cookies []*http.Cookie) ([]sirius.User, error) {
@@ -24,6 +26,13 @@ func (m *mockListUsersClient) ListUsers(ctx context.Context, cookies []*http.Coo
 	m.lastCookies = cookies
 
 	return m.data, m.err
+}
+
+func (m *mockListUsersClient) MyDetails(ctx context.Context, cookies []*http.Cookie) (sirius.MyDetails, error) {
+	m.myDetailsCount += 1
+	m.lastCookies = cookies
+
+	return m.myDetails, m.err
 }
 
 func TestListUsers(t *testing.T) {
@@ -37,7 +46,12 @@ func TestListUsers(t *testing.T) {
 			Status:      "Active",
 		},
 	}
-	client := &mockListUsersClient{data: data}
+	client := &mockListUsersClient{
+		myDetails: sirius.MyDetails{
+			Roles: []string{"System Admin"},
+		},
+		data: data,
+	}
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
@@ -53,6 +67,7 @@ func TestListUsers(t *testing.T) {
 	assert.Equal(http.StatusOK, resp.StatusCode)
 	assert.Equal(r.Cookies(), client.lastCookies)
 
+	assert.Equal(1, client.myDetailsCount)
 	assert.Equal(1, client.count)
 
 	assert.Equal(1, template.count)
@@ -87,6 +102,23 @@ func TestListUsersUnauthenticated(t *testing.T) {
 	err := handler(w, r)
 
 	assert.Equal(sirius.ErrUnauthorized, err)
+
+	assert.Equal(0, template.count)
+}
+
+func TestListUsersMissingRole(t *testing.T) {
+	assert := assert.New(t)
+
+	client := &mockListUsersClient{}
+	template := &mockTemplate{}
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("GET", "", nil)
+
+	handler := listUsers(nil, client, template, "http://sirius")
+	err := handler(w, r)
+
+	assert.Equal(StatusError(http.StatusForbidden), err)
 
 	assert.Equal(0, template.count)
 }
@@ -146,7 +178,12 @@ func TestListUsersSearchesByNameOrEmail(t *testing.T) {
 			Status:      "Locked",
 		},
 	}
-	client := &mockListUsersClient{data: data}
+	client := &mockListUsersClient{
+		myDetails: sirius.MyDetails{
+			Roles: []string{"System Admin"},
+		},
+		data: data,
+	}
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
@@ -199,7 +236,12 @@ func TestListUsersSearchesByStatus(t *testing.T) {
 			Status:      "Locked",
 		},
 	}
-	client := &mockListUsersClient{data: data}
+	client := &mockListUsersClient{
+		myDetails: sirius.MyDetails{
+			Roles: []string{"System Admin"},
+		},
+		data: data,
+	}
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
@@ -243,7 +285,12 @@ func TestListUsersCalculatesPagination(t *testing.T) {
 		})
 	}
 
-	client := &mockListUsersClient{data: data}
+	client := &mockListUsersClient{
+		myDetails: sirius.MyDetails{
+			Roles: []string{"System Admin"},
+		},
+		data: data,
+	}
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
