@@ -7,7 +7,7 @@
 {{ define "main" }}
   <div class="moj-page-header-actions">
     <div class="moj-page-header-actions__title">
-      <h1 class="govuk-heading-xl"></h1><h1 class="govuk-heading-xl">Users</h1>
+      <h1 class="govuk-heading-xl">Users</h1>
     </div>
     <div class="moj-page-header-actions__actions">
       <div class="moj-button-menu">
@@ -19,7 +19,7 @@
 
   <div class="govuk-form-group">
     <div class="moj-search">
-      <form action="" method="GET">
+      <form action="{{ prefix "/users" }}" method="GET">
         <div class="govuk-form-group">
           <label class="govuk-label moj-search__label" for="search">
             Find a user
