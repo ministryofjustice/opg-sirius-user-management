@@ -8,12 +8,25 @@ import (
 	"strconv"
 )
 
+type UserStatus string
+
+func (us UserStatus) TagColour() string {
+	if us == "Suspended" {
+		return "govuk-tag--grey"
+	} else if us == "Locked" {
+		return "govuk-tag--orange"
+	} else {
+		return ""
+	}
+}
+
 type User struct {
 	ID          int    `json:"id"`
 	DisplayName string `json:"displayName"`
 	Email       string `json:"email"`
 	Locked      bool   `json:"locked"`
 	Suspended   bool   `json:"suspended"`
+	Status      UserStatus
 }
 
 func (c *Client) ListUsers(ctx context.Context, cookies []*http.Cookie) ([]User, error) {
@@ -42,6 +55,16 @@ func (c *Client) ListUsers(ctx context.Context, cookies []*http.Cookie) ([]User,
 
 	if err != nil {
 		return nil, err
+	}
+
+	for key, user := range v {
+		if user.Suspended {
+			v[key].Status = "Suspended"
+		} else if user.Locked {
+			v[key].Status = "Locked"
+		} else {
+			v[key].Status = "Active"
+		}
 	}
 
 	return v, nil

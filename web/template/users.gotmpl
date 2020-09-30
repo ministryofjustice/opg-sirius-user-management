@@ -48,19 +48,9 @@
           <th scope="row" class="govuk-table__header">{{ .DisplayName }}</th>
           <td class="govuk-table__cell">{{ .Email }}</td>
           <td class="govuk-table__cell">
-            {{ if .Suspended }}
-              <strong class="govuk-tag govuk-tag--grey">
-                Suspended
-              </strong>
-            {{ else if .Locked }}
-              <strong class="govuk-tag govuk-tag--orange">
-                Locked
-              </strong>
-            {{ else }}
-              <strong class="govuk-tag">
-                Active
-              </strong>
-            {{ end }}
+            <strong class="govuk-tag {{ .Status.TagColour }}">
+              {{ .Status }}
+            </strong>
           </td>
         </tr>
       {{ else }}
