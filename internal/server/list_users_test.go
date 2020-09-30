@@ -121,3 +121,65 @@ func TestPostListUsers(t *testing.T) {
 
 	assert.Equal(0, template.count)
 }
+
+func TestListUsersSearchesByNameOrEmail(t *testing.T) {
+	assert := assert.New(t)
+
+	data := []sirius.User{
+		{
+			ID:          29,
+			DisplayName: "Milo Nihei",
+			Email:       "milo.nihei@opgtest.com",
+			Locked:      false,
+			Suspended:   false,
+		},
+		{
+			ID:          34,
+			DisplayName: "Blair Lemmons",
+			Email:       "blair@opgtest.com",
+			Locked:      false,
+			Suspended:   false,
+		},
+		{
+			ID:          83,
+			DisplayName: "Lori Rajtar",
+			Email:       "Lori.lemmons@opgtest.com",
+			Locked:      false,
+			Suspended:   false,
+		},
+	}
+	client := &mockListUsersClient{data: data}
+	template := &mockTemplate{}
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("GET", "/path?search=LEMMONS", nil)
+	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
+
+	handler := listUsers(nil, client, template, "http://sirius")
+	err := handler(w, r)
+
+	assert.Nil(err)
+
+	assert.Equal(listUsersVars{
+		Path:      "/path",
+		SiriusURL: "http://sirius",
+
+		Search: "LEMMONS",
+		Users: []sirius.User{
+			{
+				ID:          34,
+				DisplayName: "Blair Lemmons",
+				Email:       "blair@opgtest.com",
+				Locked:      false,
+				Suspended:   false,
+			},
+			{
+				ID:          83,
+				DisplayName: "Lori Rajtar",
+				Email:       "Lori.lemmons@opgtest.com",
+				Locked:      false,
+				Suspended:   false,
+			},
+		},
+	}, template.lastVars)
+}

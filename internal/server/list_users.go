@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
 )
@@ -16,7 +17,12 @@ type listUsersVars struct {
 	Path      string
 	SiriusURL string
 
-	Users []sirius.User
+	Users  []sirius.User
+	Search string
+}
+
+func prepareSearchTerm(term string) string {
+	return strings.Replace(strings.ToLower(term), " ", "", -1)
 }
 
 func listUsers(logger *log.Logger, client ListUsersClient, tmpl Template, siriusURL string) Handler {
@@ -30,10 +36,27 @@ func listUsers(logger *log.Logger, client ListUsersClient, tmpl Template, sirius
 			return err
 		}
 
+		search := r.FormValue("search")
+
+		var filtered []sirius.User
+
+		if search != "" {
+			preparedSearch := prepareSearchTerm(search)
+
+			for _, user := range users {
+				if strings.Contains(prepareSearchTerm(user.DisplayName), preparedSearch) || strings.Contains(prepareSearchTerm(user.Email), preparedSearch) {
+					filtered = append(filtered, user)
+				}
+			}
+		} else {
+			filtered = users
+		}
+
 		vars := listUsersVars{
 			Path:      r.URL.Path,
 			SiriusURL: siriusURL,
-			Users:     users,
+			Users:     filtered,
+			Search:    search,
 		}
 
 		return tmpl.ExecuteTemplate(w, "page", vars)
