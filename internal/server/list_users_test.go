@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -68,6 +69,8 @@ func TestListUsers(t *testing.T) {
 				Status:      "Active",
 			},
 		},
+		PagePrev: 0,
+		PageNext: 0,
 	}, template.lastVars)
 }
 
@@ -174,6 +177,8 @@ func TestListUsersSearchesByNameOrEmail(t *testing.T) {
 				Status:      "Locked",
 			},
 		},
+		PagePrev: 0,
+		PageNext: 0,
 	}, template.lastVars)
 }
 
@@ -219,5 +224,46 @@ func TestListUsersSearchesByStatus(t *testing.T) {
 				Status:      "Locked",
 			},
 		},
+		PagePrev: 0,
+		PageNext: 0,
 	}, template.lastVars)
+}
+
+func TestListUsersCalculatesPagination(t *testing.T) {
+	assert := assert.New(t)
+
+	var data []sirius.User
+
+	for i := range make([]int, 250) {
+		data = append(data, sirius.User{
+			ID:          i,
+			DisplayName: "User " + fmt.Sprint(i),
+			Email:       "user" + fmt.Sprint(i) + "@opgtest.com",
+			Status:      "Active",
+		})
+	}
+
+	client := &mockListUsersClient{data: data}
+	template := &mockTemplate{}
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("GET", "/path?page=2", nil)
+
+	handler := listUsers(nil, client, template, "http://sirius")
+	err := handler(w, r)
+
+	assert.Nil(err)
+
+	vars, ok := template.lastVars.(listUsersVars)
+
+	assert.True(ok)
+	assert.Equal(int64(1), vars.PagePrev)
+	assert.Equal(int64(3), vars.PageNext)
+
+	assert.Equal(sirius.User{
+		ID:          50,
+		DisplayName: "User 50",
+		Email:       "user50@opgtest.com",
+		Status:      "Active",
+	}, vars.Users[0])
 }
