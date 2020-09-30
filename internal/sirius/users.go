@@ -72,6 +72,14 @@ func (c *Client) ListUsers(ctx context.Context, cookies []*http.Cookie) ([]User,
 
 	var users []User
 
+	sort.SliceStable(v, func(i, j int) bool {
+		if strings.ToLower(v[i].Surname) == strings.ToLower(v[j].Surname) {
+			return strings.ToLower(v[i].DisplayName) < strings.ToLower(v[j].DisplayName)
+		}
+
+		return strings.ToLower(v[i].Surname) < strings.ToLower(v[j].Surname)
+	})
+
 	for _, u := range v {
 		user := User{
 			ID:          u.ID,
@@ -88,10 +96,6 @@ func (c *Client) ListUsers(ctx context.Context, cookies []*http.Cookie) ([]User,
 
 		users = append(users, user)
 	}
-
-	sort.SliceStable(users, func(i, j int) bool {
-		return strings.ToLower(v[i].Surname) < strings.ToLower(v[j].Surname)
-	})
 
 	return users, nil
 }
