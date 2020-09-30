@@ -43,7 +43,7 @@ type User struct {
 }
 
 func (c *Client) ListUsers(ctx context.Context, cookies []*http.Cookie) ([]User, error) {
-	var v []apiUser
+	var apiUsers []apiUser
 
 	req, err := c.newRequest(ctx, http.MethodGet, "/api/v1/users", nil, cookies)
 	if err != nil {
@@ -64,7 +64,7 @@ func (c *Client) ListUsers(ctx context.Context, cookies []*http.Cookie) ([]User,
 		return nil, errors.New("returned non-2XX response: " + strconv.Itoa(resp.StatusCode))
 	}
 
-	err = json.NewDecoder(resp.Body).Decode(&v)
+	err = json.NewDecoder(resp.Body).Decode(&apiUsers)
 
 	if err != nil {
 		return nil, err
@@ -72,15 +72,15 @@ func (c *Client) ListUsers(ctx context.Context, cookies []*http.Cookie) ([]User,
 
 	var users []User
 
-	sort.SliceStable(v, func(i, j int) bool {
-		if strings.ToLower(v[i].Surname) == strings.ToLower(v[j].Surname) {
-			return strings.ToLower(v[i].DisplayName) < strings.ToLower(v[j].DisplayName)
+	sort.SliceStable(apiUsers, func(i, j int) bool {
+		if strings.EqualFold(apiUsers[i].Surname, apiUsers[j].Surname) {
+			return strings.ToLower(apiUsers[i].DisplayName) < strings.ToLower(apiUsers[j].DisplayName)
 		}
 
-		return strings.ToLower(v[i].Surname) < strings.ToLower(v[j].Surname)
+		return strings.ToLower(apiUsers[i].Surname) < strings.ToLower(apiUsers[j].Surname)
 	})
 
-	for _, u := range v {
+	for _, u := range apiUsers {
 		user := User{
 			ID:          u.ID,
 			DisplayName: u.DisplayName,
