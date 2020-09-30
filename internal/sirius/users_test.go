@@ -13,6 +13,7 @@ import (
 type exampleUser struct {
 	ID          int    `json:"id" pact:"example=47"`
 	DisplayName string `json:"displayName" pact:"example=system admin"`
+	Surname     string `json:"surname" pact:"example=admin"`
 	Email       string `json:"email" pact:"example=system.admin@opgtest.com"`
 	Locked      bool   `json:"locked" pact:"example=false"`
 	Suspended   bool   `json:"suspended" pact:"example=false"`
@@ -64,6 +65,7 @@ func TestListUsers(t *testing.T) {
 				{
 					ID:          47,
 					DisplayName: "system admin",
+					Surname:     "admin",
 					Email:       "system.admin@opgtest.com",
 					Locked:      false,
 					Suspended:   false,

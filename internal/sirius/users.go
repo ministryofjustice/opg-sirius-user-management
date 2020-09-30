@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"sort"
 	"strconv"
+	"strings"
 )
 
 type UserStatus string
@@ -27,6 +29,7 @@ func (us UserStatus) TagColour() string {
 type User struct {
 	ID          int    `json:"id"`
 	DisplayName string `json:"displayName"`
+	Surname     string `json:"surname"`
 	Email       string `json:"email"`
 	Locked      bool   `json:"locked"`
 	Suspended   bool   `json:"suspended"`
@@ -70,6 +73,10 @@ func (c *Client) ListUsers(ctx context.Context, cookies []*http.Cookie) ([]User,
 			v[key].Status = "Active"
 		}
 	}
+
+	sort.SliceStable(v, func(i, j int) bool {
+		return strings.ToLower(v[i].Surname) < strings.ToLower(v[j].Surname)
+	})
 
 	return v, nil
 }
