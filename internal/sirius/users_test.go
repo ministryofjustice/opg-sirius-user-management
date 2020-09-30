@@ -65,10 +65,7 @@ func TestListUsers(t *testing.T) {
 				{
 					ID:          47,
 					DisplayName: "system admin",
-					Surname:     "admin",
 					Email:       "system.admin@opgtest.com",
-					Locked:      false,
-					Suspended:   false,
 					Status:      "Active",
 				},
 			},

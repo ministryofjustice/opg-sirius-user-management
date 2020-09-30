@@ -26,18 +26,24 @@ func (us UserStatus) TagColour() string {
 	}
 }
 
-type User struct {
+type apiUser struct {
 	ID          int    `json:"id"`
 	DisplayName string `json:"displayName"`
 	Surname     string `json:"surname"`
 	Email       string `json:"email"`
 	Locked      bool   `json:"locked"`
 	Suspended   bool   `json:"suspended"`
+}
+
+type User struct {
+	ID          int    `json:"id"`
+	DisplayName string `json:"displayName"`
+	Email       string `json:"email"`
 	Status      UserStatus
 }
 
 func (c *Client) ListUsers(ctx context.Context, cookies []*http.Cookie) ([]User, error) {
-	var v []User
+	var v []apiUser
 
 	req, err := c.newRequest(ctx, http.MethodGet, "/api/v1/users", nil, cookies)
 	if err != nil {
@@ -64,19 +70,28 @@ func (c *Client) ListUsers(ctx context.Context, cookies []*http.Cookie) ([]User,
 		return nil, err
 	}
 
-	for key, user := range v {
-		if user.Suspended {
-			v[key].Status = "Suspended"
-		} else if user.Locked {
-			v[key].Status = "Locked"
-		} else {
-			v[key].Status = "Active"
+	var users []User
+
+	for _, u := range v {
+		user := User{
+			ID:          u.ID,
+			DisplayName: u.DisplayName,
+			Email:       u.Email,
+			Status:      "Active",
 		}
+
+		if u.Suspended {
+			user.Status = "Suspended"
+		} else if u.Locked {
+			user.Status = "Locked"
+		}
+
+		users = append(users, user)
 	}
 
-	sort.SliceStable(v, func(i, j int) bool {
+	sort.SliceStable(users, func(i, j int) bool {
 		return strings.ToLower(v[i].Surname) < strings.ToLower(v[j].Surname)
 	})
 
-	return v, nil
+	return users, nil
 }
