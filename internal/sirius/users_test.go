@@ -67,6 +67,7 @@ func TestListUsers(t *testing.T) {
 					Email:       "system.admin@opgtest.com",
 					Locked:      false,
 					Suspended:   false,
+					Status:      "Active",
 				},
 			},
 		},
