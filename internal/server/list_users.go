@@ -44,7 +44,9 @@ func listUsers(logger *log.Logger, client ListUsersClient, tmpl Template, sirius
 			preparedSearch := prepareSearchTerm(search)
 
 			for _, user := range users {
-				if strings.Contains(prepareSearchTerm(user.DisplayName), preparedSearch) || strings.Contains(prepareSearchTerm(user.Email), preparedSearch) {
+				if strings.Contains(prepareSearchTerm(user.DisplayName), preparedSearch) ||
+					strings.Contains(prepareSearchTerm(user.Email), preparedSearch) ||
+					strings.Contains(prepareSearchTerm(user.Status.String()), preparedSearch) {
 					filtered = append(filtered, user)
 				}
 			}

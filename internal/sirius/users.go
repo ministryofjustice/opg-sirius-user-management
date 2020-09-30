@@ -10,6 +10,10 @@ import (
 
 type UserStatus string
 
+func (us UserStatus) String() string {
+	return string(us)
+}
+
 func (us UserStatus) TagColour() string {
 	if us == "Suspended" {
 		return "govuk-tag--grey"
