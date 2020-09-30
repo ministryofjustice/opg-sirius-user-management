@@ -63,6 +63,12 @@
             {{ end }}
           </td>
         </tr>
+      {{ else }}
+        <tr class="govuk-table__row">
+          <td class="govuk-table__cell" colspan="3">
+            No users found — <a href="{{ prefix "/users" }}">clear search?</a>
+          </td>
+        </tr>
       {{ end }}
     </tbody>
   </table>
