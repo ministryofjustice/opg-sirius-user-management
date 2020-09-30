@@ -34,6 +34,9 @@ func main() {
 			"prefix": func(s string) string {
 				return prefix + s
 			},
+			"sirius": func(s string) string {
+				return siriusPublicURL + s
+			},
 		}).
 		ParseGlob(webDir + "/template/layout/*.gotmpl")
 
