@@ -22,6 +22,11 @@
           html: "User has not activated their account yet, do you want to <a href='/resend-activation'>resend the activation email</a>?"
         }) }}
 
+        {{ mojBanner({
+          type: 'information',
+          html: "User account is locked, do you want to <a href='/unlock-user'>unlock it</a>?"
+        }) }}
+
         {{ govukInput({
           id: "f-email",
           name: "email",
