@@ -1,0 +1,77 @@
+{{ template "page" . }}
+
+{{ define "title" }}
+  {{ if .Error }}Error: {{ end }}Users
+{{ end }}
+
+{{ define "main" }}
+  {{ if .Error }}
+    <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" tabindex="-1" data-module="govuk-error-summary">
+      <h2 class="govuk-error-summary__title" id="error-summary-title">There was a problem</h2>
+
+      <div class="govuk-error-summary__body">
+        <ul class="govuk-list govuk-error-summary__list">
+          <li>
+            <a href="#f-search">{{ .Error }}</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  {{ end }}
+
+  <div class="moj-page-header-actions">
+    <div class="moj-page-header-actions__title">
+      <h1 class="govuk-heading-xl">Users</h1>
+    </div>
+    <div class="moj-page-header-actions__actions">
+      <div class="moj-button-menu">
+        <div class="moj-button-menu__wrapper">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="govuk-form-group">
+    <div class="moj-search">
+      <form action="{{ prefix "/users" }}" method="GET">
+        <div class="govuk-form-group">
+          <label class="govuk-label moj-search__label" for="f-search">
+            Find a user
+          </label>
+
+          <input class="govuk-input moj-search__input" id="f-search" name="search" type="search" value="{{ .Search }}">
+        </div>
+        <button class="govuk-button moj-search__button" data-module="govuk-button">
+          Search
+        </button>
+      </form>
+    </div>
+  </div>
+
+  {{ if .Users }}
+  <table class="govuk-table">
+    <thead class="govuk-table__head">
+      <tr class="govuk-table__row">
+        <th scope="col" class="govuk-table__header">Name</th>
+        <th scope="col" class="govuk-table__header">Email</th>
+        <th scope="col" class="govuk-table__header">Status</th>
+      </tr>
+    </thead>
+    <tbody class="govuk-table__body">
+      {{ range .Users }}
+        <tr class="govuk-table__row">
+          <th scope="row" class="govuk-table__header">{{ .DisplayName }}</th>
+          <td class="govuk-table__cell">{{ .Email }}</td>
+          <td class="govuk-table__cell">
+            <strong class="govuk-tag {{ .Status.TagColour }}">
+              {{ .Status }}
+            </strong>
+          </td>
+        </tr>
+      {{ end }}
+    </tbody>
+  </table>
+  {{ else if and .Search (not .Error) }}
+    <p class="govuk-body">No users found matching search term</p>
+  {{ end }}
+{{ end }}

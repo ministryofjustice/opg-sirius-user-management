@@ -14,6 +14,7 @@ type Client interface {
 	MyDetailsClient
 	EditMyDetailsClient
 	ChangePasswordClient
+	ListUsersClient
 }
 
 type Template interface {
@@ -24,6 +25,9 @@ func New(logger *log.Logger, client Client, templates map[string]*template.Templ
 	mux := http.NewServeMux()
 	mux.Handle("/", http.RedirectHandler(prefix+"/my-details", http.StatusFound))
 	mux.Handle("/health-check", healthCheck())
+	mux.Handle("/users",
+		errorHandler("listUsers", logger, templates["error.gotmpl"], prefix, siriusPublicURL,
+			listUsers(logger, client, templates["users.gotmpl"], siriusURL)))
 	mux.Handle("/my-details",
 		errorHandler("myDetails", logger, templates["error.gotmpl"], prefix, siriusPublicURL,
 			myDetails(logger, client, templates["my-details.gotmpl"], siriusURL)))
