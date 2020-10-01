@@ -12,6 +12,22 @@
 {% endblock %}
 
 {% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+
+      {{ mojBanner({
+        type: 'information',
+        html: "User account is locked, do you want to <a href='/unlock-user'>unlock it</a>?"
+      }) }}
+
+      {{ mojBanner({
+        type: 'information',
+        html: "User has not activated their account yet, do you want to <a href='/resend-activation'>resend the activation email</a>?"
+      }) }}
+
+    </div>
+  </div>
+
   {{ mojPageHeaderActions({
     heading: {
       html: '<h1 class="govuk-heading-xl">Edit Maurine Bilski</h1>'
@@ -28,16 +44,6 @@
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
       <form class="form" action="/edit-permissions" method="post">
-
-        {{ mojBanner({
-          type: 'information',
-          html: "User has not activated their account yet, do you want to <a href='/resend-activation'>resend the activation email</a>?"
-        }) }}
-
-        {{ mojBanner({
-          type: 'information',
-          html: "User account is locked, do you want to <a href='/unlock-user'>unlock it</a>?"
-        }) }}
 
         {{ govukInput({
           id: "f-email",
