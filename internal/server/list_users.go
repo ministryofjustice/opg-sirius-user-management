@@ -20,6 +20,7 @@ type listUsersVars struct {
 
 	Users  []sirius.User
 	Search string
+	Error  string
 }
 
 func prepareSearchTerm(term string) string {
@@ -54,10 +55,13 @@ func listUsers(logger *log.Logger, client ListUsersClient, tmpl Template, sirius
 		}
 
 		search := r.FormValue("search")
+		error := ""
 
 		var filtered []sirius.User
 
-		if search != "" {
+		if search != "" && len(search) < 3 {
+			error = "Search term must be at least three characters"
+		} else if search != "" {
 			preparedSearch := prepareSearchTerm(search)
 
 			for _, user := range users {
@@ -67,8 +71,6 @@ func listUsers(logger *log.Logger, client ListUsersClient, tmpl Template, sirius
 					filtered = append(filtered, user)
 				}
 			}
-		} else {
-			filtered = users
 		}
 
 		vars := listUsersVars{
@@ -76,6 +78,7 @@ func listUsers(logger *log.Logger, client ListUsersClient, tmpl Template, sirius
 			SiriusURL: siriusURL,
 			Users:     filtered,
 			Search:    search,
+			Error:     error,
 		}
 
 		return tmpl.ExecuteTemplate(w, "page", vars)

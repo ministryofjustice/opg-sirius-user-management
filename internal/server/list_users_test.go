@@ -54,6 +54,60 @@ func TestListUsers(t *testing.T) {
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("GET", "/path?search=milo", nil)
+	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
+
+	handler := listUsers(nil, client, template, "http://sirius")
+	err := handler(w, r)
+
+	assert.Nil(err)
+
+	resp := w.Result()
+	assert.Equal(http.StatusOK, resp.StatusCode)
+	assert.Equal(r.Cookies(), client.lastCookies)
+
+	assert.Equal(1, client.myDetailsCount)
+	assert.Equal(1, client.count)
+
+	assert.Equal(1, template.count)
+	assert.Equal("page", template.lastName)
+	assert.Equal(listUsersVars{
+		Path:      "/path",
+		SiriusURL: "http://sirius",
+
+		Search: "milo",
+		Users: []sirius.User{
+			{
+				ID:          29,
+				DisplayName: "Milo Nihei",
+				Email:       "milo.nihei@opgtest.com",
+				Status:      "Active",
+			},
+		},
+		Error: "",
+	}, template.lastVars)
+}
+
+func TestListUsersRequiresSearch(t *testing.T) {
+	assert := assert.New(t)
+
+	data := []sirius.User{
+		{
+			ID:          29,
+			DisplayName: "Milo Nihei",
+			Email:       "milo.nihei@opgtest.com",
+			Status:      "Active",
+		},
+	}
+	client := &mockListUsersClient{
+		myDetails: sirius.MyDetails{
+			Roles: []string{"System Admin"},
+		},
+		data: data,
+	}
+	template := &mockTemplate{}
+
+	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
 	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
@@ -75,14 +129,56 @@ func TestListUsers(t *testing.T) {
 		Path:      "/path",
 		SiriusURL: "http://sirius",
 
-		Users: []sirius.User{
-			{
-				ID:          29,
-				DisplayName: "Milo Nihei",
-				Email:       "milo.nihei@opgtest.com",
-				Status:      "Active",
-			},
+		Search: "",
+		Users:  nil,
+		Error:  "",
+	}, template.lastVars)
+}
+
+func TestListUsersWarnsShortSearches(t *testing.T) {
+	assert := assert.New(t)
+
+	data := []sirius.User{
+		{
+			ID:          29,
+			DisplayName: "Milo Nihei",
+			Email:       "milo.nihei@opgtest.com",
+			Status:      "Active",
 		},
+	}
+	client := &mockListUsersClient{
+		myDetails: sirius.MyDetails{
+			Roles: []string{"System Admin"},
+		},
+		data: data,
+	}
+	template := &mockTemplate{}
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("GET", "/path?search=m", nil)
+	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
+
+	handler := listUsers(nil, client, template, "http://sirius")
+	err := handler(w, r)
+
+	assert.Nil(err)
+
+	resp := w.Result()
+	assert.Equal(http.StatusOK, resp.StatusCode)
+	assert.Equal(r.Cookies(), client.lastCookies)
+
+	assert.Equal(1, client.myDetailsCount)
+	assert.Equal(1, client.count)
+
+	assert.Equal(1, template.count)
+	assert.Equal("page", template.lastName)
+	assert.Equal(listUsersVars{
+		Path:      "/path",
+		SiriusURL: "http://sirius",
+
+		Search: "m",
+		Users:  nil,
+		Error:  "Search term must be at least three characters",
 	}, template.lastVars)
 }
 
@@ -211,6 +307,7 @@ func TestListUsersSearchesByNameOrEmail(t *testing.T) {
 				Status:      "Locked",
 			},
 		},
+		Error: "",
 	}, template.lastVars)
 }
 
@@ -261,5 +358,6 @@ func TestListUsersSearchesByStatus(t *testing.T) {
 				Status:      "Locked",
 			},
 		},
+		Error: "",
 	}, template.lastVars)
 }
