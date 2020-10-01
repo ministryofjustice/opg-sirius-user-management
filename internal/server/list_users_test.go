@@ -15,14 +15,16 @@ type mockListUsersClient struct {
 	count          int
 	myDetailsCount int
 	lastCookies    []*http.Cookie
+	lastSearch     string
 	err            error
 	data           []sirius.User
 	myDetails      sirius.MyDetails
 }
 
-func (m *mockListUsersClient) ListUsers(ctx context.Context, cookies []*http.Cookie) ([]sirius.User, error) {
+func (m *mockListUsersClient) SearchUsers(ctx context.Context, cookies []*http.Cookie, search string) ([]sirius.User, error) {
 	m.count += 1
 	m.lastCookies = cookies
+	m.lastSearch = search
 
 	return m.data, m.err
 }
@@ -68,6 +70,7 @@ func TestListUsers(t *testing.T) {
 
 	assert.Equal(1, client.myDetailsCount)
 	assert.Equal(1, client.count)
+	assert.Equal("milo", client.lastSearch)
 
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
@@ -121,7 +124,7 @@ func TestListUsersRequiresSearch(t *testing.T) {
 	assert.Equal(r.Cookies(), client.lastCookies)
 
 	assert.Equal(1, client.myDetailsCount)
-	assert.Equal(1, client.count)
+	assert.Equal(0, client.count)
 
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
@@ -168,7 +171,7 @@ func TestListUsersWarnsShortSearches(t *testing.T) {
 	assert.Equal(r.Cookies(), client.lastCookies)
 
 	assert.Equal(1, client.myDetailsCount)
-	assert.Equal(1, client.count)
+	assert.Equal(0, client.count)
 
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
@@ -246,118 +249,4 @@ func TestPostListUsers(t *testing.T) {
 	assert.Equal(StatusError(http.StatusMethodNotAllowed), err)
 
 	assert.Equal(0, template.count)
-}
-
-func TestListUsersSearchesByNameOrEmail(t *testing.T) {
-	assert := assert.New(t)
-
-	data := []sirius.User{
-		{
-			ID:          29,
-			DisplayName: "Milo Nihei",
-			Email:       "milo.nihei@opgtest.com",
-			Status:      "Active",
-		},
-		{
-			ID:          34,
-			DisplayName: "Blair Lemmons",
-			Email:       "blair@opgtest.com",
-			Status:      "Active",
-		},
-		{
-			ID:          83,
-			DisplayName: "Lori Rajtar",
-			Email:       "Lori.lemmons@opgtest.com",
-			Status:      "Locked",
-		},
-	}
-	client := &mockListUsersClient{
-		myDetails: sirius.MyDetails{
-			Roles: []string{"System Admin"},
-		},
-		data: data,
-	}
-	template := &mockTemplate{}
-
-	w := httptest.NewRecorder()
-	r, _ := http.NewRequest("GET", "/path?search=LEMMONS", nil)
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
-
-	handler := listUsers(nil, client, template, "http://sirius")
-	err := handler(w, r)
-
-	assert.Nil(err)
-
-	assert.Equal(listUsersVars{
-		Path:      "/path",
-		SiriusURL: "http://sirius",
-
-		Search: "LEMMONS",
-		Users: []sirius.User{
-			{
-				ID:          34,
-				DisplayName: "Blair Lemmons",
-				Email:       "blair@opgtest.com",
-				Status:      "Active",
-			},
-			{
-				ID:          83,
-				DisplayName: "Lori Rajtar",
-				Email:       "Lori.lemmons@opgtest.com",
-				Status:      "Locked",
-			},
-		},
-		Error: "",
-	}, template.lastVars)
-}
-
-func TestListUsersSearchesByStatus(t *testing.T) {
-	assert := assert.New(t)
-
-	data := []sirius.User{
-		{
-			ID:          29,
-			DisplayName: "Milo Nihei",
-			Email:       "milo.nihei@opgtest.com",
-			Status:      "Active",
-		},
-		{
-			ID:          83,
-			DisplayName: "Lori Rajtar",
-			Email:       "Lori.lemmons@opgtest.com",
-			Status:      "Locked",
-		},
-	}
-	client := &mockListUsersClient{
-		myDetails: sirius.MyDetails{
-			Roles: []string{"System Admin"},
-		},
-		data: data,
-	}
-	template := &mockTemplate{}
-
-	w := httptest.NewRecorder()
-	r, _ := http.NewRequest("GET", "/path?search=locked", nil)
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
-
-	handler := listUsers(nil, client, template, "http://sirius")
-	err := handler(w, r)
-
-	assert.Nil(err)
-
-	assert.Equal(listUsersVars{
-		Path:      "/path",
-		SiriusURL: "http://sirius",
-
-		Search: "locked",
-		Users: []sirius.User{
-			{
-				ID:          83,
-				DisplayName: "Lori Rajtar",
-				Email:       "Lori.lemmons@opgtest.com",
-				Status:      "Locked",
-			},
-		},
-		Error: "",
-	}, template.lastVars)
 }

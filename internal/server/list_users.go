@@ -4,13 +4,12 @@ import (
 	"context"
 	"log"
 	"net/http"
-	"strings"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
 )
 
 type ListUsersClient interface {
-	ListUsers(context.Context, []*http.Cookie) ([]sirius.User, error)
+	SearchUsers(context.Context, []*http.Cookie, string) ([]sirius.User, error)
 	MyDetails(context.Context, []*http.Cookie) (sirius.MyDetails, error)
 }
 
@@ -21,10 +20,6 @@ type listUsersVars struct {
 	Users  []sirius.User
 	Search string
 	Error  string
-}
-
-func prepareSearchTerm(term string) string {
-	return strings.Replace(strings.ToLower(term), " ", "", -1)
 }
 
 func listUsers(logger *log.Logger, client ListUsersClient, tmpl Template, siriusURL string) Handler {
@@ -49,36 +44,27 @@ func listUsers(logger *log.Logger, client ListUsersClient, tmpl Template, sirius
 			return StatusError(http.StatusForbidden)
 		}
 
-		users, err := client.ListUsers(r.Context(), r.Cookies())
-		if err != nil {
-			return err
-		}
-
 		search := r.FormValue("search")
-		error := ""
+		var users []sirius.User
 
-		var filtered []sirius.User
+		errorMessage := ""
 
 		if search != "" && len(search) < 3 {
-			error = "Search term must be at least three characters"
+			errorMessage = "Search term must be at least three characters"
 		} else if search != "" {
-			preparedSearch := prepareSearchTerm(search)
-
-			for _, user := range users {
-				if strings.Contains(prepareSearchTerm(user.DisplayName), preparedSearch) ||
-					strings.Contains(prepareSearchTerm(user.Email), preparedSearch) ||
-					strings.Contains(prepareSearchTerm(user.Status.String()), preparedSearch) {
-					filtered = append(filtered, user)
-				}
+			var err error
+			users, err = client.SearchUsers(r.Context(), r.Cookies(), search)
+			if err != nil {
+				return err
 			}
 		}
 
 		vars := listUsersVars{
 			Path:      r.URL.Path,
 			SiriusURL: siriusURL,
-			Users:     filtered,
+			Users:     users,
 			Search:    search,
-			Error:     error,
+			Error:     errorMessage,
 		}
 
 		return tmpl.ExecuteTemplate(w, "page", vars)
