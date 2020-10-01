@@ -1,6 +1,7 @@
 {% extends "layout.html" %}
 
 {% from "moj/components/banner/macro.njk" import mojBanner %}
+{% from "moj/components/page-header-actions/macro.njk" import mojPageHeaderActions %}
 
 {% block pageTitle %}
   Edit Maurine Bilski - Sirius
@@ -11,7 +12,18 @@
 {% endblock %}
 
 {% block content %}
-  <h1 class="govuk-heading-xl">Edit Maurine Bilski</h1>
+  {{ mojPageHeaderActions({
+    heading: {
+      html: '<h1 class="govuk-heading-xl">Edit Maurine Bilski</h1>'
+    },
+    items: [
+      {
+        text: 'Delete user',
+        href: '/delete-user',
+        classes: 'govuk-button--warning'
+      }
+    ]
+  }) }}
 
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">

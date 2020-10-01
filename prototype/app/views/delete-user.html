@@ -1,0 +1,35 @@
+{% extends "layout.html" %}
+
+{% block pageTitle %}
+  Delete Maurine Bilski - Sirius
+{% endblock %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="/edit">Back</a>
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-xl">Delete account</h1>
+
+      <p>Are you sure you want to delete <strong>Susannah Wooward's</strong> account?</p>
+
+      <form class="form" action="/home" method="post">
+
+        {{ govukButton({
+          text: "Delete account",
+          classes: "govuk-button--warning"
+        }) }}
+
+        {{ govukButton({
+          element: "a",
+          href: "/home",
+          text: "Cancel",
+          classes: "govuk-button--secondary"
+        }) }}
+
+      </form>
+    </div>
+  </div>
+{% endblock %}
