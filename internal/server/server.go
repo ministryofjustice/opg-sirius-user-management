@@ -11,6 +11,7 @@ import (
 )
 
 type Client interface {
+	AddUserClient
 	MyDetailsClient
 	EditMyDetailsClient
 	ChangePasswordClient
@@ -37,6 +38,9 @@ func New(logger *log.Logger, client Client, templates map[string]*template.Templ
 	mux.Handle("/change-password",
 		errorHandler("changePassword", logger, templates["error.gotmpl"], prefix, siriusPublicURL,
 			changePassword(logger, client, templates["change-password.gotmpl"], siriusURL)))
+	mux.Handle("/add-user",
+		errorHandler("addUser", logger, templates["error.gotmpl"], prefix, siriusPublicURL,
+			addUser(logger, client, templates["add-user.gotmpl"], siriusURL)))
 
 	static := http.FileServer(http.Dir(webDir + "/static"))
 	mux.Handle("/assets/", static)
