@@ -19,7 +19,7 @@ type listUsersVars struct {
 
 	Users  []sirius.User
 	Search string
-	Error  string
+	Errors sirius.ValidationErrors
 }
 
 func listUsers(logger *log.Logger, client ListUsersClient, tmpl Template, siriusURL string) Handler {
@@ -45,26 +45,25 @@ func listUsers(logger *log.Logger, client ListUsersClient, tmpl Template, sirius
 		}
 
 		search := r.FormValue("search")
-		var users []sirius.User
-
-		errorMessage := ""
-
-		if search != "" && len(search) < 3 {
-			errorMessage = "Search term must be at least three characters"
-		} else if search != "" {
-			var err error
-			users, err = client.SearchUsers(r.Context(), r.Cookies(), search)
-			if err != nil {
-				return err
-			}
-		}
 
 		vars := listUsersVars{
 			Path:      r.URL.Path,
 			SiriusURL: siriusURL,
-			Users:     users,
 			Search:    search,
-			Error:     errorMessage,
+		}
+
+		if len(search) >= 3 {
+			users, err := client.SearchUsers(r.Context(), r.Cookies(), search)
+			if err != nil {
+				return err
+			}
+			vars.Users = users
+		} else if search != "" {
+			vars.Errors = sirius.ValidationErrors{
+				"search": {
+					"": "Search term must be at least three characters",
+				},
+			}
 		}
 
 		return tmpl.ExecuteTemplate(w, "page", vars)

@@ -118,15 +118,20 @@ func TestPostChangePasswordSiriusError(t *testing.T) {
 	assert.Equal(changePasswordVars{
 		Path:      "/path",
 		SiriusURL: "http://sirius",
-		Error:     "Something happened",
+		Errors: sirius.ValidationErrors{
+			"currentpassword": {
+				"": "Something happened",
+			},
+		},
 	}, template.lastVars)
 }
 
 func TestPostChangePasswordOtherError(t *testing.T) {
 	assert := assert.New(t)
 
+	expectedErr := errors.New("oops")
 	logger := log.New(ioutil.Discard, "", 0)
-	client := &mockChangePasswordClient{err: errors.New("oops")}
+	client := &mockChangePasswordClient{err: expectedErr}
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
@@ -135,16 +140,7 @@ func TestPostChangePasswordOtherError(t *testing.T) {
 	handler := changePassword(logger, client, template, "http://sirius")
 	err := handler(w, r)
 
-	assert.Nil(err)
+	assert.Equal(expectedErr, err)
 
-	resp := w.Result()
-	assert.Equal(http.StatusBadRequest, resp.StatusCode)
-
-	assert.Equal(1, template.count)
-	assert.Equal("page", template.lastName)
-	assert.Equal(changePasswordVars{
-		Path:      "/path",
-		SiriusURL: "http://sirius",
-		Error:     "Could not connect to Sirius",
-	}, template.lastVars)
+	assert.Equal(0, template.count)
 }
