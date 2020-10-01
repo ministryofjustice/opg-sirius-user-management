@@ -62,22 +62,4 @@
       {{ end }}
     </tbody>
   </table>
-
-  <nav class="moj-pagination" id="pagination-label">
-    <p class="govuk-visually-hidden" aria-labelledby="pagination-label">Pagination navigation</p>
-
-    <ul class="moj-pagination__list">
-      {{ if .PagePrev }}
-        <li class="moj-pagination__item  moj-pagination__item--prev">
-          <a class="moj-pagination__link" href="{{ prefix (print "/users?search=" .Search "&page=" .PagePrev) }}">Previous<span class="govuk-visually-hidden"> set of pages</span></a>
-        </li>
-      {{ end }}
-
-      {{ if .PageNext }}
-        <li class="moj-pagination__item  moj-pagination__item--next">
-          <a class="moj-pagination__link" href="{{ prefix (print "/users?search=" .Search "&page=" .PageNext) }}">Next<span class="govuk-visually-hidden"> set of pages</span></a>
-        </li>
-      {{ end }}
-    </ul>
-  </nav>
 {{ end }}
