@@ -19,7 +19,11 @@ type exampleUser struct {
 	Suspended   bool   `json:"suspended" pact:"example=false"`
 }
 
-func TestListUsers(t *testing.T) {
+type exampleUserList struct {
+	Data []exampleUser `json:"data" pact:"min=1"`
+}
+
+func TestSearchUsers(t *testing.T) {
 	pact := &dsl.Pact{
 		Consumer:          "sirius-user-management",
 		Provider:          "sirius",
@@ -41,10 +45,13 @@ func TestListUsers(t *testing.T) {
 				pact.
 					AddInteraction().
 					Given("User exists").
-					UponReceiving("A request to get all users").
+					UponReceiving("A search for admin users").
 					WithRequest(dsl.Request{
 						Method: http.MethodGet,
-						Path:   dsl.String("/api/v1/users"),
+						Path:   dsl.String("/api/search/users"),
+						Query: dsl.MapMatcher{
+							"query": dsl.String("admin"),
+						},
 						Headers: dsl.MapMatcher{
 							"X-XSRF-TOKEN":        dsl.String("abcde"),
 							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
@@ -54,7 +61,9 @@ func TestListUsers(t *testing.T) {
 					WillRespondWith(dsl.Response{
 						Status:  http.StatusOK,
 						Headers: dsl.MapMatcher{"Content-Type": dsl.String("application/json")},
-						Body:    dsl.Match([]exampleUser{}),
+						Body: dsl.Match(&exampleUserList{
+							Data: []exampleUser{},
+						}),
 					})
 			},
 			cookies: []*http.Cookie{
@@ -75,10 +84,13 @@ func TestListUsers(t *testing.T) {
 				pact.
 					AddInteraction().
 					Given("User exists").
-					UponReceiving("A request to get all users without cookies").
+					UponReceiving("A search for admin users without cookies").
 					WithRequest(dsl.Request{
 						Method: http.MethodGet,
-						Path:   dsl.String("/api/v1/users"),
+						Path:   dsl.String("/api/search/users"),
+						Query: dsl.MapMatcher{
+							"query": dsl.String("admin"),
+						},
 						Headers: dsl.MapMatcher{
 							"OPG-Bypass-Membrane": dsl.String("1"),
 						},
@@ -98,7 +110,7 @@ func TestListUsers(t *testing.T) {
 			assert.Nil(t, pact.Verify(func() error {
 				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
 
-				users, err := client.ListUsers(context.Background(), tc.cookies)
+				users, err := client.SearchUsers(context.Background(), tc.cookies, "admin")
 				assert.Equal(t, tc.expectedResponse, users)
 				assert.Equal(t, tc.expectedError, err)
 				return nil

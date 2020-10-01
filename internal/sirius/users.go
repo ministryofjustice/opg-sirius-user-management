@@ -35,6 +35,10 @@ type apiUser struct {
 	Suspended   bool   `json:"suspended"`
 }
 
+type apiUserList struct {
+	Data []apiUser `json:"data"`
+}
+
 type User struct {
 	ID          int    `json:"id"`
 	DisplayName string `json:"displayName"`
@@ -42,10 +46,10 @@ type User struct {
 	Status      UserStatus
 }
 
-func (c *Client) ListUsers(ctx context.Context, cookies []*http.Cookie) ([]User, error) {
-	var apiUsers []apiUser
+func (c *Client) SearchUsers(ctx context.Context, cookies []*http.Cookie, search string) ([]User, error) {
+	var apiUserList apiUserList
 
-	req, err := c.newRequest(ctx, http.MethodGet, "/api/v1/users", nil, cookies)
+	req, err := c.newRequest(ctx, http.MethodGet, "/api/search/users?query="+search, nil, cookies)
 	if err != nil {
 		return nil, err
 	}
@@ -64,12 +68,13 @@ func (c *Client) ListUsers(ctx context.Context, cookies []*http.Cookie) ([]User,
 		return nil, errors.New("returned non-2XX response: " + strconv.Itoa(resp.StatusCode))
 	}
 
-	err = json.NewDecoder(resp.Body).Decode(&apiUsers)
+	err = json.NewDecoder(resp.Body).Decode(&apiUserList)
 
 	if err != nil {
 		return nil, err
 	}
 
+	apiUsers := apiUserList.Data
 	var users []User
 
 	sort.SliceStable(apiUsers, func(i, j int) bool {
