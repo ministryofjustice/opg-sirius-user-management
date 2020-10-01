@@ -43,7 +43,7 @@
 
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      <form class="form" action="/edit-permissions" method="post">
+      <form class="form" action="/home" method="post">
 
         {{ govukInput({
           id: "f-email",
@@ -106,8 +106,32 @@
           ]
         }) }}
 
+        {{ govukRadios({
+          classes: "govuk-radios--inline",
+          idPrefix: "organisation",
+          name: "organisation",
+          fieldset: {
+            legend: {
+              text: "Organisation",
+              classes: "govuk-fieldset__legend--m"
+            }
+          },
+          items: [
+            {
+              text: "COP User"
+            },
+            {
+              text: "OPG User",
+              checked: true
+            }
+          ]
+        }) }}
+
+        {% set selected = ['System Admin', 'Manager'] %}
+        {% include './includes/roles-control.html' %}
+
         {{ govukButton({
-          text: "Continue"
+          text: "Save changes"
         }) }}
 
       </form>
