@@ -12,10 +12,11 @@ import (
 
 type Client interface {
 	AddUserClient
-	MyDetailsClient
-	EditMyDetailsClient
 	ChangePasswordClient
+	EditMyDetailsClient
+	EditUserClient
 	ListUsersClient
+	MyDetailsClient
 }
 
 type Template interface {
@@ -33,6 +34,7 @@ func New(logger *log.Logger, client Client, templates map[string]*template.Templ
 	mux.Handle("/my-details/edit", wrap("editMyDetails", editMyDetails(logger, client, templates["edit-my-details.gotmpl"], siriusURL)))
 	mux.Handle("/change-password", wrap("changePassword", changePassword(logger, client, templates["change-password.gotmpl"], siriusURL)))
 	mux.Handle("/add-user", wrap("addUser", addUser(logger, client, templates["add-user.gotmpl"], siriusURL)))
+	mux.Handle("/edit-user/", wrap("editUser", editUser(logger, client, templates["edit-user.gotmpl"], siriusURL)))
 
 	static := http.FileServer(http.Dir(webDir + "/static"))
 	mux.Handle("/assets/", static)

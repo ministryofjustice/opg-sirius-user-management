@@ -31,6 +31,15 @@ func main() {
 			"join": func(sep string, items []string) string {
 				return strings.Join(items, sep)
 			},
+			"contains": func(xs []string, needle string) bool {
+				for _, x := range xs {
+					if x == needle {
+						return true
+					}
+				}
+
+				return false
+			},
 			"prefix": func(s string) string {
 				return prefix + s
 			},

@@ -1,0 +1,85 @@
+package server
+
+import (
+	"context"
+	"log"
+	"net/http"
+	"strconv"
+	"strings"
+
+	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
+)
+
+type EditUserClient interface {
+	User(context.Context, []*http.Cookie, int) (sirius.AuthUser, error)
+	EditUser(context.Context, []*http.Cookie, sirius.AuthUser) error
+	MyDetails(context.Context, []*http.Cookie) (sirius.MyDetails, error)
+}
+
+type editUserVars struct {
+	Path      string
+	SiriusURL string
+	User      sirius.AuthUser
+	Errors    sirius.ValidationErrors
+}
+
+func editUser(logger *log.Logger, client EditUserClient, tmpl Template, siriusURL string) Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
+		id, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/edit-user/"))
+		if err != nil {
+			return StatusError(http.StatusNotFound)
+		}
+
+		myDetails, err := client.MyDetails(r.Context(), r.Cookies())
+		if err != nil {
+			return err
+		}
+
+		permitted := false
+		for _, role := range myDetails.Roles {
+			if role == "System Admin" {
+				permitted = true
+			}
+		}
+
+		if !permitted {
+			return StatusError(http.StatusForbidden)
+		}
+
+		vars := editUserVars{
+			Path:      r.URL.Path,
+			SiriusURL: siriusURL,
+		}
+
+		switch r.Method {
+		case http.MethodGet:
+			user, err := client.User(r.Context(), r.Cookies(), id)
+			if err != nil {
+				return err
+			}
+			vars.User = user
+
+			return tmpl.ExecuteTemplate(w, "page", vars)
+
+		case http.MethodPost:
+			err := client.EditUser(r.Context(), r.Cookies(), sirius.AuthUser{
+				ID:           id,
+				Firstname:    r.PostFormValue("firstname"),
+				Surname:      r.PostFormValue("surname"),
+				Email:        r.PostFormValue("email"),
+				Organisation: r.PostFormValue("organisation"),
+				Roles:        r.PostForm["roles"],
+				Suspended:    r.PostFormValue("suspended") == "Yes",
+				Locked:       r.PostFormValue("locked") == "Yes",
+			})
+			if err != nil {
+				return err
+			}
+
+			return RedirectError("/users")
+
+		default:
+			return StatusError(http.StatusMethodNotAllowed)
+		}
+	}
+}
