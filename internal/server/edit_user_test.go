@@ -56,7 +56,7 @@ func TestGetEditUser(t *testing.T) {
 	r, _ := http.NewRequest("GET", "/edit-user/123", nil)
 	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	err := editUser(nil, client, template, "http://sirius")(w, r)
+	err := editUser(client, template, "http://sirius")(w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.user.count)
@@ -88,7 +88,7 @@ func TestGetEditUserBadPath(t *testing.T) {
 			r, _ := http.NewRequest("GET", path, nil)
 			r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-			err := editUser(nil, client, template, "http://sirius")(w, r)
+			err := editUser(client, template, "http://sirius")(w, r)
 			assert.Equal(StatusError(http.StatusNotFound), err)
 
 			assert.Equal(0, client.user.count)
@@ -110,7 +110,7 @@ func TestPostEditUser(t *testing.T) {
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	err := editUser(nil, client, template, "http://sirius")(w, r)
+	err := editUser(client, template, "http://sirius")(w, r)
 	assert.Equal(RedirectError("/users"), err)
 
 	assert.Equal(1, client.editUser.count)
@@ -141,7 +141,7 @@ func TestPostEditUserClientError(t *testing.T) {
 	r, _ := http.NewRequest("POST", "/edit-user/123", strings.NewReader("email=a&firstname=b&surname=c&organisation=d&roles=e&roles=f&locked=Yes&suspended=No"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
-	err := editUser(nil, client, template, "http://sirius")(w, r)
+	err := editUser(client, template, "http://sirius")(w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.editUser.count)
@@ -181,7 +181,7 @@ func TestPostEditUserOtherError(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/edit-user/123", nil)
 
-	err := editUser(nil, client, template, "http://sirius")(w, r)
+	err := editUser(client, template, "http://sirius")(w, r)
 	assert.Equal(expectedErr, err)
 
 	assert.Equal(1, client.editUser.count)

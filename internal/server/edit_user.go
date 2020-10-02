@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -22,7 +21,7 @@ type editUserVars struct {
 	Errors    sirius.ValidationErrors
 }
 
-func editUser(logger *log.Logger, client EditUserClient, tmpl Template, siriusURL string) Handler {
+func editUser(client EditUserClient, tmpl Template, siriusURL string) Handler {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		id, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/edit-user/"))
 		if err != nil {

@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"log"
 	"net/http"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
@@ -29,7 +28,7 @@ type myDetailsVars struct {
 	CanEditPhoneNumber bool
 }
 
-func myDetails(logger *log.Logger, client MyDetailsClient, tmpl Template, siriusURL string) Handler {
+func myDetails(client MyDetailsClient, tmpl Template, siriusURL string) Handler {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		if r.Method != http.MethodGet {
 			return StatusError(http.StatusMethodNotAllowed)

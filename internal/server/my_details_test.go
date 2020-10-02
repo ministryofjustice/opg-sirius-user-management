@@ -62,7 +62,7 @@ func TestGetMyDetails(t *testing.T) {
 	r, _ := http.NewRequest("GET", "/path", nil)
 	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	handler := myDetails(nil, client, template, "http://sirius")
+	handler := myDetails(client, template, "http://sirius")
 	err := handler(w, r)
 
 	assert.Nil(err)
@@ -112,7 +112,7 @@ func TestGetMyDetailsUsesPermission(t *testing.T) {
 	r, _ := http.NewRequest("GET", "/path", nil)
 	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	handler := myDetails(nil, client, template, "http://sirius")
+	handler := myDetails(client, template, "http://sirius")
 	err := handler(w, r)
 
 	assert.Nil(err)
@@ -152,7 +152,7 @@ func TestGetMyDetailsUnauthenticated(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "", nil)
 
-	handler := myDetails(nil, client, template, "http://sirius")
+	handler := myDetails(client, template, "http://sirius")
 	err := handler(w, r)
 
 	assert.Equal(sirius.ErrUnauthorized, err)
@@ -169,7 +169,7 @@ func TestGetMyDetailsSiriusErrors(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "", nil)
 
-	handler := myDetails(nil, client, template, "http://sirius")
+	handler := myDetails(client, template, "http://sirius")
 	err := handler(w, r)
 
 	assert.Equal("err", err.Error())
@@ -184,7 +184,7 @@ func TestPostMyDetails(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "", nil)
 
-	handler := myDetails(nil, nil, template, "http://sirius")
+	handler := myDetails(nil, template, "http://sirius")
 	err := handler(w, r)
 
 	assert.Equal(StatusError(http.StatusMethodNotAllowed), err)

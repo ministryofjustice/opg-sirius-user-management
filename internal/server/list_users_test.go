@@ -47,7 +47,7 @@ func TestListUsers(t *testing.T) {
 	r, _ := http.NewRequest("GET", "/path?search=milo", nil)
 	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	handler := listUsers(nil, client, template, "http://sirius")
+	handler := listUsers(client, template, "http://sirius")
 	err := handler(w, r)
 
 	assert.Nil(err)
@@ -97,7 +97,7 @@ func TestListUsersRequiresSearch(t *testing.T) {
 	r, _ := http.NewRequest("GET", "/path", nil)
 	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	handler := listUsers(nil, client, template, "http://sirius")
+	handler := listUsers(client, template, "http://sirius")
 	err := handler(w, r)
 
 	assert.Nil(err)
@@ -138,7 +138,7 @@ func TestListUsersWarnsShortSearches(t *testing.T) {
 	r, _ := http.NewRequest("GET", "/path?search=m", nil)
 	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	handler := listUsers(nil, client, template, "http://sirius")
+	handler := listUsers(client, template, "http://sirius")
 	err := handler(w, r)
 
 	assert.Nil(err)
@@ -174,7 +174,7 @@ func TestListUsersSiriusErrors(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/?search=long", nil)
 
-	handler := listUsers(nil, client, template, "http://sirius")
+	handler := listUsers(client, template, "http://sirius")
 	err := handler(w, r)
 
 	assert.Equal(expectedErr, err)
@@ -188,7 +188,7 @@ func TestPostListUsers(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "", nil)
 
-	handler := listUsers(nil, nil, template, "http://sirius")
+	handler := listUsers(nil, template, "http://sirius")
 	err := handler(w, r)
 
 	assert.Equal(StatusError(http.StatusMethodNotAllowed), err)

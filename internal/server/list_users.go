@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"log"
 	"net/http"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
@@ -21,7 +20,7 @@ type listUsersVars struct {
 	Errors sirius.ValidationErrors
 }
 
-func listUsers(logger *log.Logger, client ListUsersClient, tmpl Template, siriusURL string) Handler {
+func listUsers(client ListUsersClient, tmpl Template, siriusURL string) Handler {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		if r.Method != http.MethodGet {
 			return StatusError(http.StatusMethodNotAllowed)

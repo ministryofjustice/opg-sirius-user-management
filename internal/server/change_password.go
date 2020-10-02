@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"log"
 	"net/http"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
@@ -18,7 +17,7 @@ type changePasswordVars struct {
 	Errors    sirius.ValidationErrors
 }
 
-func changePassword(logger *log.Logger, client ChangePasswordClient, tmpl Template, siriusURL string) Handler {
+func changePassword(client ChangePasswordClient, tmpl Template, siriusURL string) Handler {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		vars := changePasswordVars{
 			Path:      r.URL.Path,

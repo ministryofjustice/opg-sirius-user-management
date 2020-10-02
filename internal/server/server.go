@@ -36,29 +36,29 @@ func New(logger *log.Logger, client Client, templates map[string]*template.Templ
 	mux.Handle("/users",
 		wrap("listUsers",
 			systemAdminOnly(
-				listUsers(logger, client, templates["users.gotmpl"], siriusURL))))
+				listUsers(client, templates["users.gotmpl"], siriusURL))))
 
 	mux.Handle("/my-details",
 		wrap("myDetails",
-			myDetails(logger, client, templates["my-details.gotmpl"], siriusURL)))
+			myDetails(client, templates["my-details.gotmpl"], siriusURL)))
 
 	mux.Handle("/my-details/edit",
 		wrap("editMyDetails",
-			editMyDetails(logger, client, templates["edit-my-details.gotmpl"], siriusURL)))
+			editMyDetails(client, templates["edit-my-details.gotmpl"], siriusURL)))
 
 	mux.Handle("/change-password",
 		wrap("changePassword",
-			changePassword(logger, client, templates["change-password.gotmpl"], siriusURL)))
+			changePassword(client, templates["change-password.gotmpl"], siriusURL)))
 
 	mux.Handle("/add-user",
 		wrap("addUser",
 			systemAdminOnly(
-				addUser(logger, client, templates["add-user.gotmpl"], siriusURL))))
+				addUser(client, templates["add-user.gotmpl"], siriusURL))))
 
 	mux.Handle("/edit-user/",
 		wrap("editUser",
 			systemAdminOnly(
-				editUser(logger, client, templates["edit-user.gotmpl"], siriusURL))))
+				editUser(client, templates["edit-user.gotmpl"], siriusURL))))
 
 	static := http.FileServer(http.Dir(webDir + "/static"))
 	mux.Handle("/assets/", static)

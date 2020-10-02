@@ -3,8 +3,6 @@ package server
 import (
 	"context"
 	"errors"
-	"io/ioutil"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -42,7 +40,7 @@ func TestGetChangePassword(t *testing.T) {
 	r, _ := http.NewRequest("GET", "/path", nil)
 	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	handler := changePassword(nil, nil, template, "http://sirius")
+	handler := changePassword(nil, template, "http://sirius")
 	err := handler(w, r)
 
 	assert.Nil(err)
@@ -66,7 +64,7 @@ func TestPostChangePassword(t *testing.T) {
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	handler := changePassword(nil, client, template, "http://sirius")
+	handler := changePassword(client, template, "http://sirius")
 	err := handler(w, r)
 
 	assert.Equal(RedirectError("/my-details"), err)
@@ -88,7 +86,7 @@ func TestPostChangePasswordUnauthenticated(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", nil)
 
-	handler := changePassword(nil, client, template, "http://sirius")
+	handler := changePassword(client, template, "http://sirius")
 	err := handler(w, r)
 
 	assert.Equal(sirius.ErrUnauthorized, err)
@@ -105,7 +103,7 @@ func TestPostChangePasswordSiriusError(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", nil)
 
-	handler := changePassword(nil, client, template, "http://sirius")
+	handler := changePassword(client, template, "http://sirius")
 	err := handler(w, r)
 
 	assert.Nil(err)
@@ -130,14 +128,13 @@ func TestPostChangePasswordOtherError(t *testing.T) {
 	assert := assert.New(t)
 
 	expectedErr := errors.New("oops")
-	logger := log.New(ioutil.Discard, "", 0)
 	client := &mockChangePasswordClient{err: expectedErr}
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", nil)
 
-	handler := changePassword(logger, client, template, "http://sirius")
+	handler := changePassword(client, template, "http://sirius")
 	err := handler(w, r)
 
 	assert.Equal(expectedErr, err)

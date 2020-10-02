@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"log"
 	"net/http"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
@@ -18,7 +17,7 @@ type addUserVars struct {
 	Errors    sirius.ValidationErrors
 }
 
-func addUser(logger *log.Logger, client AddUserClient, tmpl Template, siriusURL string) Handler {
+func addUser(client AddUserClient, tmpl Template, siriusURL string) Handler {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		vars := addUserVars{
 			Path:      r.URL.Path,

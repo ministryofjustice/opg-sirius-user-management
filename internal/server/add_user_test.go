@@ -3,8 +3,6 @@ package server
 import (
 	"context"
 	"errors"
-	"io/ioutil"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -47,7 +45,7 @@ func TestGetAddUser(t *testing.T) {
 	r, _ := http.NewRequest("GET", "/path", nil)
 	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	err := addUser(nil, client, template, "http://sirius")(w, r)
+	err := addUser(client, template, "http://sirius")(w, r)
 	assert.Nil(err)
 
 	assert.Equal(0, client.count)
@@ -71,7 +69,7 @@ func TestPostAddUser(t *testing.T) {
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	err := addUser(nil, client, template, "http://sirius")(w, r)
+	err := addUser(client, template, "http://sirius")(w, r)
 	assert.Equal(RedirectError("/users"), err)
 
 	assert.Equal(1, client.count)
@@ -102,7 +100,7 @@ func TestPostAddUserValidationError(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", nil)
 
-	err := addUser(nil, client, template, "http://sirius")(w, r)
+	err := addUser(client, template, "http://sirius")(w, r)
 	assert.Nil(err)
 
 	resp := w.Result()
@@ -123,7 +121,6 @@ func TestPostAddUserOtherError(t *testing.T) {
 	assert := assert.New(t)
 
 	expectedErr := errors.New("oops")
-	logger := log.New(ioutil.Discard, "", 0)
 	client := &mockAddUserClient{}
 	client.err = expectedErr
 	template := &mockTemplate{}
@@ -131,7 +128,7 @@ func TestPostAddUserOtherError(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", nil)
 
-	err := addUser(logger, client, template, "http://sirius")(w, r)
+	err := addUser(client, template, "http://sirius")(w, r)
 	assert.Equal(expectedErr, err)
 
 	assert.Equal(1, client.count)
