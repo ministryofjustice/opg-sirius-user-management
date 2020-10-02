@@ -87,7 +87,6 @@ func TestListUsers(t *testing.T) {
 				Status:      "Active",
 			},
 		},
-		Error: "",
 	}, template.lastVars)
 }
 
@@ -134,7 +133,6 @@ func TestListUsersRequiresSearch(t *testing.T) {
 
 		Search: "",
 		Users:  nil,
-		Error:  "",
 	}, template.lastVars)
 }
 
@@ -181,7 +179,11 @@ func TestListUsersWarnsShortSearches(t *testing.T) {
 
 		Search: "m",
 		Users:  nil,
-		Error:  "Search term must be at least three characters",
+		Errors: sirius.ValidationErrors{
+			"search": {
+				"": "Search term must be at least three characters",
+			},
+		},
 	}, template.lastVars)
 }
 

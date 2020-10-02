@@ -15,7 +15,7 @@ type ChangePasswordClient interface {
 type changePasswordVars struct {
 	Path      string
 	SiriusURL string
-	Error     string
+	Errors    sirius.ValidationErrors
 }
 
 func changePassword(logger *log.Logger, client ChangePasswordClient, tmpl Template, siriusURL string) Handler {
@@ -40,21 +40,23 @@ func changePassword(logger *log.Logger, client ChangePasswordClient, tmpl Templa
 
 			if err == sirius.ErrUnauthorized {
 				return err
+			}
 
-			} else if err != nil {
-				if _, ok := err.(sirius.ClientError); ok {
-					vars.Error = err.Error()
-				} else {
-					logger.Println("changePassword:", err)
-					vars.Error = "Could not connect to Sirius"
+			if _, ok := err.(sirius.ClientError); ok {
+				vars.Errors = sirius.ValidationErrors{
+					"currentpassword": {
+						"": err.Error(),
+					},
 				}
-
 				w.WriteHeader(http.StatusBadRequest)
 				return tmpl.ExecuteTemplate(w, "page", vars)
-
-			} else {
-				return RedirectError("/my-details")
 			}
+
+			if err != nil {
+				return err
+			}
+
+			return RedirectError("/my-details")
 
 		default:
 			return StatusError(http.StatusMethodNotAllowed)
