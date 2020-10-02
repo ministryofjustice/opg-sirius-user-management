@@ -10,6 +10,7 @@ import (
 
 type AddUserClient interface {
 	AddUser(ctx context.Context, cookies []*http.Cookie, email, firstname, surname, organisation string, roles []string) error
+	MyDetails(context.Context, []*http.Cookie) (sirius.MyDetails, error)
 }
 
 type addUserVars struct {
@@ -20,6 +21,22 @@ type addUserVars struct {
 
 func addUser(logger *log.Logger, client AddUserClient, tmpl Template, siriusURL string) Handler {
 	return func(w http.ResponseWriter, r *http.Request) error {
+		myDetails, err := client.MyDetails(r.Context(), r.Cookies())
+		if err != nil {
+			return err
+		}
+
+		permitted := false
+		for _, role := range myDetails.Roles {
+			if role == "System Admin" {
+				permitted = true
+			}
+		}
+
+		if !permitted {
+			return StatusError(http.StatusForbidden)
+		}
+
 		vars := addUserVars{
 			Path:      r.URL.Path,
 			SiriusURL: siriusURL,
