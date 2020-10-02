@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 )
 
@@ -50,7 +51,20 @@ func (c *Client) EditUser(ctx context.Context, cookies []*http.Cookie, user Auth
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("returned non-200 response: %d", resp.StatusCode)
+		var v struct {
+			Message string `json:"message"`
+		}
+
+		err = json.NewDecoder(resp.Body).Decode(&v)
+		if err == nil {
+			return ClientError(v.Message)
+		}
+
+		if err == io.EOF {
+			return fmt.Errorf("returned non-200 response: %d", resp.StatusCode)
+		}
+
+		return err
 	}
 
 	return nil

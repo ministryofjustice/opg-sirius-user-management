@@ -45,7 +45,7 @@ func editUser(logger *log.Logger, client EditUserClient, tmpl Template, siriusUR
 			return tmpl.ExecuteTemplate(w, "page", vars)
 
 		case http.MethodPost:
-			err := client.EditUser(r.Context(), r.Cookies(), sirius.AuthUser{
+			user := sirius.AuthUser{
 				ID:           id,
 				Firstname:    r.PostFormValue("firstname"),
 				Surname:      r.PostFormValue("surname"),
@@ -54,7 +54,21 @@ func editUser(logger *log.Logger, client EditUserClient, tmpl Template, siriusUR
 				Roles:        r.PostForm["roles"],
 				Suspended:    r.PostFormValue("suspended") == "Yes",
 				Locked:       r.PostFormValue("locked") == "Yes",
-			})
+			}
+			err := client.EditUser(r.Context(), r.Cookies(), user)
+
+			if _, ok := err.(sirius.ClientError); ok {
+				vars.User = user
+				vars.Errors = sirius.ValidationErrors{
+					"email": {
+						"": err.Error(),
+					},
+				}
+
+				w.WriteHeader(http.StatusBadRequest)
+				return tmpl.ExecuteTemplate(w, "page", vars)
+			}
+
 			if err != nil {
 				return err
 			}

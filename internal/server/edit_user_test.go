@@ -3,8 +3,6 @@ package server
 import (
 	"context"
 	"errors"
-	"io/ioutil"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -132,11 +130,50 @@ func TestPostEditUser(t *testing.T) {
 	assert.Equal(0, template.count)
 }
 
-func TestPostEditUserError(t *testing.T) {
+func TestPostEditUserClientError(t *testing.T) {
+	assert := assert.New(t)
+
+	client := &mockEditUserClient{}
+	client.editUser.err = sirius.ClientError("something")
+	template := &mockTemplate{}
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("POST", "/edit-user/123", strings.NewReader("email=a&firstname=b&surname=c&organisation=d&roles=e&roles=f&locked=Yes&suspended=No"))
+	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	err := editUser(nil, client, template, "http://sirius")(w, r)
+	assert.Nil(err)
+
+	assert.Equal(1, client.editUser.count)
+	assert.Equal(0, client.user.count)
+
+	assert.Equal(1, template.count)
+	assert.Equal("page", template.lastName)
+	assert.Equal(editUserVars{
+		Path:      "/edit-user/123",
+		SiriusURL: "http://sirius",
+		User: sirius.AuthUser{
+			ID:           123,
+			Email:        "a",
+			Firstname:    "b",
+			Surname:      "c",
+			Organisation: "d",
+			Roles:        []string{"e", "f"},
+			Locked:       true,
+			Suspended:    false,
+		},
+		Errors: sirius.ValidationErrors{
+			"email": {
+				"": "something",
+			},
+		},
+	}, template.lastVars)
+}
+
+func TestPostEditUserOtherError(t *testing.T) {
 	assert := assert.New(t)
 
 	expectedErr := errors.New("oops")
-	logger := log.New(ioutil.Discard, "", 0)
 	client := &mockEditUserClient{}
 	client.editUser.err = expectedErr
 	template := &mockTemplate{}
@@ -144,7 +181,7 @@ func TestPostEditUserError(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/edit-user/123", nil)
 
-	err := editUser(logger, client, template, "http://sirius")(w, r)
+	err := editUser(nil, client, template, "http://sirius")(w, r)
 	assert.Equal(expectedErr, err)
 
 	assert.Equal(1, client.editUser.count)

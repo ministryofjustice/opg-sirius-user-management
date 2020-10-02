@@ -11,6 +11,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+type editUserErrorsResponse struct {
+	Message string `json:"message" pact:"example=oops"`
+}
+
 func TestEditUser(t *testing.T) {
 	pact := &dsl.Pact{
 		Consumer:          "sirius-user-management",
@@ -70,6 +74,27 @@ func TestEditUser(t *testing.T) {
 					})
 			},
 			expectedError: ErrUnauthorized,
+		},
+
+		"Validation Errors": {
+			setup: func() {
+				pact.
+					AddInteraction().
+					Given("A user").
+					UponReceiving("A request to edit the user errors on validation").
+					WithRequest(dsl.Request{
+						Method: http.MethodPut,
+						Path:   dsl.String("/auth/user/123"),
+						Headers: dsl.MapMatcher{
+							"OPG-Bypass-Membrane": dsl.String("1"),
+						},
+					}).
+					WillRespondWith(dsl.Response{
+						Status: http.StatusBadRequest,
+						Body:   dsl.Match(editUserErrorsResponse{}),
+					})
+			},
+			expectedError: ClientError("oops"),
 		},
 
 		"Errors": {
