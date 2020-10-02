@@ -13,7 +13,6 @@ import (
 type EditUserClient interface {
 	User(context.Context, []*http.Cookie, int) (sirius.AuthUser, error)
 	EditUser(context.Context, []*http.Cookie, sirius.AuthUser) error
-	MyDetails(context.Context, []*http.Cookie) (sirius.MyDetails, error)
 }
 
 type editUserVars struct {
@@ -28,22 +27,6 @@ func editUser(logger *log.Logger, client EditUserClient, tmpl Template, siriusUR
 		id, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/edit-user/"))
 		if err != nil {
 			return StatusError(http.StatusNotFound)
-		}
-
-		myDetails, err := client.MyDetails(r.Context(), r.Cookies())
-		if err != nil {
-			return err
-		}
-
-		permitted := false
-		for _, role := range myDetails.Roles {
-			if role == "System Admin" {
-				permitted = true
-			}
-		}
-
-		if !permitted {
-			return StatusError(http.StatusForbidden)
 		}
 
 		vars := editUserVars{

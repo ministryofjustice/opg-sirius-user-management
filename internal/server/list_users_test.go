@@ -12,13 +12,11 @@ import (
 )
 
 type mockListUsersClient struct {
-	count          int
-	myDetailsCount int
-	lastCookies    []*http.Cookie
-	lastSearch     string
-	err            error
-	data           []sirius.User
-	myDetails      sirius.MyDetails
+	count       int
+	lastCookies []*http.Cookie
+	lastSearch  string
+	err         error
+	data        []sirius.User
 }
 
 func (m *mockListUsersClient) SearchUsers(ctx context.Context, cookies []*http.Cookie, search string) ([]sirius.User, error) {
@@ -27,13 +25,6 @@ func (m *mockListUsersClient) SearchUsers(ctx context.Context, cookies []*http.C
 	m.lastSearch = search
 
 	return m.data, m.err
-}
-
-func (m *mockListUsersClient) MyDetails(ctx context.Context, cookies []*http.Cookie) (sirius.MyDetails, error) {
-	m.myDetailsCount += 1
-	m.lastCookies = cookies
-
-	return m.myDetails, m.err
 }
 
 func TestListUsers(t *testing.T) {
@@ -48,9 +39,6 @@ func TestListUsers(t *testing.T) {
 		},
 	}
 	client := &mockListUsersClient{
-		myDetails: sirius.MyDetails{
-			Roles: []string{"System Admin"},
-		},
 		data: data,
 	}
 	template := &mockTemplate{}
@@ -68,7 +56,6 @@ func TestListUsers(t *testing.T) {
 	assert.Equal(http.StatusOK, resp.StatusCode)
 	assert.Equal(r.Cookies(), client.lastCookies)
 
-	assert.Equal(1, client.myDetailsCount)
 	assert.Equal(1, client.count)
 	assert.Equal("milo", client.lastSearch)
 
@@ -102,9 +89,6 @@ func TestListUsersRequiresSearch(t *testing.T) {
 		},
 	}
 	client := &mockListUsersClient{
-		myDetails: sirius.MyDetails{
-			Roles: []string{"System Admin"},
-		},
 		data: data,
 	}
 	template := &mockTemplate{}
@@ -120,9 +104,7 @@ func TestListUsersRequiresSearch(t *testing.T) {
 
 	resp := w.Result()
 	assert.Equal(http.StatusOK, resp.StatusCode)
-	assert.Equal(r.Cookies(), client.lastCookies)
 
-	assert.Equal(1, client.myDetailsCount)
 	assert.Equal(0, client.count)
 
 	assert.Equal(1, template.count)
@@ -148,9 +130,6 @@ func TestListUsersWarnsShortSearches(t *testing.T) {
 		},
 	}
 	client := &mockListUsersClient{
-		myDetails: sirius.MyDetails{
-			Roles: []string{"System Admin"},
-		},
 		data: data,
 	}
 	template := &mockTemplate{}
@@ -166,9 +145,7 @@ func TestListUsersWarnsShortSearches(t *testing.T) {
 
 	resp := w.Result()
 	assert.Equal(http.StatusOK, resp.StatusCode)
-	assert.Equal(r.Cookies(), client.lastCookies)
 
-	assert.Equal(1, client.myDetailsCount)
 	assert.Equal(0, client.count)
 
 	assert.Equal(1, template.count)
@@ -187,54 +164,20 @@ func TestListUsersWarnsShortSearches(t *testing.T) {
 	}, template.lastVars)
 }
 
-func TestListUsersUnauthenticated(t *testing.T) {
-	assert := assert.New(t)
-
-	client := &mockListUsersClient{err: sirius.ErrUnauthorized}
-	template := &mockTemplate{}
-
-	w := httptest.NewRecorder()
-	r, _ := http.NewRequest("GET", "", nil)
-
-	handler := listUsers(nil, client, template, "http://sirius")
-	err := handler(w, r)
-
-	assert.Equal(sirius.ErrUnauthorized, err)
-
-	assert.Equal(0, template.count)
-}
-
-func TestListUsersMissingRole(t *testing.T) {
-	assert := assert.New(t)
-
-	client := &mockListUsersClient{}
-	template := &mockTemplate{}
-
-	w := httptest.NewRecorder()
-	r, _ := http.NewRequest("GET", "", nil)
-
-	handler := listUsers(nil, client, template, "http://sirius")
-	err := handler(w, r)
-
-	assert.Equal(StatusError(http.StatusForbidden), err)
-
-	assert.Equal(0, template.count)
-}
-
 func TestListUsersSiriusErrors(t *testing.T) {
 	assert := assert.New(t)
 
-	client := &mockListUsersClient{err: errors.New("err")}
+	expectedErr := errors.New("err")
+	client := &mockListUsersClient{err: expectedErr}
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
-	r, _ := http.NewRequest("GET", "", nil)
+	r, _ := http.NewRequest("GET", "/?search=long", nil)
 
 	handler := listUsers(nil, client, template, "http://sirius")
 	err := handler(w, r)
 
-	assert.Equal("err", err.Error())
-
+	assert.Equal(expectedErr, err)
 	assert.Equal(0, template.count)
 }
 

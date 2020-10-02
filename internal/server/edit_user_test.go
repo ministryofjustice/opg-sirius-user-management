@@ -29,13 +29,6 @@ type mockEditUserClient struct {
 		lastUser    sirius.AuthUser
 		err         error
 	}
-
-	myDetails struct {
-		count       int
-		lastCookies []*http.Cookie
-		err         error
-		roles       []string
-	}
 }
 
 func (m *mockEditUserClient) User(ctx context.Context, cookies []*http.Cookie, id int) (sirius.AuthUser, error) {
@@ -54,18 +47,10 @@ func (m *mockEditUserClient) EditUser(ctx context.Context, cookies []*http.Cooki
 	return m.editUser.err
 }
 
-func (m *mockEditUserClient) MyDetails(ctx context.Context, cookies []*http.Cookie) (sirius.MyDetails, error) {
-	m.myDetails.count += 1
-	m.myDetails.lastCookies = cookies
-
-	return sirius.MyDetails{Roles: m.myDetails.roles}, m.myDetails.err
-}
-
 func TestGetEditUser(t *testing.T) {
 	assert := assert.New(t)
 
 	client := &mockEditUserClient{}
-	client.myDetails.roles = []string{"System Admin"}
 	client.user.data = sirius.AuthUser{DisplayName: "test"}
 	template := &mockTemplate{}
 
@@ -76,7 +61,6 @@ func TestGetEditUser(t *testing.T) {
 	err := editUser(nil, client, template, "http://sirius")(w, r)
 	assert.Nil(err)
 
-	assert.Equal(1, client.myDetails.count)
 	assert.Equal(1, client.user.count)
 	assert.Equal(123, client.user.lastID)
 	assert.Equal(0, client.editUser.count)
@@ -88,26 +72,6 @@ func TestGetEditUser(t *testing.T) {
 		SiriusURL: "http://sirius",
 		User:      client.user.data,
 	}, template.lastVars)
-}
-
-func TestGetEditUserMissingRole(t *testing.T) {
-	assert := assert.New(t)
-
-	client := &mockEditUserClient{}
-	client.myDetails.roles = []string{}
-	template := &mockTemplate{}
-
-	w := httptest.NewRecorder()
-	r, _ := http.NewRequest("GET", "/edit-user/123", nil)
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
-
-	err := editUser(nil, client, template, "http://sirius")(w, r)
-
-	assert.Equal(StatusError(http.StatusForbidden), err)
-
-	assert.Equal(1, client.myDetails.count)
-	assert.Equal(0, client.editUser.count)
-	assert.Equal(0, template.count)
 }
 
 func TestGetEditUserBadPath(t *testing.T) {
@@ -129,7 +93,6 @@ func TestGetEditUserBadPath(t *testing.T) {
 			err := editUser(nil, client, template, "http://sirius")(w, r)
 			assert.Equal(StatusError(http.StatusNotFound), err)
 
-			assert.Equal(0, client.myDetails.count)
 			assert.Equal(0, client.user.count)
 			assert.Equal(0, client.editUser.count)
 			assert.Equal(0, template.count)
@@ -141,7 +104,6 @@ func TestPostEditUser(t *testing.T) {
 	assert := assert.New(t)
 
 	client := &mockEditUserClient{}
-	client.myDetails.roles = []string{"System Admin"}
 	client.user.data = sirius.AuthUser{DisplayName: "test"}
 	template := &mockTemplate{}
 
@@ -152,9 +114,6 @@ func TestPostEditUser(t *testing.T) {
 
 	err := editUser(nil, client, template, "http://sirius")(w, r)
 	assert.Equal(RedirectError("/users"), err)
-
-	assert.Equal(1, client.myDetails.count)
-	assert.Equal(r.Cookies(), client.myDetails.lastCookies)
 
 	assert.Equal(1, client.editUser.count)
 	assert.Equal(r.Cookies(), client.editUser.lastCookies)
@@ -173,36 +132,12 @@ func TestPostEditUser(t *testing.T) {
 	assert.Equal(0, template.count)
 }
 
-func TestPostEditUserMissingRole(t *testing.T) {
-	assert := assert.New(t)
-
-	client := &mockEditUserClient{}
-	client.myDetails.roles = []string{}
-	template := &mockTemplate{}
-
-	w := httptest.NewRecorder()
-	r, _ := http.NewRequest("POST", "/edit-user/123", strings.NewReader(""))
-	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
-
-	err := editUser(nil, client, template, "http://sirius")(w, r)
-	assert.Equal(StatusError(http.StatusForbidden), err)
-
-	assert.Equal(1, client.myDetails.count)
-	assert.Equal(r.Cookies(), client.myDetails.lastCookies)
-
-	assert.Equal(0, client.user.count)
-	assert.Equal(0, client.editUser.count)
-	assert.Equal(0, template.count)
-}
-
 func TestPostEditUserError(t *testing.T) {
 	assert := assert.New(t)
 
 	expectedErr := errors.New("oops")
 	logger := log.New(ioutil.Discard, "", 0)
 	client := &mockEditUserClient{}
-	client.myDetails.roles = []string{"System Admin"}
 	client.editUser.err = expectedErr
 	template := &mockTemplate{}
 
@@ -212,29 +147,7 @@ func TestPostEditUserError(t *testing.T) {
 	err := editUser(logger, client, template, "http://sirius")(w, r)
 	assert.Equal(expectedErr, err)
 
-	assert.Equal(1, client.myDetails.count)
 	assert.Equal(1, client.editUser.count)
-	assert.Equal(0, client.user.count)
-	assert.Equal(0, template.count)
-}
-
-func TestPostEditUserMyDetailsError(t *testing.T) {
-	assert := assert.New(t)
-
-	expectedErr := errors.New("oops")
-	logger := log.New(ioutil.Discard, "", 0)
-	client := &mockEditUserClient{}
-	client.myDetails.err = expectedErr
-	template := &mockTemplate{}
-
-	w := httptest.NewRecorder()
-	r, _ := http.NewRequest("POST", "/edit-user/123", nil)
-
-	err := editUser(logger, client, template, "http://sirius")(w, r)
-	assert.Equal(expectedErr, err)
-
-	assert.Equal(1, client.myDetails.count)
-	assert.Equal(0, client.editUser.count)
 	assert.Equal(0, client.user.count)
 	assert.Equal(0, template.count)
 }
