@@ -13,7 +13,7 @@
     <div class="govuk-grid-column-two-thirds">
       <h1 class="govuk-heading-xl">Add new user</h1>
 
-      <form class="form" action="/add-permissions" method="post">
+      <form class="form" action="/home" method="post">
 
         {{ govukInput({
           id: "f-email",
@@ -49,8 +49,31 @@
           }
         }) }}
 
+        {{ govukRadios({
+          classes: "govuk-radios--inline",
+          idPrefix: "organisation",
+          name: "organisation",
+          fieldset: {
+            legend: {
+              text: "Organisation",
+              classes: "govuk-fieldset__legend--m"
+            }
+          },
+          items: [
+            {
+              text: "COP User"
+            },
+            {
+              text: "OPG User",
+              selected: true
+            }
+          ]
+        }) }}
+
+        {% include './includes/roles-control.html' %}
+
         {{ govukButton({
-          text: "Continue"
+          text: "Add user"
         }) }}
 
       </form>
