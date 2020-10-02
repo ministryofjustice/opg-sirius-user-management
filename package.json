@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "license": "MIT",
   "scripts": {
-    "build": "webpack"
+    "build": "webpack",
+    "heroku-postbuild": "cd prototype && yarn install && node ./node_modules/gulp/bin/gulp generate-assets"
   },
   "dependencies": {
     "@ministryofjustice/frontend": "^0.0.19-alpha",
