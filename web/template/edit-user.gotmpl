@@ -5,7 +5,7 @@
 {{ end }}
 
 {{ define "title" }}
-  {{ if .Errors }}Error: {{ end }}Edit {{ .User.DisplayName }}
+  {{ if .Errors }}Error: {{ end }}Edit {{ .User.Firstname }} {{ .User.Surname }}
 {{ end }}
 
 {{ define "main" }}
@@ -13,7 +13,7 @@
     <div class="govuk-grid-column-two-thirds">
       {{ template "error-summary" .Errors }}
 
-      <h1 class="govuk-heading-xl">Edit {{ .User.DisplayName }}</h1>
+      <h1 class="govuk-heading-xl">Edit {{ .User.Firstname }} {{ .User.Surname }}</h1>
       <form class="form" method="post">
         <div class="govuk-form-group {{ if .Errors.email }}govuk-form-group--error{{ end }}">
           <label class="govuk-label" for="f-email">Email address</label>

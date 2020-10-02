@@ -49,7 +49,7 @@ func TestGetEditUser(t *testing.T) {
 	assert := assert.New(t)
 
 	client := &mockEditUserClient{}
-	client.user.data = sirius.AuthUser{DisplayName: "test"}
+	client.user.data = sirius.AuthUser{Firstname: "test"}
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
@@ -102,7 +102,7 @@ func TestPostEditUser(t *testing.T) {
 	assert := assert.New(t)
 
 	client := &mockEditUserClient{}
-	client.user.data = sirius.AuthUser{DisplayName: "test"}
+	client.user.data = sirius.AuthUser{Firstname: "test"}
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()

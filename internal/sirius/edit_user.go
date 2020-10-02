@@ -26,7 +26,7 @@ func (c *Client) EditUser(ctx context.Context, cookies []*http.Cookie, user Auth
 		Firstname: user.Firstname,
 		Surname:   user.Surname,
 		Email:     user.Email,
-		Roles:     append([]string{user.Organisation}, user.Roles...),
+		Roles:     append(user.Roles, user.Organisation),
 		Locked:    user.Locked,
 		Suspended: user.Suspended,
 	})

@@ -11,14 +11,13 @@ import (
 )
 
 type exampleAuthUser struct {
-	ID          int      `json:"id" pact:"example=123"`
-	DisplayName string   `json:"displayName" pact:"example=system admin"`
-	Firstname   string   `json:"firstname" pact:"example=system"`
-	Surname     string   `json:"surname" pact:"example=admin"`
-	Email       string   `json:"email" pact:"example=system.admin@opgtest.com"`
-	Roles       []string `json:"roles"`
-	Locked      bool     `json:"locked" pact:"example=true"`
-	Suspended   bool     `json:"suspended" pact:"example=false"`
+	ID        int      `json:"id" pact:"example=123"`
+	Firstname string   `json:"firstname" pact:"example=system"`
+	Surname   string   `json:"surname" pact:"example=admin"`
+	Email     string   `json:"email" pact:"example=system.admin@opgtest.com"`
+	Roles     []string `json:"roles"`
+	Locked    bool     `json:"locked" pact:"example=true"`
+	Suspended bool     `json:"suspended" pact:"example=false"`
 }
 
 func TestUser(t *testing.T) {
@@ -67,10 +66,9 @@ func TestUser(t *testing.T) {
 				ID:           123,
 				Firstname:    "system",
 				Surname:      "admin",
-				DisplayName:  "system admin",
 				Email:        "system.admin@opgtest.com",
-				Organisation: "string",
-				Roles:        []string{},
+				Organisation: "",
+				Roles:        []string{"string"},
 				Locked:       true,
 				Suspended:    false,
 			},

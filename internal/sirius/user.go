@@ -11,7 +11,6 @@ import (
 
 type AuthUser struct {
 	ID           int
-	DisplayName  string
 	Firstname    string
 	Surname      string
 	Email        string
@@ -22,14 +21,13 @@ type AuthUser struct {
 }
 
 type authUserResponse struct {
-	ID          int      `json:"id"`
-	DisplayName string   `json:"displayName"`
-	Firstname   string   `json:"firstname"`
-	Surname     string   `json:"surname"`
-	Email       string   `json:"email"`
-	Roles       []string `json:"roles"`
-	Locked      bool     `json:"locked"`
-	Suspended   bool     `json:"suspended"`
+	ID        int      `json:"id"`
+	Firstname string   `json:"firstname"`
+	Surname   string   `json:"surname"`
+	Email     string   `json:"email"`
+	Roles     []string `json:"roles"`
+	Locked    bool     `json:"locked"`
+	Suspended bool     `json:"suspended"`
 }
 
 func (c *Client) User(ctx context.Context, cookies []*http.Cookie, id int) (AuthUser, error) {
@@ -56,18 +54,20 @@ func (c *Client) User(ctx context.Context, cookies []*http.Cookie, id int) (Auth
 	err = json.NewDecoder(resp.Body).Decode(&v)
 
 	user := AuthUser{
-		ID:          v.ID,
-		DisplayName: v.DisplayName,
-		Firstname:   v.Firstname,
-		Surname:     v.Surname,
-		Email:       v.Email,
-		Locked:      v.Locked,
-		Suspended:   v.Suspended,
+		ID:        v.ID,
+		Firstname: v.Firstname,
+		Surname:   v.Surname,
+		Email:     v.Email,
+		Locked:    v.Locked,
+		Suspended: v.Suspended,
 	}
 
-	if len(v.Roles) > 0 {
-		user.Organisation = v.Roles[0]
-		user.Roles = v.Roles[1:]
+	for _, role := range v.Roles {
+		if role == "OPG User" || role == "COP User" {
+			user.Organisation = role
+		} else {
+			user.Roles = append(user.Roles, role)
+		}
 	}
 
 	return user, err

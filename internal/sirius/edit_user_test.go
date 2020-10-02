@@ -45,6 +45,15 @@ func TestEditUser(t *testing.T) {
 							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
 							"OPG-Bypass-Membrane": dsl.String("1"),
 						},
+						Body: map[string]interface{}{
+							"id":        123,
+							"firstname": "a",
+							"surname":   "b",
+							"email":     "c",
+							"roles":     []string{"e", "f", "d"},
+							"locked":    false,
+							"suspended": true,
+						},
 					}).
 					WillRespondWith(dsl.Response{
 						Status: http.StatusOK,
