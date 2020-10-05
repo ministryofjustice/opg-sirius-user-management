@@ -48,7 +48,6 @@ func editUser(client EditUserClient, tmpl Template, siriusURL string) Handler {
 				ID:           id,
 				Firstname:    r.PostFormValue("firstname"),
 				Surname:      r.PostFormValue("surname"),
-				Email:        r.PostFormValue("email"),
 				Organisation: r.PostFormValue("organisation"),
 				Roles:        r.PostForm["roles"],
 				Suspended:    r.PostFormValue("suspended") == "Yes",
@@ -59,7 +58,7 @@ func editUser(client EditUserClient, tmpl Template, siriusURL string) Handler {
 			if _, ok := err.(sirius.ClientError); ok {
 				vars.User = user
 				vars.Errors = sirius.ValidationErrors{
-					"email": {
+					"firstname": {
 						"": err.Error(),
 					},
 				}

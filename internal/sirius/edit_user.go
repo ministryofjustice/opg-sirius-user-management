@@ -13,7 +13,6 @@ type editUserRequest struct {
 	ID        int      `json:"id"`
 	Firstname string   `json:"firstname"`
 	Surname   string   `json:"surname"`
-	Email     string   `json:"email"`
 	Roles     []string `json:"roles"`
 	Locked    bool     `json:"locked"`
 	Suspended bool     `json:"suspended"`
@@ -25,7 +24,6 @@ func (c *Client) EditUser(ctx context.Context, cookies []*http.Cookie, user Auth
 		ID:        user.ID,
 		Firstname: user.Firstname,
 		Surname:   user.Surname,
-		Email:     user.Email,
 		Roles:     append(user.Roles, user.Organisation),
 		Locked:    user.Locked,
 		Suspended: user.Suspended,

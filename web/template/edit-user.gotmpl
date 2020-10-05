@@ -15,14 +15,9 @@
 
       <h1 class="govuk-heading-xl">Edit {{ .User.Firstname }} {{ .User.Surname }}</h1>
       <form class="form" method="post">
-        <div class="govuk-form-group {{ if .Errors.email }}govuk-form-group--error{{ end }}">
+        <div class="govuk-form-group">
           <label class="govuk-label" for="f-email">Email address</label>
-          {{ range .Errors.email }}
-            <span class="govuk-error-message">
-              <span class="govuk-visually-hidden">Error:</span> {{ . }}
-            </span>
-          {{ end }}
-          <input class="govuk-input {{ if .Errors.email }}govuk-input--error{{ end }}" id="f-email" name="email" type="text" value="{{ .User.Email }}">
+          <input class="govuk-input" id="f-email" name="email" type="text" value="{{ .User.Email }}" disabled>
         </div>
 
         <div class="govuk-form-group {{ if .Errors.firstname }}govuk-form-group--error{{ end }}">

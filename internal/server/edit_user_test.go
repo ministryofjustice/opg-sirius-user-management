@@ -117,7 +117,6 @@ func TestPostEditUser(t *testing.T) {
 	assert.Equal(r.Cookies(), client.editUser.lastCookies)
 	assert.Equal(sirius.AuthUser{
 		ID:           123,
-		Email:        "a",
 		Firstname:    "b",
 		Surname:      "c",
 		Organisation: "d",
@@ -154,7 +153,6 @@ func TestPostEditUserClientError(t *testing.T) {
 		SiriusURL: "http://sirius",
 		User: sirius.AuthUser{
 			ID:           123,
-			Email:        "a",
 			Firstname:    "b",
 			Surname:      "c",
 			Organisation: "d",
@@ -163,7 +161,7 @@ func TestPostEditUserClientError(t *testing.T) {
 			Suspended:    false,
 		},
 		Errors: sirius.ValidationErrors{
-			"email": {
+			"firstname": {
 				"": "something",
 			},
 		},
