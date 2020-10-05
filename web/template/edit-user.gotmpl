@@ -13,11 +13,16 @@
     <div class="govuk-grid-column-two-thirds">
       {{ template "error-summary" .Errors }}
 
+      {{ if .Success }}
+        {{ template "success-banner" "You have successfully edited a user." }}
+      {{ end }}
+
       <h1 class="govuk-heading-xl">Edit {{ .User.Firstname }} {{ .User.Surname }}</h1>
       <form class="form" method="post">
         <div class="govuk-form-group">
           <label class="govuk-label" for="f-email">Email address</label>
-          <input class="govuk-input" id="f-email" name="email" type="text" value="{{ .User.Email }}" disabled>
+          <input class="govuk-input" id="f-email" type="text" value="{{ .User.Email }}" disabled>
+          <input name="email" type="hidden" value="{{ .User.Email }}">
         </div>
 
         <div class="govuk-form-group {{ if .Errors.firstname }}govuk-form-group--error{{ end }}">

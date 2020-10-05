@@ -18,6 +18,7 @@ type editUserVars struct {
 	Path      string
 	SiriusURL string
 	User      sirius.AuthUser
+	Success   bool
 	Errors    sirius.ValidationErrors
 }
 
@@ -44,7 +45,7 @@ func editUser(client EditUserClient, tmpl Template, siriusURL string) Handler {
 			return tmpl.ExecuteTemplate(w, "page", vars)
 
 		case http.MethodPost:
-			user := sirius.AuthUser{
+			vars.User = sirius.AuthUser{
 				ID:           id,
 				Firstname:    r.PostFormValue("firstname"),
 				Surname:      r.PostFormValue("surname"),
@@ -53,10 +54,9 @@ func editUser(client EditUserClient, tmpl Template, siriusURL string) Handler {
 				Suspended:    r.PostFormValue("suspended") == "Yes",
 				Locked:       r.PostFormValue("locked") == "Yes",
 			}
-			err := client.EditUser(r.Context(), r.Cookies(), user)
+			err := client.EditUser(r.Context(), r.Cookies(), vars.User)
 
 			if _, ok := err.(sirius.ClientError); ok {
-				vars.User = user
 				vars.Errors = sirius.ValidationErrors{
 					"firstname": {
 						"": err.Error(),
@@ -71,7 +71,9 @@ func editUser(client EditUserClient, tmpl Template, siriusURL string) Handler {
 				return err
 			}
 
-			return RedirectError("/users")
+			vars.Success = true
+			vars.User.Email = r.PostFormValue("email")
+			return tmpl.ExecuteTemplate(w, "page", vars)
 
 		default:
 			return StatusError(http.StatusMethodNotAllowed)

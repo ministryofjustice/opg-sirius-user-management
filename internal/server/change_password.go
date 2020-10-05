@@ -14,6 +14,7 @@ type ChangePasswordClient interface {
 type changePasswordVars struct {
 	Path      string
 	SiriusURL string
+	Success   bool
 	Errors    sirius.ValidationErrors
 }
 
@@ -55,7 +56,8 @@ func changePassword(client ChangePasswordClient, tmpl Template, siriusURL string
 				return err
 			}
 
-			return RedirectError("/my-details")
+			vars.Success = true
+			return tmpl.ExecuteTemplate(w, "page", vars)
 
 		default:
 			return StatusError(http.StatusMethodNotAllowed)

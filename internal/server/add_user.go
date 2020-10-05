@@ -14,6 +14,7 @@ type AddUserClient interface {
 type addUserVars struct {
 	Path      string
 	SiriusURL string
+	Success   bool
 	Errors    sirius.ValidationErrors
 }
 
@@ -50,7 +51,8 @@ func addUser(client AddUserClient, tmpl Template, siriusURL string) Handler {
 				return err
 			}
 
-			return RedirectError("/users")
+			vars.Success = true
+			return tmpl.ExecuteTemplate(w, "page", vars)
 
 		default:
 			return StatusError(http.StatusMethodNotAllowed)
