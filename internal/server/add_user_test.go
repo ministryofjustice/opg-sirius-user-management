@@ -70,7 +70,7 @@ func TestPostAddUser(t *testing.T) {
 	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
 	err := addUser(client, template, "http://sirius")(w, r)
-	assert.Equal(RedirectError("/users"), err)
+	assert.Nil(err)
 
 	assert.Equal(1, client.count)
 	assert.Equal(r.Cookies(), client.lastCookies)
@@ -80,7 +80,13 @@ func TestPostAddUser(t *testing.T) {
 	assert.Equal("d", client.lastOrganisation)
 	assert.Equal([]string{"e", "f"}, client.lastRoles)
 
-	assert.Equal(0, template.count)
+	assert.Equal(1, template.count)
+	assert.Equal("page", template.lastName)
+	assert.Equal(addUserVars{
+		Path:      "/path",
+		SiriusURL: "http://sirius",
+		Success:   true,
+	}, template.lastVars)
 }
 
 func TestPostAddUserValidationError(t *testing.T) {

@@ -14,21 +14,16 @@ type EditMyDetailsClient interface {
 }
 
 type editMyDetailsVars struct {
-	Path      string
-	SiriusURL string
-	Errors    sirius.ValidationErrors
-
+	Path        string
+	SiriusURL   string
+	Success     bool
+	Errors      sirius.ValidationErrors
 	PhoneNumber string
 }
 
 func editMyDetails(client EditMyDetailsClient, tmpl Template, siriusURL string) Handler {
 	return func(w http.ResponseWriter, r *http.Request) error {
-		var validationErrors sirius.ValidationErrors
-
-		switch r.Method {
-		case http.MethodGet, http.MethodPost:
-			break
-		default:
+		if r.Method != http.MethodGet && r.Method != http.MethodPost {
 			return StatusError(http.StatusMethodNotAllowed)
 		}
 
@@ -45,29 +40,24 @@ func editMyDetails(client EditMyDetailsClient, tmpl Template, siriusURL string) 
 			return err
 		}
 
-		phoneNumber := myDetails.PhoneNumber
+		vars := editMyDetailsVars{
+			Path:        r.URL.Path,
+			SiriusURL:   siriusURL,
+			PhoneNumber: myDetails.PhoneNumber,
+		}
 
 		if r.Method == http.MethodPost {
-			var err error
-
-			phoneNumber = r.FormValue("phonenumber")
-			err = client.EditMyDetails(r.Context(), r.Cookies(), myDetails.ID, phoneNumber)
+			vars.PhoneNumber = r.FormValue("phonenumber")
+			err := client.EditMyDetails(r.Context(), r.Cookies(), myDetails.ID, vars.PhoneNumber)
 
 			if e, ok := err.(*sirius.ValidationError); ok {
-				validationErrors = e.Errors
+				vars.Errors = e.Errors
 				w.WriteHeader(http.StatusBadRequest)
 			} else if err != nil {
 				return err
 			} else {
-				return RedirectError("/my-details")
+				vars.Success = true
 			}
-		}
-
-		vars := editMyDetailsVars{
-			Path:        r.URL.Path,
-			SiriusURL:   siriusURL,
-			Errors:      validationErrors,
-			PhoneNumber: phoneNumber,
 		}
 
 		return tmpl.ExecuteTemplate(w, "page", vars)

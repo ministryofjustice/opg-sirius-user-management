@@ -173,7 +173,7 @@ func TestPostEditMyDetails(t *testing.T) {
 	handler := editMyDetails(client, template, "http://sirius")
 	err := handler(w, r)
 
-	assert.Equal(RedirectError("/my-details"), err)
+	assert.Nil(err)
 
 	assert.Equal(1, client.count)
 	assert.Equal(1, client.saveCount)
@@ -183,7 +183,14 @@ func TestPostEditMyDetails(t *testing.T) {
 	assert.Equal(31, client.lastArguments.ID)
 	assert.Equal("0189202", client.lastArguments.PhoneNumber)
 
-	assert.Equal(0, template.count)
+	assert.Equal(1, template.count)
+	assert.Equal("page", template.lastName)
+	assert.Equal(editMyDetailsVars{
+		Path:        "/path",
+		SiriusURL:   "http://sirius",
+		Success:     true,
+		PhoneNumber: "0189202",
+	}, template.lastVars)
 }
 
 func TestPostEditMyDetailsUnauthenticated(t *testing.T) {

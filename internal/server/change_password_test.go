@@ -67,14 +67,19 @@ func TestPostChangePassword(t *testing.T) {
 	handler := changePassword(client, template, "http://sirius")
 	err := handler(w, r)
 
-	assert.Equal(RedirectError("/my-details"), err)
+	assert.Nil(err)
 
 	assert.Equal(r.Cookies(), client.lastCookies)
 	assert.Equal("a", client.lastExistingPassword)
 	assert.Equal("b", client.lastNewPassword)
 	assert.Equal("c", client.lastNewPasswordConfirm)
 
-	assert.Equal(0, template.count)
+	assert.Equal("page", template.lastName)
+	assert.Equal(changePasswordVars{
+		Path:      "/path",
+		SiriusURL: "http://sirius",
+		Success:   true,
+	}, template.lastVars)
 }
 
 func TestPostChangePasswordUnauthenticated(t *testing.T) {

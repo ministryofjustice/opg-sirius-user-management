@@ -111,7 +111,7 @@ func TestPostEditUser(t *testing.T) {
 	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
 	err := editUser(client, template, "http://sirius")(w, r)
-	assert.Equal(RedirectError("/users"), err)
+	assert.Nil(err)
 
 	assert.Equal(1, client.editUser.count)
 	assert.Equal(r.Cookies(), client.editUser.lastCookies)
@@ -126,7 +126,24 @@ func TestPostEditUser(t *testing.T) {
 	}, client.editUser.lastUser)
 
 	assert.Equal(0, client.user.count)
-	assert.Equal(0, template.count)
+
+	assert.Equal(1, template.count)
+	assert.Equal("page", template.lastName)
+	assert.Equal(editUserVars{
+		Path:      "/edit-user/123",
+		SiriusURL: "http://sirius",
+		Success:   true,
+		User: sirius.AuthUser{
+			ID:           123,
+			Email:        "a",
+			Firstname:    "b",
+			Surname:      "c",
+			Organisation: "d",
+			Roles:        []string{"e", "f"},
+			Locked:       true,
+			Suspended:    false,
+		},
+	}, template.lastVars)
 }
 
 func TestPostEditUserClientError(t *testing.T) {
