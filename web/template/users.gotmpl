@@ -60,7 +60,7 @@
             </strong>
           </td>
           <td class="govuk-table__cell">
-            <a href="/edit-user/{{ .ID }}" class="govuk-link">Edit</a>
+            <a href="{{ prefix (printf "/edit-user/%d" .ID) }}" class="govuk-link">Edit</a>
           </td>
         </tr>
       {{ end }}
