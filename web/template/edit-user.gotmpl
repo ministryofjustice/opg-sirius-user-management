@@ -1,0 +1,181 @@
+{{ template "page" . }}
+
+{{ define "backlink" }}
+  <a class="govuk-back-link" href="{{ prefix "/users" }}">Back</a>
+{{ end }}
+
+{{ define "title" }}
+  {{ if .Errors }}Error: {{ end }}Edit {{ .User.Firstname }} {{ .User.Surname }}
+{{ end }}
+
+{{ define "main" }}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {{ template "error-summary" .Errors }}
+
+      <h1 class="govuk-heading-xl">Edit {{ .User.Firstname }} {{ .User.Surname }}</h1>
+      <form class="form" method="post">
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="f-email">Email address</label>
+          <input class="govuk-input" id="f-email" name="email" type="text" value="{{ .User.Email }}" disabled>
+        </div>
+
+        <div class="govuk-form-group {{ if .Errors.firstname }}govuk-form-group--error{{ end }}">
+          <label class="govuk-label" for="f-firstname">First name</label>
+          {{ range .Errors.firstname }}
+            <span class="govuk-error-message">
+              <span class="govuk-visually-hidden">Error:</span> {{ . }}
+            </span>
+          {{ end }}
+          <input class="govuk-input govuk-!-width-two-thirds {{ if .Errors.firstname }}govuk-input--error{{ end }}" id="f-firstname" name="firstname" type="text" autocomplete="name" spellcheck="false" value="{{ .User.Firstname }}">
+        </div>
+
+        <div class="govuk-form-group {{ if .Errors.surname }}govuk-form-group--error{{ end }}">
+          <label class="govuk-label" for="f-surname">Last name</label>
+          {{ range .Errors.surname }}
+            <span class="govuk-error-message">
+              <span class="govuk-visually-hidden">Error:</span> {{ . }}
+            </span>
+          {{ end }}
+          <input class="govuk-input govuk-!-width-two-thirds {{ if .Errors.surname }}govuk-input--error{{ end }}" id="f-surname" name="surname" type="text" autocomplete="name" spellcheck="false" value="{{ .User.Surname }}">
+        </div>
+        
+        <div class="govuk-form-group">
+          <fieldset class="govuk-fieldset">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">Suspended</legend>
+            <div class="govuk-radios govuk-radios--inline">
+              <div class="govuk-radios__item">
+                <input class="govuk-radios__input" id="f-suspended" name="suspended" type="radio" value="Yes" {{ if .User.Suspended }}checked{{ end }}>
+                <label class="govuk-label govuk-radios__label" for="f-suspended">Yes</label>
+              </div>
+              <div class="govuk-radios__item">
+                <input class="govuk-radios__input" id="f-suspended-2" name="suspended" type="radio" value="No" {{ if not .User.Suspended }}checked{{ end }}>
+                <label class="govuk-label govuk-radios__label" for="f-suspended-2">No</label>
+              </div>
+            </div>
+          </fieldset>
+        </div>
+        
+        <div class="govuk-form-group">
+          <fieldset class="govuk-fieldset">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">Organisation</legend>
+            <div class="govuk-radios govuk-radios--inline">
+              <div class="govuk-radios__item">
+                <input class="govuk-radios__input" id="f-organisation" name="organisation" type="radio" value="COP User" {{ if eq .User.Organisation "COP User" }}checked{{ end }}>
+                <label class="govuk-label govuk-radios__label" for="f-organisation">
+                  COP User
+                </label>
+              </div>
+              <div class="govuk-radios__item">
+                <input class="govuk-radios__input" id="f-organisation-2" name="organisation" type="radio" value="OPG User" {{ if eq .User.Organisation "OPG User" }}checked{{ end }}>
+                <label class="govuk-label govuk-radios__label" for="f-organisation-2">
+                  OPG User
+                </label>
+              </div>
+            </div>
+          </fieldset>
+        </div>
+
+        <div class="govuk-form-group {{ if .Errors.roles }}govuk-form-group--error{{ end }}">
+          <fieldset class="govuk-fieldset">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">Roles</legend>
+            {{ range .Errors.roles }}
+              <span class="govuk-error-message">
+                <span class="govuk-visually-hidden">Error:</span> {{ . }}
+              </span>
+            {{ end }}
+            
+            <div class="govuk-checkboxes govuk-checkboxes--small">
+              <div class="govuk-checkboxes__item">
+                <input class="govuk-checkboxes__input" id="f-roles" name="roles" type="checkbox" value="Case Manager" {{ if contains .User.Roles "Case Manager" }}checked{{ end }}>
+                <label class="govuk-label govuk-checkboxes__label" for="f-roles">Case Manager</label>
+              </div>
+              
+              <div class="govuk-checkboxes__item">
+                <input class="govuk-checkboxes__input" id="f-roles-2" name="roles" type="checkbox" value="Contact Centre User" {{ if contains .User.Roles "Contact Centre User" }}checked{{ end }}>
+                <label class="govuk-label govuk-checkboxes__label" for="f-roles-2">Contact Centre User</label>
+              </div>
+              
+              <div class="govuk-checkboxes__item">
+                <input class="govuk-checkboxes__input" id="f-roles-3" name="roles" type="checkbox" value="Corporate Finance" {{ if contains .User.Roles "Corporate Finance" }}checked{{ end }}>
+                <label class="govuk-label govuk-checkboxes__label" for="f-roles-3">Corporate Finance</label>
+              </div>
+              
+              <div class="govuk-checkboxes__item">
+                <input class="govuk-checkboxes__input" id="f-roles-4" name="roles" type="checkbox" value="DDC" {{ if contains .User.Roles "DDC" }}checked{{ end }}>
+                <label class="govuk-label govuk-checkboxes__label" for="f-roles-4">DDC</label>
+              </div>
+              
+              <div class="govuk-checkboxes__item">
+                <input class="govuk-checkboxes__input" id="f-roles-5" name="roles" type="checkbox" value="Finance Manager" {{ if contains .User.Roles "Finance Manager" }}checked{{ end }}>
+                <label class="govuk-label govuk-checkboxes__label" for="f-roles-5">Finance Manager</label>
+              </div>
+              
+              <div class="govuk-checkboxes__item">
+                <input class="govuk-checkboxes__input" id="f-roles-6" name="roles" type="checkbox" value="Finance Reporting" {{ if contains .User.Roles "Finance Reporting" }}checked{{ end }}>
+                <label class="govuk-label govuk-checkboxes__label" for="f-roles-6">Finance Reporting</label>
+              </div>
+              
+              <div class="govuk-checkboxes__item">
+                <input class="govuk-checkboxes__input" id="f-roles-7" name="roles" type="checkbox" value="Finance User" {{ if contains .User.Roles "Finance User" }}checked{{ end }}>
+                <label class="govuk-label govuk-checkboxes__label" for="f-roles-7">Finance User</label>
+              </div>
+              
+              <div class="govuk-checkboxes__item">
+                <input class="govuk-checkboxes__input" id="f-roles-8" name="roles" type="checkbox" value="Investigations User" {{ if contains .User.Roles "Investigations User" }}checked{{ end }}>
+                <label class="govuk-label govuk-checkboxes__label" for="f-roles-8">Investigations User</label>
+              </div>
+              
+              <div class="govuk-checkboxes__item">
+                <input class="govuk-checkboxes__input" id="f-roles-9" name="roles" type="checkbox" value="Manager" {{ if contains .User.Roles "Manager" }}checked{{ end }}>
+                <label class="govuk-label govuk-checkboxes__label" for="f-roles-9">Manager</label>
+              </div>
+              
+              <div class="govuk-checkboxes__item">
+                <input class="govuk-checkboxes__input" id="f-roles-10" name="roles" type="checkbox" value="POA User" {{ if contains .User.Roles "POA User" }}checked{{ end }}>
+                <label class="govuk-label govuk-checkboxes__label" for="f-roles-10">POA User</label>
+              </div>
+              
+              <div class="govuk-checkboxes__item">
+                <input class="govuk-checkboxes__input" id="f-roles-11" name="roles" type="checkbox" value="Panel Deputy User" {{ if contains .User.Roles "Panel Deputy User" }}checked{{ end }}>
+                <label class="govuk-label govuk-checkboxes__label" for="f-roles-11">Panel Deputy User</label>
+              </div>
+              
+              <div class="govuk-checkboxes__item">
+                <input class="govuk-checkboxes__input" id="f-roles-12" name="roles" type="checkbox" value="Public API" {{ if contains .User.Roles "Public API" }}checked{{ end }}>
+                <label class="govuk-label govuk-checkboxes__label" for="f-roles-12">Public API</label>
+              </div>
+              
+              <div class="govuk-checkboxes__item">
+                <input class="govuk-checkboxes__input" id="f-roles-13" name="roles" type="checkbox" value="Reporting User" {{ if contains .User.Roles "Reporting User" }}checked{{ end }}>
+                <label class="govuk-label govuk-checkboxes__label" for="f-roles-13">Reporting User</label>
+              </div>
+              
+              <div class="govuk-checkboxes__item">
+                <input class="govuk-checkboxes__input" id="f-roles-14" name="roles" type="checkbox" value="System Admin" aria-describedby="f-roles-14-item-hint" {{ if contains .User.Roles "System Admin" }}checked{{ end }}>
+                <label class="f-govuk-label govuk-checkboxes__label" for="f-roles-14">System Admin</label>
+                <div id="f-roles-14-item-hint" class="govuk-hint govuk-checkboxes__hint">
+                  System Admins can add and edit other users
+                </div>
+              </div>
+              
+              <div class="govuk-checkboxes__item">
+                <input class="govuk-checkboxes__input" id="f-roles-15" name="roles" type="checkbox" value="Unit Manager" {{ if contains .User.Roles "Unit Manager" }}checked{{ end }}>
+                <label class="govuk-label govuk-checkboxes__label" for="f-roles-15">Unit Manager</label>
+              </div>
+              
+              <div class="govuk-checkboxes__item">
+                <input class="govuk-checkboxes__input" id="f-roles-16" name="roles" type="checkbox" value="Visits Team User" {{ if contains .User.Roles "Visits Team User" }}checked{{ end }}>
+                <label class="govuk-label govuk-checkboxes__label" for="f-roles-16">Visits Team User</label>
+              </div>
+            </div>
+          </fieldset>
+        </div>
+        
+        <button type="submit" class="govuk-button" data-module="govuk-button">
+          Save changes
+        </button>
+      </form>
+    </div>
+  </div>
+{{ end }}

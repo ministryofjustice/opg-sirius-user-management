@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"log"
 	"net/http"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
@@ -22,7 +21,7 @@ type editMyDetailsVars struct {
 	PhoneNumber string
 }
 
-func editMyDetails(logger *log.Logger, client EditMyDetailsClient, tmpl Template, siriusURL string) Handler {
+func editMyDetails(client EditMyDetailsClient, tmpl Template, siriusURL string) Handler {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		var validationErrors sirius.ValidationErrors
 

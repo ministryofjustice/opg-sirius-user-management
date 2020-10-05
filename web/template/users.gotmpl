@@ -46,6 +46,7 @@
         <th scope="col" class="govuk-table__header">Name</th>
         <th scope="col" class="govuk-table__header">Email</th>
         <th scope="col" class="govuk-table__header">Status</th>
+        <th scope="col" class="govuk-table__header"><span class="govuk-visually-hidden">Actions</span></th>
       </tr>
     </thead>
     <tbody class="govuk-table__body">
@@ -57,6 +58,9 @@
             <strong class="govuk-tag {{ .Status.TagColour }}">
               {{ .Status }}
             </strong>
+          </td>
+          <td class="govuk-table__cell">
+            <a href="{{ prefix (printf "/edit-user/%d" .ID) }}" class="govuk-link">Edit</a>
           </td>
         </tr>
       {{ end }}

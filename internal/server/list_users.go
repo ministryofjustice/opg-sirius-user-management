@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"log"
 	"net/http"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
@@ -10,7 +9,6 @@ import (
 
 type ListUsersClient interface {
 	SearchUsers(context.Context, []*http.Cookie, string) ([]sirius.User, error)
-	MyDetails(context.Context, []*http.Cookie) (sirius.MyDetails, error)
 }
 
 type listUsersVars struct {
@@ -22,26 +20,10 @@ type listUsersVars struct {
 	Errors sirius.ValidationErrors
 }
 
-func listUsers(logger *log.Logger, client ListUsersClient, tmpl Template, siriusURL string) Handler {
+func listUsers(client ListUsersClient, tmpl Template, siriusURL string) Handler {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		if r.Method != http.MethodGet {
 			return StatusError(http.StatusMethodNotAllowed)
-		}
-
-		myDetails, err := client.MyDetails(r.Context(), r.Cookies())
-		if err != nil {
-			return err
-		}
-
-		permitted := false
-		for _, role := range myDetails.Roles {
-			if role == "System Admin" {
-				permitted = true
-			}
-		}
-
-		if !permitted {
-			return StatusError(http.StatusForbidden)
 		}
 
 		search := r.FormValue("search")

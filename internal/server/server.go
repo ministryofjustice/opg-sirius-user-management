@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"html/template"
 	"io"
@@ -12,10 +13,12 @@ import (
 
 type Client interface {
 	AddUserClient
-	MyDetailsClient
-	EditMyDetailsClient
 	ChangePasswordClient
+	EditMyDetailsClient
+	EditUserClient
 	ListUsersClient
+	MyDetailsClient
+	SystemAdminOnlyClient
 }
 
 type Template interface {
@@ -24,15 +27,38 @@ type Template interface {
 
 func New(logger *log.Logger, client Client, templates map[string]*template.Template, prefix, siriusURL, siriusPublicURL string, webDir string) http.Handler {
 	wrap := errorHandler(logger, templates["error.gotmpl"], prefix, siriusPublicURL)
+	systemAdminOnly := systemAdminOnly(client)
 
 	mux := http.NewServeMux()
 	mux.Handle("/", http.RedirectHandler(prefix+"/my-details", http.StatusFound))
 	mux.Handle("/health-check", healthCheck())
-	mux.Handle("/users", wrap("listUsers", listUsers(logger, client, templates["users.gotmpl"], siriusURL)))
-	mux.Handle("/my-details", wrap("myDetails", myDetails(logger, client, templates["my-details.gotmpl"], siriusURL)))
-	mux.Handle("/my-details/edit", wrap("editMyDetails", editMyDetails(logger, client, templates["edit-my-details.gotmpl"], siriusURL)))
-	mux.Handle("/change-password", wrap("changePassword", changePassword(logger, client, templates["change-password.gotmpl"], siriusURL)))
-	mux.Handle("/add-user", wrap("addUser", addUser(logger, client, templates["add-user.gotmpl"], siriusURL)))
+
+	mux.Handle("/users",
+		wrap("listUsers",
+			systemAdminOnly(
+				listUsers(client, templates["users.gotmpl"], siriusURL))))
+
+	mux.Handle("/my-details",
+		wrap("myDetails",
+			myDetails(client, templates["my-details.gotmpl"], siriusURL)))
+
+	mux.Handle("/my-details/edit",
+		wrap("editMyDetails",
+			editMyDetails(client, templates["edit-my-details.gotmpl"], siriusURL)))
+
+	mux.Handle("/change-password",
+		wrap("changePassword",
+			changePassword(client, templates["change-password.gotmpl"], siriusURL)))
+
+	mux.Handle("/add-user",
+		wrap("addUser",
+			systemAdminOnly(
+				addUser(client, templates["add-user.gotmpl"], siriusURL))))
+
+	mux.Handle("/edit-user/",
+		wrap("editUser",
+			systemAdminOnly(
+				editUser(client, templates["edit-user.gotmpl"], siriusURL))))
 
 	static := http.FileServer(http.Dir(webDir + "/static"))
 	mux.Handle("/assets/", static)
@@ -112,5 +138,33 @@ func errorHandler(logger *log.Logger, tmplError Template, prefix, siriusURL stri
 				}
 			}
 		})
+	}
+}
+
+type SystemAdminOnlyClient interface {
+	MyDetails(context.Context, []*http.Cookie) (sirius.MyDetails, error)
+}
+
+func systemAdminOnly(client SystemAdminOnlyClient) func(Handler) Handler {
+	return func(next Handler) Handler {
+		return func(w http.ResponseWriter, r *http.Request) error {
+			myDetails, err := client.MyDetails(r.Context(), r.Cookies())
+			if err != nil {
+				return err
+			}
+
+			permitted := false
+			for _, role := range myDetails.Roles {
+				if role == "System Admin" {
+					permitted = true
+				}
+			}
+
+			if !permitted {
+				return StatusError(http.StatusForbidden)
+			}
+
+			return next(w, r)
+		}
 	}
 }

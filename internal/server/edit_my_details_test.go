@@ -82,7 +82,7 @@ func TestGetEditMyDetails(t *testing.T) {
 	r, _ := http.NewRequest("GET", "/path", nil)
 	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	handler := editMyDetails(nil, client, template, "http://sirius")
+	handler := editMyDetails(client, template, "http://sirius")
 	err := handler(w, r)
 
 	assert.Nil(err)
@@ -112,7 +112,7 @@ func TestGetEditMyDetailsUnauthenticated(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "", nil)
 
-	handler := editMyDetails(nil, client, template, "http://sirius")
+	handler := editMyDetails(client, template, "http://sirius")
 	err := handler(w, r)
 
 	assert.Equal(sirius.ErrUnauthorized, err)
@@ -129,7 +129,7 @@ func TestGetEditMyDetailsNotPermitted(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "", nil)
 
-	handler := editMyDetails(nil, client, template, "http://sirius")
+	handler := editMyDetails(client, template, "http://sirius")
 	err := handler(w, r)
 
 	assert.Equal(StatusError(http.StatusForbidden), err)
@@ -146,7 +146,7 @@ func TestGetEditMyDetailsSiriusErrors(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "", nil)
 
-	handler := editMyDetails(nil, client, template, "http://sirius")
+	handler := editMyDetails(client, template, "http://sirius")
 	err := handler(w, r)
 
 	assert.Equal("err", err.Error())
@@ -170,7 +170,7 @@ func TestPostEditMyDetails(t *testing.T) {
 	r.Header.Add("Content-type", "application/x-www-form-urlencoded")
 	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	handler := editMyDetails(nil, client, template, "http://sirius")
+	handler := editMyDetails(client, template, "http://sirius")
 	err := handler(w, r)
 
 	assert.Equal(RedirectError("/my-details"), err)
@@ -195,7 +195,7 @@ func TestPostEditMyDetailsUnauthenticated(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", strings.NewReader("phonenumber=0189202"))
 
-	handler := editMyDetails(nil, client, template, "http://sirius")
+	handler := editMyDetails(client, template, "http://sirius")
 	err := handler(w, r)
 
 	assert.Equal(sirius.ErrUnauthorized, err)
@@ -216,7 +216,7 @@ func TestPostEditMyDetailsSiriusErrors(t *testing.T) {
 	r, _ := http.NewRequest("POST", "/path", strings.NewReader("phonenumber=0189202"))
 	r.Header.Add("Content-type", "application/x-www-form-urlencoded")
 
-	handler := editMyDetails(nil, client, template, "http://sirius")
+	handler := editMyDetails(client, template, "http://sirius")
 	err := handler(w, r)
 
 	assert.Equal("err", err.Error())
@@ -246,7 +246,7 @@ func TestPostEditMyDetailsInvalidRequest(t *testing.T) {
 	r.Header.Add("Content-type", "application/x-www-form-urlencoded")
 	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	handler := editMyDetails(nil, client, template, "http://sirius")
+	handler := editMyDetails(client, template, "http://sirius")
 	err := handler(w, r)
 
 	assert.Nil(err)
