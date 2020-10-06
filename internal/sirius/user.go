@@ -18,6 +18,7 @@ type AuthUser struct {
 	Roles        []string
 	Locked       bool
 	Suspended    bool
+	Inactive     bool
 }
 
 type authUserResponse struct {
@@ -28,6 +29,7 @@ type authUserResponse struct {
 	Roles     []string `json:"roles"`
 	Locked    bool     `json:"locked"`
 	Suspended bool     `json:"suspended"`
+	Inactive  bool     `json:"inactive"`
 }
 
 func (c *Client) User(ctx context.Context, cookies []*http.Cookie, id int) (AuthUser, error) {
@@ -60,6 +62,7 @@ func (c *Client) User(ctx context.Context, cookies []*http.Cookie, id int) (Auth
 		Email:     v.Email,
 		Locked:    v.Locked,
 		Suspended: v.Suspended,
+		Inactive:  v.Inactive,
 	}
 
 	for _, role := range v.Roles {

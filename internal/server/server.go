@@ -18,6 +18,7 @@ type Client interface {
 	EditUserClient
 	ListUsersClient
 	MyDetailsClient
+	ResendConfirmationClient
 	SystemAdminOnlyClient
 }
 
@@ -59,6 +60,11 @@ func New(logger *log.Logger, client Client, templates map[string]*template.Templ
 		wrap("editUser",
 			systemAdminOnly(
 				editUser(client, templates["edit-user.gotmpl"], siriusURL))))
+
+	mux.Handle("/resend-confirmation",
+		wrap("resendConfirmation",
+			systemAdminOnly(
+				resendConfirmation(client, templates["resend-confirmation.gotmpl"], siriusURL))))
 
 	static := http.FileServer(http.Dir(webDir + "/static"))
 	mux.Handle("/assets/", static)
