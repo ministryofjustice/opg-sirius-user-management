@@ -91,7 +91,7 @@ func TestMyDetails(t *testing.T) {
 				Email:       "system.admin@opgtest.com",
 				Firstname:   "system",
 				Surname:     "admin",
-				Roles:       []string{"string"},
+				Roles:       []string{"System Admin"},
 				Locked:      false,
 				Suspended:   false,
 			},

@@ -68,7 +68,7 @@ func TestPermissions(t *testing.T) {
 			},
 			permission: PermissionRequest{
 				group:  "user",
-				method: "GET",
+				method: "PATCH",
 			},
 			expectedResponse: true,
 		},
