@@ -91,7 +91,6 @@ jobs:
           name: Retrieve pact
           command: |
             curl -u "$PACT_BROKER_USERNAME:$PACT_BROKER_PASSWORD" "$PACT_BROKER_URL/pacts/provider/sirius/consumer/sirius-user-management/version/$(echo $CIRCLE_SHA1 | cut -c -7)" -o sirius-user-management-sirius.json
-            docker volume create pacts_data
             docker container create --name temp -v pacts_data:/root hello-world
             docker cp ./sirius-user-management-sirius.json temp:/root/sirius-user-management-sirius.json
             docker rm temp
@@ -101,7 +100,7 @@ jobs:
       - run:
           name: Run pa11y
           command: |
-            docker-compose run pa11y
+            docker-compose -f docker/docker-compose.ci.yml run pa11y
 
   push:
     executor: ecr/python
@@ -118,7 +117,7 @@ jobs:
       - run:
           name: Build
           command: |
-            docker build --tag sirius-user-management:latest .
+            docker build --tag sirius-user-management:latest -f docker/sirius-user-management/Dockerfile .
       - ecr/login
       - run:
           name: Push container

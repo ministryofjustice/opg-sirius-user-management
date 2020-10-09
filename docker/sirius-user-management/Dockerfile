@@ -1,4 +1,4 @@
-FROM node:lts-alpine as asset-env
+FROM node:14.13.1-alpine3.12 as asset-env
 
 WORKDIR /app
 
@@ -24,7 +24,7 @@ COPY . .
 
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o /go/bin/opg-sirius-user-management
 
-FROM alpine:3.10
+FROM alpine:3.12
 
 WORKDIR /go/bin
 

@@ -2,7 +2,9 @@ version: "3.6"
 
 services:
   app:
-    build: .
+    build:
+      context: ..
+      dockerfile: ./docker/sirius-user-management/Dockerfile
     ports: ["8888:8888"]
     environment:
       PORT: 8888
@@ -10,7 +12,7 @@ services:
       SIRIUS_PUBLIC_URL: http://localhost:8080
 
   pact-stub:
-    image: pactfoundation/pact-stub-server
+    image: pactfoundation/pact-stub-server:v0.4.3
     ports: ["8080:8080"]
     command: ["-d", "pacts", "-p", "8080"]
     volumes:
@@ -19,7 +21,7 @@ services:
         target: /app/pacts
 
   pa11y:
-    build: ./docker/pa11y-ci
+    build: ./pa11y-ci
     depends_on:
       - app
       - pact-stub
