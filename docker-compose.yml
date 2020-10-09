@@ -14,8 +14,8 @@ services:
     ports: ["8080:8080"]
     command: ["-d", "pacts", "-p", "8080"]
     volumes:
-      - type: bind
-        source: ./pacts
+      - type: volume
+        source: pacts_data
         target: /app/pacts
 
   pa11y:
@@ -23,3 +23,8 @@ services:
     depends_on:
       - app
       - pact-stub
+
+volumes:
+  pacts_data:
+    name: pacts_data
+    external: true
