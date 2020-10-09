@@ -10,23 +10,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type myDetailsResponse struct {
-	ID          int    `json:"id" pact:"example=47"`
-	Name        string `json:"name" pact:"example=system"`
-	PhoneNumber string `json:"phoneNumber" pact:"example=03004560300"`
-	Teams       []struct {
-		DisplayName string `json:"displayName" pact:"example=Allocations - (Supervision)"`
-	} `json:"teams"`
-	DisplayName string   `json:"displayName" pact:"example=system admin"`
-	Deleted     bool     `json:"deleted" pact:"example=false"`
-	Email       string   `json:"email" pact:"example=system.admin@opgtest.com"`
-	Firstname   string   `json:"firstname" pact:"example=system"`
-	Surname     string   `json:"surname" pact:"example=admin"`
-	Roles       []string `json:"roles"`
-	Locked      bool     `json:"locked" pact:"example=false"`
-	Suspended   bool     `json:"suspended" pact:"example=false"`
-}
-
 type editMyDetailsBadRequestResponse struct {
 	Status           int    `json:"status" pact:"example=400"`
 	Detail           string `json:"detail" pact:"example=Payload failed validation"`
@@ -48,13 +31,15 @@ func TestMyDetails(t *testing.T) {
 	}
 	defer pact.Teardown()
 
-	testCases := map[string]struct {
+	testCases := []struct {
+		name              string
 		setup             func()
 		cookies           []*http.Cookie
 		expectedMyDetails MyDetails
 		expectedError     error
 	}{
-		"OK": {
+		{
+			name: "OK",
 			setup: func() {
 				pact.
 					AddInteraction().
@@ -72,7 +57,22 @@ func TestMyDetails(t *testing.T) {
 					WillRespondWith(dsl.Response{
 						Status:  http.StatusOK,
 						Headers: dsl.MapMatcher{"Content-Type": dsl.String("application/json")},
-						Body:    dsl.Match(myDetailsResponse{}),
+						Body: dsl.Like(map[string]interface{}{
+							"id":          dsl.Like(47),
+							"name":        dsl.Like("system"),
+							"phoneNumber": dsl.Like("03004560300"),
+							"teams": dsl.EachLike(map[string]interface{}{
+								"displayName": dsl.Like("Allocations - (Supervision)"),
+							}, 1),
+							"displayName": dsl.Like("system admin"),
+							"deleted":     dsl.Like(false),
+							"email":       dsl.Like("system.admin@opgtest.com"),
+							"firstname":   dsl.Like("system"),
+							"surname":     dsl.Like("admin"),
+							"roles":       dsl.EachLike("System Admin", 1),
+							"locked":      dsl.Like(false),
+							"suspended":   dsl.Like(false),
+						}),
 					})
 			},
 			cookies: []*http.Cookie{
@@ -91,13 +91,14 @@ func TestMyDetails(t *testing.T) {
 				Email:       "system.admin@opgtest.com",
 				Firstname:   "system",
 				Surname:     "admin",
-				Roles:       []string{"string"},
+				Roles:       []string{"System Admin"},
 				Locked:      false,
 				Suspended:   false,
 			},
 		},
 
-		"Unauthorized": {
+		{
+			name: "Unauthorized",
 			setup: func() {
 				pact.
 					AddInteraction().
@@ -118,8 +119,8 @@ func TestMyDetails(t *testing.T) {
 		},
 	}
 
-	for name, tc := range testCases {
-		t.Run(name, func(t *testing.T) {
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
 			tc.setup()
 
 			assert.Nil(t, pact.Verify(func() error {
@@ -174,7 +175,22 @@ func TestEditMyDetails(t *testing.T) {
 					WillRespondWith(dsl.Response{
 						Status:  http.StatusOK,
 						Headers: dsl.MapMatcher{"Content-Type": dsl.String("application/json")},
-						Body:    dsl.Match(myDetailsResponse{}),
+						Body: dsl.Like(map[string]interface{}{
+							"id":          dsl.Like(47),
+							"name":        dsl.Like("system"),
+							"phoneNumber": dsl.Like("03004560300"),
+							"teams": dsl.EachLike(map[string]interface{}{
+								"displayName": dsl.Like("Allocations - (Supervision)"),
+							}, 1),
+							"displayName": dsl.Like("system admin"),
+							"deleted":     dsl.Like(false),
+							"email":       dsl.Like("system.admin@opgtest.com"),
+							"firstname":   dsl.Like("system"),
+							"surname":     dsl.Like("admin"),
+							"roles":       dsl.EachLike("System Admin", 1),
+							"locked":      dsl.Like(false),
+							"suspended":   dsl.Like(false),
+						}),
 					})
 			},
 			cookies: []*http.Cookie{
@@ -228,7 +244,7 @@ func TestEditMyDetails(t *testing.T) {
 				pact.
 					AddInteraction().
 					Given("User exists").
-					UponReceiving("A request to get my details without cookies").
+					UponReceiving("A request to change my phone number without cookies").
 					WithRequest(dsl.Request{
 						Method: http.MethodPut,
 						Path:   dsl.String("/api/v1/users/47/updateTelephoneNumber"),

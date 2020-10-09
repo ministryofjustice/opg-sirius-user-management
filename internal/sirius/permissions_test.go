@@ -26,14 +26,16 @@ func TestPermissions(t *testing.T) {
 	}
 	defer pact.Teardown()
 
-	testCases := map[string]struct {
+	testCases := []struct {
+		name             string
 		setup            func()
 		cookies          []*http.Cookie
 		expectedResponse bool
 		expectedError    error
 		permission       PermissionRequest
 	}{
-		"OK": {
+		{
+			name: "OK",
 			setup: func() {
 				pact.
 					AddInteraction().
@@ -54,7 +56,7 @@ func TestPermissions(t *testing.T) {
 						Body: dsl.Like(map[string]interface{}{
 							"data": map[string]interface{}{
 								"user": map[string]interface{}{
-									"permissions": dsl.EachLike("GET", 1),
+									"permissions": dsl.EachLike("PATCH", 1),
 								},
 							},
 						}),
@@ -66,16 +68,17 @@ func TestPermissions(t *testing.T) {
 			},
 			permission: PermissionRequest{
 				group:  "user",
-				method: "GET",
+				method: "PATCH",
 			},
 			expectedResponse: true,
 		},
-		"Unauthorized": {
+		{
+			name: "Unauthorized",
 			setup: func() {
 				pact.
 					AddInteraction().
 					Given("User exists").
-					UponReceiving("A request to get my details without cookies").
+					UponReceiving("A request to get my permissions without cookies").
 					WithRequest(dsl.Request{
 						Method: http.MethodGet,
 						Path:   dsl.String("/api/permission"),
@@ -91,8 +94,8 @@ func TestPermissions(t *testing.T) {
 		},
 	}
 
-	for name, tc := range testCases {
-		t.Run(name, func(t *testing.T) {
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
 			tc.setup()
 
 			assert.Nil(t, pact.Verify(func() error {

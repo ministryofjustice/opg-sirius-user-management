@@ -29,7 +29,8 @@ func TestAddUser(t *testing.T) {
 	}
 	defer pact.Teardown()
 
-	testCases := map[string]struct {
+	testCases := []struct {
+		name          string
 		setup         func()
 		cookies       []*http.Cookie
 		email         string
@@ -39,7 +40,8 @@ func TestAddUser(t *testing.T) {
 		roles         []string
 		expectedError error
 	}{
-		"Created": {
+		{
+			name: "Created",
 			setup: func() {
 				pact.
 					AddInteraction().
@@ -76,7 +78,8 @@ func TestAddUser(t *testing.T) {
 			roles:        []string{"other1", "other2"},
 		},
 
-		"Unauthorized": {
+		{
+			name: "Unauthorized",
 			setup: func() {
 				pact.
 					AddInteraction().
@@ -96,7 +99,8 @@ func TestAddUser(t *testing.T) {
 			expectedError: ErrUnauthorized,
 		},
 
-		"Errors": {
+		{
+			name: "Errors",
 			setup: func() {
 				pact.
 					AddInteraction().
@@ -124,8 +128,8 @@ func TestAddUser(t *testing.T) {
 		},
 	}
 
-	for name, tc := range testCases {
-		t.Run(name, func(t *testing.T) {
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
 			tc.setup()
 
 			assert.Nil(t, pact.Verify(func() error {
