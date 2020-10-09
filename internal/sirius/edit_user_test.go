@@ -26,12 +26,14 @@ func TestEditUser(t *testing.T) {
 	}
 	defer pact.Teardown()
 
-	testCases := map[string]struct {
+	testCases := []struct {
+		name          string
 		setup         func()
 		cookies       []*http.Cookie
 		expectedError error
 	}{
-		"OK": {
+		{
+			name: "OK",
 			setup: func() {
 				pact.
 					AddInteraction().
@@ -64,7 +66,8 @@ func TestEditUser(t *testing.T) {
 			},
 		},
 
-		"Unauthorized": {
+		{
+			name: "Unauthorized",
 			setup: func() {
 				pact.
 					AddInteraction().
@@ -84,7 +87,8 @@ func TestEditUser(t *testing.T) {
 			expectedError: ErrUnauthorized,
 		},
 
-		"Validation Errors": {
+		{
+			name: "Validation Errors",
 			setup: func() {
 				pact.
 					AddInteraction().
@@ -105,7 +109,8 @@ func TestEditUser(t *testing.T) {
 			expectedError: ClientError("oops"),
 		},
 
-		"Errors": {
+		{
+			name: "Errors",
 			setup: func() {
 				pact.
 					AddInteraction().
@@ -126,8 +131,8 @@ func TestEditUser(t *testing.T) {
 		},
 	}
 
-	for name, tc := range testCases {
-		t.Run(name, func(t *testing.T) {
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
 			tc.setup()
 
 			assert.Nil(t, pact.Verify(func() error {

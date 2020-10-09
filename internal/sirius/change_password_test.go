@@ -25,13 +25,15 @@ func TestChangePassword(t *testing.T) {
 	}
 	defer pact.Teardown()
 
-	testCases := map[string]struct {
+	testCases := []struct {
+		name             string
 		setup            func()
 		cookies          []*http.Cookie
 		existingPassword string
 		expectedError    error
 	}{
-		"OK": {
+		{
+			name: "OK",
 			setup: func() {
 				pact.
 					AddInteraction().
@@ -56,7 +58,8 @@ func TestChangePassword(t *testing.T) {
 			},
 		},
 
-		"Unauthorized": {
+		{
+			name: "Unauthorized",
 			setup: func() {
 				pact.
 					AddInteraction().
@@ -76,7 +79,8 @@ func TestChangePassword(t *testing.T) {
 			expectedError: ErrUnauthorized,
 		},
 
-		"Errors": {
+		{
+			name: "Errors",
 			setup: func() {
 				pact.
 					AddInteraction().
@@ -98,8 +102,8 @@ func TestChangePassword(t *testing.T) {
 		},
 	}
 
-	for name, tc := range testCases {
-		t.Run(name, func(t *testing.T) {
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
 			tc.setup()
 
 			assert.Nil(t, pact.Verify(func() error {
