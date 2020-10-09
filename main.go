@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"html/template"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -12,12 +11,13 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/ministryofjustice/opg-sirius-user-management/internal/logging"
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/server"
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
 )
 
 func main() {
-	logger := log.New(os.Stdout, "opg-sirius-user-management ", log.LstdFlags)
+	logger := logging.New(os.Stdout, "opg-sirius-user-management")
 
 	port := getEnv("PORT", "8080")
 	webDir := getEnv("WEB_DIR", "web")
@@ -58,7 +58,7 @@ func main() {
 
 	client, err := sirius.NewClient(http.DefaultClient, siriusURL)
 	if err != nil {
-		logger.Fatalln(err)
+		logger.Fatal(err)
 	}
 
 	server := &http.Server{
@@ -68,23 +68,23 @@ func main() {
 
 	go func() {
 		if err := server.ListenAndServe(); err != nil {
-			logger.Fatalln(err)
+			logger.Fatal(err)
 		}
 	}()
 
-	logger.Println("Running at :" + port)
+	logger.Print("Running at :" + port)
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
 
 	sig := <-c
-	logger.Println("Received terminate, graceful shutdown", sig)
+	logger.Print("signal received: ", sig)
 
 	tc, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	if err := server.Shutdown(tc); err != nil {
-		logger.Println(err)
+		logger.Print(err)
 	}
 }
 

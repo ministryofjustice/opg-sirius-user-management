@@ -1,12 +1,10 @@
 package server
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -14,6 +12,18 @@ import (
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
 	"github.com/stretchr/testify/assert"
 )
+
+type mockLogger struct {
+	count       int
+	lastRequest *http.Request
+	lastError   error
+}
+
+func (m *mockLogger) Request(r *http.Request, err error) {
+	m.count += 1
+	m.lastRequest = r
+	m.lastError = err
+}
 
 type mockTemplate struct {
 	count    int
@@ -34,7 +44,7 @@ func TestErrorHandler(t *testing.T) {
 	tmplError := &mockTemplate{}
 
 	wrap := errorHandler(nil, tmplError, "/prefix", "http://sirius")
-	handler := wrap("handler", func(w http.ResponseWriter, r *http.Request) error {
+	handler := wrap(func(w http.ResponseWriter, r *http.Request) error {
 		w.WriteHeader(http.StatusTeapot)
 		return nil
 	})
@@ -55,7 +65,7 @@ func TestErrorHandlerUnauthorized(t *testing.T) {
 	tmplError := &mockTemplate{}
 
 	wrap := errorHandler(nil, tmplError, "/prefix", "http://sirius")
-	handler := wrap("handler", func(w http.ResponseWriter, r *http.Request) error {
+	handler := wrap(func(w http.ResponseWriter, r *http.Request) error {
 		return sirius.ErrUnauthorized
 	})
 
@@ -77,7 +87,7 @@ func TestErrorHandlerRedirect(t *testing.T) {
 	tmplError := &mockTemplate{}
 
 	wrap := errorHandler(nil, tmplError, "/prefix", "http://sirius")
-	handler := wrap("handler", func(w http.ResponseWriter, r *http.Request) error {
+	handler := wrap(func(w http.ResponseWriter, r *http.Request) error {
 		return RedirectError("/here")
 	})
 
@@ -96,12 +106,11 @@ func TestErrorHandlerRedirect(t *testing.T) {
 func TestErrorHandlerStatus(t *testing.T) {
 	assert := assert.New(t)
 
-	var buf bytes.Buffer
-	logger := log.New(&buf, "", 0)
+	logger := &mockLogger{}
 	tmplError := &mockTemplate{}
 
 	wrap := errorHandler(logger, tmplError, "/prefix", "http://sirius")
-	handler := wrap("handler", func(w http.ResponseWriter, r *http.Request) error {
+	handler := wrap(func(w http.ResponseWriter, r *http.Request) error {
 		return StatusError(http.StatusTeapot)
 	})
 
@@ -116,7 +125,9 @@ func TestErrorHandlerStatus(t *testing.T) {
 	assert.Equal(1, tmplError.count)
 	assert.Equal(errorVars{SiriusURL: "http://sirius", Code: http.StatusInternalServerError, Error: "418 I'm a teapot"}, tmplError.lastVars)
 
-	assert.Equal("handler: 418 I'm a teapot\n", buf.String())
+	assert.Equal(1, logger.count)
+	assert.Equal(r, logger.lastRequest)
+	assert.Equal(StatusError(http.StatusTeapot), logger.lastError)
 }
 
 func TestErrorHandlerStatusKnown(t *testing.T) {
@@ -127,12 +138,11 @@ func TestErrorHandlerStatusKnown(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			assert := assert.New(t)
 
-			var buf bytes.Buffer
-			logger := log.New(&buf, "", 0)
+			logger := &mockLogger{}
 			tmplError := &mockTemplate{}
 
 			wrap := errorHandler(logger, tmplError, "/prefix", "http://sirius")
-			handler := wrap("handler", func(w http.ResponseWriter, r *http.Request) error {
+			handler := wrap(func(w http.ResponseWriter, r *http.Request) error {
 				return StatusError(code)
 			})
 
@@ -147,7 +157,9 @@ func TestErrorHandlerStatusKnown(t *testing.T) {
 			assert.Equal(1, tmplError.count)
 			assert.Equal(errorVars{SiriusURL: "http://sirius", Code: code, Error: fmt.Sprintf("%d %s", code, name)}, tmplError.lastVars)
 
-			assert.Equal(fmt.Sprintf("handler: %d %s\n", code, name), buf.String())
+			assert.Equal(1, logger.count)
+			assert.Equal(r, logger.lastRequest)
+			assert.Equal(StatusError(code), logger.lastError)
 		})
 	}
 }

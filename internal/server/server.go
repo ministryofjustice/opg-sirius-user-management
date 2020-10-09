@@ -5,11 +5,14 @@ import (
 	"fmt"
 	"html/template"
 	"io"
-	"log"
 	"net/http"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
 )
+
+type Logger interface {
+	Request(*http.Request, error)
+}
 
 type Client interface {
 	AddUserClient
@@ -26,7 +29,7 @@ type Template interface {
 	ExecuteTemplate(io.Writer, string, interface{}) error
 }
 
-func New(logger *log.Logger, client Client, templates map[string]*template.Template, prefix, siriusURL, siriusPublicURL string, webDir string) http.Handler {
+func New(logger Logger, client Client, templates map[string]*template.Template, prefix, siriusURL, siriusPublicURL string, webDir string) http.Handler {
 	wrap := errorHandler(logger, templates["error.gotmpl"], prefix, siriusPublicURL)
 	systemAdminOnly := systemAdminOnly(client)
 
@@ -35,34 +38,34 @@ func New(logger *log.Logger, client Client, templates map[string]*template.Templ
 	mux.Handle("/health-check", healthCheck())
 
 	mux.Handle("/users",
-		wrap("listUsers",
+		wrap(
 			systemAdminOnly(
 				listUsers(client, templates["users.gotmpl"], siriusURL))))
 
 	mux.Handle("/my-details",
-		wrap("myDetails",
+		wrap(
 			myDetails(client, templates["my-details.gotmpl"], siriusURL)))
 
 	mux.Handle("/my-details/edit",
-		wrap("editMyDetails",
+		wrap(
 			editMyDetails(client, templates["edit-my-details.gotmpl"], siriusURL)))
 
 	mux.Handle("/change-password",
-		wrap("changePassword",
+		wrap(
 			changePassword(client, templates["change-password.gotmpl"], siriusURL)))
 
 	mux.Handle("/add-user",
-		wrap("addUser",
+		wrap(
 			systemAdminOnly(
 				addUser(client, templates["add-user.gotmpl"], siriusURL))))
 
 	mux.Handle("/edit-user/",
-		wrap("editUser",
+		wrap(
 			systemAdminOnly(
 				editUser(client, templates["edit-user.gotmpl"], siriusURL))))
 
 	mux.Handle("/resend-confirmation",
-		wrap("resendConfirmation",
+		wrap(
 			systemAdminOnly(
 				resendConfirmation(client, templates["resend-confirmation.gotmpl"], siriusURL))))
 
@@ -106,8 +109,8 @@ type errorVars struct {
 	Error string
 }
 
-func errorHandler(logger *log.Logger, tmplError Template, prefix, siriusURL string) func(name string, next Handler) http.Handler {
-	return func(name string, next Handler) http.Handler {
+func errorHandler(logger Logger, tmplError Template, prefix, siriusURL string) func(next Handler) http.Handler {
+	return func(next Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if err := next(w, r); err != nil {
 				if err == sirius.ErrUnauthorized {
@@ -120,15 +123,14 @@ func errorHandler(logger *log.Logger, tmplError Template, prefix, siriusURL stri
 					return
 				}
 
-				code := http.StatusInternalServerError
+				logger.Request(r, err)
 
+				code := http.StatusInternalServerError
 				if status, ok := err.(StatusError); ok {
 					if status.Code() == http.StatusForbidden || status.Code() == http.StatusNotFound {
 						code = status.Code()
 					}
 				}
-
-				logger.Printf("%s: %v\n", name, err)
 
 				w.WriteHeader(code)
 				err = tmplError.ExecuteTemplate(w, "page", errorVars{
@@ -139,7 +141,7 @@ func errorHandler(logger *log.Logger, tmplError Template, prefix, siriusURL stri
 				})
 
 				if err != nil {
-					logger.Printf("%s: %v\n", name, err)
+					logger.Request(r, err)
 					http.Error(w, "Could not generate error template", http.StatusInternalServerError)
 				}
 			}

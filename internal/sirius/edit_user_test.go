@@ -2,7 +2,6 @@ package sirius
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 	"testing"
@@ -30,7 +29,7 @@ func TestEditUser(t *testing.T) {
 		name          string
 		setup         func()
 		cookies       []*http.Cookie
-		expectedError error
+		expectedError func(int) error
 	}{
 		{
 			name: "OK",
@@ -64,6 +63,7 @@ func TestEditUser(t *testing.T) {
 				{Name: "XSRF-TOKEN", Value: "abcde"},
 				{Name: "Other", Value: "other"},
 			},
+			expectedError: func(port int) error { return nil },
 		},
 
 		{
@@ -84,7 +84,7 @@ func TestEditUser(t *testing.T) {
 						Status: http.StatusUnauthorized,
 					})
 			},
-			expectedError: ErrUnauthorized,
+			expectedError: func(port int) error { return ErrUnauthorized },
 		},
 
 		{
@@ -106,7 +106,7 @@ func TestEditUser(t *testing.T) {
 						Body:   dsl.Match(editUserErrorsResponse{}),
 					})
 			},
-			expectedError: ClientError("oops"),
+			expectedError: func(port int) error { return ClientError("oops") },
 		},
 
 		{
@@ -127,7 +127,13 @@ func TestEditUser(t *testing.T) {
 						Status: http.StatusBadRequest,
 					})
 			},
-			expectedError: errors.New("returned non-200 response: 400"),
+			expectedError: func(port int) error {
+				return StatusError{
+					Code:   http.StatusBadRequest,
+					URL:    fmt.Sprintf("http://localhost:%d/auth/user/123", port),
+					Method: http.MethodPut,
+				}
+			},
 		},
 	}
 
@@ -148,7 +154,7 @@ func TestEditUser(t *testing.T) {
 					Suspended:    true,
 				})
 
-				assert.Equal(t, tc.expectedError, err)
+				assert.Equal(t, tc.expectedError(pact.Server.Port), err)
 				return nil
 			}))
 		})

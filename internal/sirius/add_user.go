@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 )
 
@@ -51,7 +50,7 @@ func (c *Client) AddUser(ctx context.Context, cookies []*http.Cookie, email, fir
 			return ValidationError{Errors: v.ErrorMessages}
 		}
 
-		return fmt.Errorf("returned non-201 response: %d", resp.StatusCode)
+		return newStatusError(resp)
 	}
 
 	return nil
