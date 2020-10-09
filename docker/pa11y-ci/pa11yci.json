@@ -1,0 +1,23 @@
+{
+    "defaults": {
+        "chromeLaunchConfig": {
+            "args": ["--no-sandbox"]
+        },
+        "headers": {
+            "Cookie": "XSRF-TOKEN=abcde; Other=other",
+            "OPG-Bypass-Membrane": "1",
+            "X-XSRF-TOKEN": "abcde"
+        }
+    },
+    "urls": [
+        "http://app:8888/users",
+        "http://app:8888/users?search=admin",
+        "http://app:8888/my-details",
+        "http://app:8888/my-details/edit",
+        "http://app:8888/change-password",
+        "http://app:8888/add-user",
+        "http://app:8888/edit-user/123"
+    ]
+}
+
+

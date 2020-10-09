@@ -6,8 +6,10 @@ workflows:
     jobs:
       - test
       - lint
-      - push:
+      - pa11y:
           requires: [test, lint]
+      - push:
+          requires: [pa11y]
 
 orbs:
   ecr:
@@ -59,6 +61,10 @@ jobs:
             PACT_BROKER_URL: https://pact-broker.api.opg.service.justice.gov.uk
             PACT_BROKER_USERNAME: admin
             PACT_TAG: v1_production
+      - persist_to_workspace:
+          root: pacts
+          paths:
+            - sirius-user-management.json
 
   lint:
     docker:
@@ -75,6 +81,22 @@ jobs:
       - run:
           name: Lint
           command: golangci-lint run
+
+  pa11y:
+    docker:
+      - image: circleci/node
+    resource_class: small
+    steps:
+      - checkout
+      - attach_workspace:
+          at: pacts
+      - setup_remote_docker:
+          version: 18.06.0-ce
+          docker_layer_caching: false
+      - run:
+          name: Run pa11y
+          command: |
+            docker-compose run pa11y
 
   push:
     executor: ecr/python
