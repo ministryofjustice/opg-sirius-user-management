@@ -228,7 +228,7 @@ func TestEditMyDetails(t *testing.T) {
 				pact.
 					AddInteraction().
 					Given("User exists").
-					UponReceiving("A request to get my details without cookies").
+					UponReceiving("A request to change my phone number without cookies").
 					WithRequest(dsl.Request{
 						Method: http.MethodPut,
 						Path:   dsl.String("/api/v1/users/47/updateTelephoneNumber"),

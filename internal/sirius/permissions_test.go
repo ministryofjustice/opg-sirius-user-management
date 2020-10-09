@@ -75,7 +75,7 @@ func TestPermissions(t *testing.T) {
 				pact.
 					AddInteraction().
 					Given("User exists").
-					UponReceiving("A request to get my details without cookies").
+					UponReceiving("A request to get my permissions without cookies").
 					WithRequest(dsl.Request{
 						Method: http.MethodGet,
 						Path:   dsl.String("/api/permission"),
