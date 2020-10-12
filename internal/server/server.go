@@ -19,6 +19,7 @@ type Client interface {
 	ChangePasswordClient
 	EditMyDetailsClient
 	EditUserClient
+	ListTeamsClient
 	ListUsersClient
 	MyDetailsClient
 	ResendConfirmationClient
@@ -41,6 +42,11 @@ func New(logger Logger, client Client, templates map[string]*template.Template, 
 		wrap(
 			systemAdminOnly(
 				listUsers(client, templates["users.gotmpl"], siriusURL))))
+
+	mux.Handle("/teams",
+		wrap(
+			systemAdminOnly(
+				listTeams(client, templates["teams.gotmpl"], siriusURL))))
 
 	mux.Handle("/my-details",
 		wrap(
