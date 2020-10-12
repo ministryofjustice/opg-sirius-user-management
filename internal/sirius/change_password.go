@@ -3,7 +3,6 @@ package sirius
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
@@ -41,7 +40,7 @@ func (c *Client) ChangePassword(ctx context.Context, cookies []*http.Cookie, old
 			return ClientError(v.Errors)
 		}
 
-		return fmt.Errorf("returned non-2XX response: %d", resp.StatusCode)
+		return newStatusError(resp)
 	}
 
 	return nil

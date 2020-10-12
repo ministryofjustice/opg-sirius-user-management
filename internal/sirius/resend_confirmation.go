@@ -2,7 +2,6 @@ package sirius
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
@@ -30,7 +29,7 @@ func (c *Client) ResendConfirmation(ctx context.Context, cookies []*http.Cookie,
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("returned non-200 response: %d", resp.StatusCode)
+		return newStatusError(resp)
 	}
 
 	return nil

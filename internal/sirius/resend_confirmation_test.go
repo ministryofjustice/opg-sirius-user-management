@@ -2,7 +2,6 @@ package sirius
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 	"testing"
@@ -27,7 +26,7 @@ func TestResendConfirmation(t *testing.T) {
 		setup         func()
 		cookies       []*http.Cookie
 		email         string
-		expectedError error
+		expectedError func(int) error
 	}{
 		{
 			name: "Created",
@@ -55,7 +54,8 @@ func TestResendConfirmation(t *testing.T) {
 				{Name: "XSRF-TOKEN", Value: "abcde"},
 				{Name: "Other", Value: "other"},
 			},
-			email: "john.doe@example.com",
+			email:         "john.doe@example.com",
+			expectedError: func(port int) error { return nil },
 		},
 
 		{
@@ -76,7 +76,7 @@ func TestResendConfirmation(t *testing.T) {
 						Status: http.StatusUnauthorized,
 					})
 			},
-			expectedError: ErrUnauthorized,
+			expectedError: func(port int) error { return ErrUnauthorized },
 		},
 
 		{
@@ -97,7 +97,13 @@ func TestResendConfirmation(t *testing.T) {
 						Status: http.StatusBadRequest,
 					})
 			},
-			expectedError: errors.New("returned non-200 response: 400"),
+			expectedError: func(port int) error {
+				return StatusError{
+					Code:   http.StatusBadRequest,
+					URL:    fmt.Sprintf("http://localhost:%d/auth/resend-confirmation", port),
+					Method: http.MethodPost,
+				}
+			},
 		},
 	}
 
@@ -109,7 +115,7 @@ func TestResendConfirmation(t *testing.T) {
 				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
 
 				err := client.ResendConfirmation(context.Background(), tc.cookies, tc.email)
-				assert.Equal(t, tc.expectedError, err)
+				assert.Equal(t, tc.expectedError(pact.Server.Port), err)
 				return nil
 			}))
 		})

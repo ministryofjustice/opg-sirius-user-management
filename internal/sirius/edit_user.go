@@ -32,7 +32,9 @@ func (c *Client) EditUser(ctx context.Context, cookies []*http.Cookie, user Auth
 		return err
 	}
 
-	req, err := c.newRequest(ctx, http.MethodPut, fmt.Sprintf("/auth/user/%d", user.ID), &body, cookies)
+	requestURL := fmt.Sprintf("/auth/user/%d", user.ID)
+
+	req, err := c.newRequest(ctx, http.MethodPut, requestURL, &body, cookies)
 	if err != nil {
 		return err
 	}
@@ -59,7 +61,7 @@ func (c *Client) EditUser(ctx context.Context, cookies []*http.Cookie, user Auth
 		}
 
 		if err == io.EOF {
-			return fmt.Errorf("returned non-200 response: %d", resp.StatusCode)
+			return newStatusError(resp)
 		}
 
 		return err
