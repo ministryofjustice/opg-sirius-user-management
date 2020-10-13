@@ -51,7 +51,7 @@ jobs:
             echo 'export PATH=$PWD/pact/bin:$PATH' >> $BASH_ENV
       - run:
           name: Run tests
-          command: gotestsum --junitfile /tmp/test-results/unit-tests.xml -- -coverprofile=/tmp/test-coverage.txt
+          command: gotestsum --junitfile /tmp/test-results/unit-tests.xml -- ./... -coverprofile=/tmp/test-coverage.txt
       - store_test_results:
           path: /tmp/test-results
       - run:
