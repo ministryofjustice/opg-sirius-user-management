@@ -62,9 +62,6 @@ jobs:
             PACT_BROKER_URL: https://pact-broker.api.opg.service.justice.gov.uk
             PACT_BROKER_USERNAME: admin
             PACT_TAG: v1_production
-      - store_artifacts:
-          path: /tmp/test-coverage.txt
-          destination: Test coverage
       - codecov/upload:
           file: /tmp/test-coverage.txt
 
