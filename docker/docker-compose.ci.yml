@@ -25,6 +25,8 @@ services:
     depends_on:
       - app
       - pact-stub
+    environment:
+      LHCI_BUILD_CONTEXT__CURRENT_HASH: $CIRCLE_SHA1
 
 volumes:
   pacts_data:
