@@ -1,8 +1,6 @@
 package server
 
 import (
-	"context"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -162,70 +160,4 @@ func TestErrorHandlerStatusKnown(t *testing.T) {
 			assert.Equal(StatusError(code), logger.lastError)
 		})
 	}
-}
-
-type mockSystemAdminOnlyClient struct {
-	count int
-	roles []string
-	err   error
-}
-
-func (m *mockSystemAdminOnlyClient) MyDetails(ctx context.Context, cookies []*http.Cookie) (sirius.MyDetails, error) {
-	m.count += 1
-
-	return sirius.MyDetails{Roles: m.roles}, m.err
-}
-
-func TestSystemAdminOnly(t *testing.T) {
-	assert := assert.New(t)
-
-	client := &mockSystemAdminOnlyClient{}
-	client.roles = []string{"System Admin"}
-
-	w := httptest.NewRecorder()
-	r, _ := http.NewRequest("GET", "/path", nil)
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
-
-	err := systemAdminOnly(client)(func(w http.ResponseWriter, r *http.Request) error {
-		return StatusError(http.StatusTeapot)
-	})(w, r)
-
-	assert.Equal(StatusError(http.StatusTeapot), err)
-	assert.Equal(1, client.count)
-}
-
-func TestSystemAdminOnlyMissingRole(t *testing.T) {
-	assert := assert.New(t)
-
-	client := &mockSystemAdminOnlyClient{}
-	client.roles = []string{}
-
-	w := httptest.NewRecorder()
-	r, _ := http.NewRequest("GET", "/path", nil)
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
-
-	err := systemAdminOnly(client)(func(w http.ResponseWriter, r *http.Request) error {
-		return StatusError(http.StatusTeapot)
-	})(w, r)
-
-	assert.Equal(StatusError(http.StatusForbidden), err)
-	assert.Equal(1, client.count)
-}
-
-func TestSystemAdminOnlyMyDetailsError(t *testing.T) {
-	assert := assert.New(t)
-
-	expectedErr := errors.New("oops")
-	client := &mockSystemAdminOnlyClient{}
-	client.err = expectedErr
-
-	w := httptest.NewRecorder()
-	r, _ := http.NewRequest("POST", "/path", nil)
-
-	err := systemAdminOnly(client)(func(w http.ResponseWriter, r *http.Request) error {
-		return StatusError(http.StatusTeapot)
-	})(w, r)
-
-	assert.Equal(expectedErr, err)
-	assert.Equal(1, client.count)
 }

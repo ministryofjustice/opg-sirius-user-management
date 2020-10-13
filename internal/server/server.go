@@ -1,7 +1,6 @@
 package server
 
 import (
-	"context"
 	"fmt"
 	"html/template"
 	"io"
@@ -16,13 +15,14 @@ type Logger interface {
 
 type Client interface {
 	AddUserClient
+	AllowRolesClient
 	ChangePasswordClient
 	EditMyDetailsClient
 	EditUserClient
+	ListTeamsClient
 	ListUsersClient
 	MyDetailsClient
 	ResendConfirmationClient
-	SystemAdminOnlyClient
 }
 
 type Template interface {
@@ -31,7 +31,7 @@ type Template interface {
 
 func New(logger Logger, client Client, templates map[string]*template.Template, prefix, siriusURL, siriusPublicURL string, webDir string) http.Handler {
 	wrap := errorHandler(logger, templates["error.gotmpl"], prefix, siriusPublicURL)
-	systemAdminOnly := systemAdminOnly(client)
+	systemAdminOnly := allowRoles(client, "System Admin")
 
 	mux := http.NewServeMux()
 	mux.Handle("/", http.RedirectHandler(prefix+"/my-details", http.StatusFound))
@@ -41,6 +41,11 @@ func New(logger Logger, client Client, templates map[string]*template.Template, 
 		wrap(
 			systemAdminOnly(
 				listUsers(client, templates["users.gotmpl"], siriusURL))))
+
+	mux.Handle("/teams",
+		wrap(
+			allowRoles(client, "System Admin", "Manager")(
+				listTeams(client, templates["teams.gotmpl"], siriusURL))))
 
 	mux.Handle("/my-details",
 		wrap(
@@ -146,33 +151,5 @@ func errorHandler(logger Logger, tmplError Template, prefix, siriusURL string) f
 				}
 			}
 		})
-	}
-}
-
-type SystemAdminOnlyClient interface {
-	MyDetails(context.Context, []*http.Cookie) (sirius.MyDetails, error)
-}
-
-func systemAdminOnly(client SystemAdminOnlyClient) func(Handler) Handler {
-	return func(next Handler) Handler {
-		return func(w http.ResponseWriter, r *http.Request) error {
-			myDetails, err := client.MyDetails(r.Context(), r.Cookies())
-			if err != nil {
-				return err
-			}
-
-			permitted := false
-			for _, role := range myDetails.Roles {
-				if role == "System Admin" {
-					permitted = true
-				}
-			}
-
-			if !permitted {
-				return StatusError(http.StatusForbidden)
-			}
-
-			return next(w, r)
-		}
 	}
 }
