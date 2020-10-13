@@ -104,6 +104,10 @@ jobs:
           name: Run pa11y
           command: |
             docker-compose -f docker/docker-compose.ci.yml run pa11y
+      - run:
+          name: Run Lighthouse
+          command: |
+            docker-compose -f docker/docker-compose.ci.yml run --entrypoint="lhci autorun" pa11y
 
   push:
     executor: ecr/python
