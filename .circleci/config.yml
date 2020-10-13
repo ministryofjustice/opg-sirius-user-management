@@ -12,6 +12,7 @@ workflows:
           requires: [pa11y]
 
 orbs:
+  codecov: codecov/codecov@1.1.1
   ecr:
     commands:
       login:
@@ -50,7 +51,7 @@ jobs:
             echo 'export PATH=$PWD/pact/bin:$PATH' >> $BASH_ENV
       - run:
           name: Run tests
-          command: gotestsum --junitfile /tmp/test-results/unit-tests.xml
+          command: gotestsum --junitfile /tmp/test-results/unit-tests.xml -- -coverprofile=/tmp/test-coverage.txt
       - store_test_results:
           path: /tmp/test-results
       - run:
@@ -61,6 +62,11 @@ jobs:
             PACT_BROKER_URL: https://pact-broker.api.opg.service.justice.gov.uk
             PACT_BROKER_USERNAME: admin
             PACT_TAG: v1_production
+      - store_artifacts:
+          path: /tmp/test-coverage.txt
+          destination: Test coverage
+      - codecov/upload:
+          file: /tmp/test-coverage.txt
 
   lint:
     docker:
