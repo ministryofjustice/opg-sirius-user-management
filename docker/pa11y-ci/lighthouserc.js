@@ -7,6 +7,9 @@ module.exports = {
           chromeFlags: "--disable-gpu --no-sandbox",
         },
       },
+      assert: {
+        preset: "lighthouse:no-pwa",
+      },
       upload: {
         target: 'temporary-public-storage',
       },
