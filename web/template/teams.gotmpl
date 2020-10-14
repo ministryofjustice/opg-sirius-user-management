@@ -39,7 +39,11 @@
     <tbody class="govuk-table__body">
       {{ range .Teams }}
         <tr class="govuk-table__row">
-          <th scope="row" class="govuk-table__header">{{ .DisplayName }}</th>
+          <th scope="row" class="govuk-table__header">
+            <a href="{{ prefix (printf "/teams/%d" .ID) }}" class="govuk-link">
+              {{ .DisplayName }}
+            </a>
+          </th>
           <td class="govuk-table__cell">{{ .Type }}</td>
           <td class="govuk-table__cell">{{ .Members }}</td>
         </tr>
