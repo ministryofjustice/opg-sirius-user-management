@@ -20,8 +20,8 @@ services:
         source: pacts_data
         target: /app/pacts
 
-  pa11y:
-    build: ./pa11y-ci
+  puppeteer:
+    build: ./puppeteer
     depends_on:
       - app
       - pact-stub
