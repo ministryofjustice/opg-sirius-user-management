@@ -71,8 +71,7 @@ func TestTeam(t *testing.T) {
 			expectedResponse: Team{
 				ID:          65,
 				DisplayName: "Cool Team",
-				Members:     1,
-				MemberDetails: []TeamMember{
+				Members: []TeamMember{
 					{
 						DisplayName: "John",
 						Email:       "john@opgtest.com",
@@ -121,8 +120,7 @@ func TestTeam(t *testing.T) {
 			expectedResponse: Team{
 				ID:          65,
 				DisplayName: "Cool Team",
-				Members:     1,
-				MemberDetails: []TeamMember{
+				Members: []TeamMember{
 					{
 						DisplayName: "Carline",
 						Email:       "carline@opgtest.com",

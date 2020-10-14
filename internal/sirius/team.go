@@ -7,20 +7,8 @@ import (
 	"strconv"
 )
 
-type apiTeamWithMembers struct {
-	ID          int    `json:"id"`
-	DisplayName string `json:"displayName"`
-	Members     []struct {
-		DisplayName string `json:"displayName"`
-		Email       string `json:"email"`
-	} `json:"members"`
-	TeamType *struct {
-		Label string `json:"label"`
-	} `json:"teamType"`
-}
-
 type apiTeamResponse struct {
-	Data apiTeamWithMembers `json:"data"`
+	Data apiTeam `json:"data"`
 }
 
 func (c *Client) Team(ctx context.Context, cookies []*http.Cookie, id int) (Team, error) {
@@ -51,12 +39,11 @@ func (c *Client) Team(ctx context.Context, cookies []*http.Cookie, id int) (Team
 	team := Team{
 		ID:          v.Data.ID,
 		DisplayName: v.Data.DisplayName,
-		Members:     len(v.Data.Members),
 		Type:        "LPA",
 	}
 
 	for _, m := range v.Data.Members {
-		team.MemberDetails = append(team.MemberDetails, TeamMember{
+		team.Members = append(team.Members, TeamMember{
 			DisplayName: m.DisplayName,
 			Email:       m.Email,
 		})

@@ -7,10 +7,13 @@ import (
 )
 
 type apiTeam struct {
-	ID          int        `json:"id"`
-	DisplayName string     `json:"displayName"`
-	Members     []struct{} `json:"members"`
-	TeamType    *struct {
+	ID          int    `json:"id"`
+	DisplayName string `json:"displayName"`
+	Members     []struct {
+		DisplayName string `json:"displayName"`
+		Email       string `json:"email"`
+	} `json:"members"`
+	TeamType *struct {
 		Label string `json:"label"`
 	} `json:"teamType"`
 }
@@ -21,11 +24,10 @@ type TeamMember struct {
 }
 
 type Team struct {
-	ID            int
-	DisplayName   string
-	Members       int
-	MemberDetails []TeamMember
-	Type          string
+	ID          int
+	DisplayName string
+	Members     []TeamMember
+	Type        string
 }
 
 func (c *Client) Teams(ctx context.Context, cookies []*http.Cookie) ([]Team, error) {
@@ -59,8 +61,14 @@ func (c *Client) Teams(ctx context.Context, cookies []*http.Cookie) ([]Team, err
 		teams[i] = Team{
 			ID:          t.ID,
 			DisplayName: t.DisplayName,
-			Members:     len(t.Members),
 			Type:        "LPA",
+		}
+
+		for _, m := range t.Members {
+			teams[i].Members = append(teams[i].Members, TeamMember{
+				DisplayName: m.DisplayName,
+				Email:       m.Email,
+			})
 		}
 
 		if t.TeamType != nil {
