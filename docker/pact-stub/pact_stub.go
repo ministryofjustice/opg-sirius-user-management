@@ -75,6 +75,7 @@ func (q Request) Match(r *http.Request) bool {
 			query := r.URL.Query()
 
 			if expectedQuery.Encode() != query.Encode() {
+				log.Println("QX", q)
 				return false
 			}
 		}

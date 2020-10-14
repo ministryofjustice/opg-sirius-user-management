@@ -1,12 +1,8 @@
 describe("Edit my details", () => {
     beforeEach(() => {
-        Cypress.Cookies.debug(true);
-
         cy.setCookie("Other", "other");
         cy.setCookie("XSRF-TOKEN", "abcde");
         cy.visit("/my-details/edit");
-
-        cy.server();
     });
 
     it("shows my phone number", () => {
@@ -15,13 +11,8 @@ describe("Edit my details", () => {
 
     it("allows me to change my phone number", () => {
         cy.get("#f-phonenumber").clear().type("123456789");
-
-        cy.route("POST", "/my-details/edit").as("formSuccess");
         cy.get("button[type=submit]").click();
 
-        cy.contains(
-            ".moj-banner",
-            "SuccessYou have successfully edited your details."
-        );
+        cy.contains(".moj-banner", "You have successfully edited your details.");
     });
 });
