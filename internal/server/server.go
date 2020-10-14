@@ -23,6 +23,7 @@ type Client interface {
 	ListUsersClient
 	MyDetailsClient
 	ResendConfirmationClient
+	ViewTeamClient
 }
 
 type Template interface {
@@ -46,6 +47,11 @@ func New(logger Logger, client Client, templates map[string]*template.Template, 
 		wrap(
 			allowRoles(client, "System Admin", "Manager")(
 				listTeams(client, templates["teams.gotmpl"], siriusURL))))
+
+	mux.Handle("/teams/",
+		wrap(
+			allowRoles(client, "System Admin", "Manager")(
+				viewTeam(client, templates["team.gotmpl"], siriusURL))))
 
 	mux.Handle("/my-details",
 		wrap(
