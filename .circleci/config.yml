@@ -8,8 +8,10 @@ workflows:
       - lint
       - acceptance-test:
           requires: [test, lint]
+      - cypress:
+          requires: [test, lint]
       - push:
-          requires: [acceptance-test]
+          requires: [acceptance-test, cypress]
 
 orbs:
   codecov: codecov/codecov@1.1.1
@@ -64,6 +66,10 @@ jobs:
             PACT_TAG: v1_production
       - codecov/upload:
           file: /tmp/test-coverage.txt
+      - persist_to_workspace:
+          root: ./pacts
+          paths:
+            - sirius-user-management-sirius.json
 
   lint:
     docker:
@@ -90,16 +96,13 @@ jobs:
       - setup_remote_docker:
           version: 18.06.0-ce
           docker_layer_caching: false
+      - attach_workspace:
+          at: ./pacts
       - run:
           name: Retrieve pact
           command: |
-            curl -u "$PACT_BROKER_USERNAME:$PACT_BROKER_PASSWORD" "$PACT_BROKER_URL/pacts/provider/sirius/consumer/sirius-user-management/version/$(echo $CIRCLE_SHA1 | cut -c -7)" -o sirius-user-management-sirius.json
             docker container create --name temp -v pacts_data:/root hello-world
-            docker cp ./sirius-user-management-sirius.json temp:/root/sirius-user-management-sirius.json
-            docker rm temp
-          environment:
-            PACT_BROKER_URL: https://pact-broker.api.opg.service.justice.gov.uk
-            PACT_BROKER_USERNAME: admin
+            docker cp ./pacts/sirius-user-management-sirius.json temp:/root/sirius-user-management-sirius.json
       - run:
           name: Run pa11y
           command: |
@@ -108,6 +111,27 @@ jobs:
           name: Run Lighthouse
           command: |
             docker-compose -f docker/docker-compose.ci.yml run --entrypoint="lhci autorun" puppeteer
+
+  cypress:
+    docker:
+      - image: circleci/node
+    resource_class: small
+    steps:
+      - checkout
+      - setup_remote_docker:
+          version: 18.06.0-ce
+          docker_layer_caching: false
+      - attach_workspace:
+          at: ./pacts
+      - run:
+          name: Retrieve pact
+          command: |
+            docker container create --name temp -v pacts_data:/root hello-world
+            docker cp ./pacts/sirius-user-management-sirius.json temp:/root/sirius-user-management-sirius.json
+      - run:
+          name: Run cypress
+          command: |
+            docker-compose -f docker/docker-compose.ci.yml run cypress
 
   push:
     executor: ecr/python

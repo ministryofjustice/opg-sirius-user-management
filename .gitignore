@@ -15,3 +15,5 @@ package-lock.json
 web/static
 logs
 pacts
+cypress/screenshots
+cypress/videos
