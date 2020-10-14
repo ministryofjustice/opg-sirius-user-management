@@ -11,15 +11,17 @@ import (
 )
 
 type mockViewTeamClient struct {
-	count       int
-	lastCookies []*http.Cookie
-	err         error
-	data        []sirius.Team
+	count         int
+	lastCookies   []*http.Cookie
+	err           error
+	data          sirius.Team
+	lastRequestID int
 }
 
-func (m *mockViewTeamClient) Teams(ctx context.Context, cookies []*http.Cookie) ([]sirius.Team, error) {
+func (m *mockViewTeamClient) Team(ctx context.Context, cookies []*http.Cookie, id int) (sirius.Team, error) {
 	m.count += 1
 	m.lastCookies = cookies
+	m.lastRequestID = id
 
 	return m.data, m.err
 }
@@ -27,17 +29,15 @@ func (m *mockViewTeamClient) Teams(ctx context.Context, cookies []*http.Cookie) 
 func TestViewTeam(t *testing.T) {
 	assert := assert.New(t)
 
-	data := []sirius.Team{
-		{
-			ID:          16,
-			DisplayName: "Lay allocations",
-			Type:        "Allocations",
-			Members:     1,
-			MemberDetails: []sirius.TeamMember{
-				{
-					DisplayName: "Stephani Bennard",
-					Email:       "s.bennard@opgtest.com",
-				},
+	data := sirius.Team{
+		ID:          16,
+		DisplayName: "Lay allocations",
+		Type:        "Allocations",
+		Members:     1,
+		MemberDetails: []sirius.TeamMember{
+			{
+				DisplayName: "Stephani Bennard",
+				Email:       "s.bennard@opgtest.com",
 			},
 		},
 	}
@@ -64,29 +64,15 @@ func TestViewTeam(t *testing.T) {
 	assert.Equal(viewTeamVars{
 		Path:      "/teams/16",
 		SiriusURL: "http://sirius",
-		Team:      data[0],
+		Team:      data,
 	}, template.lastVars)
 }
 
 func TestViewTeamNotFound(t *testing.T) {
 	assert := assert.New(t)
 
-	data := []sirius.Team{
-		{
-			ID:          16,
-			DisplayName: "Lay allocations",
-			Type:        "Allocations",
-			Members:     1,
-			MemberDetails: []sirius.TeamMember{
-				{
-					DisplayName: "Stephani Bennard",
-					Email:       "s.bennard@opgtest.com",
-				},
-			},
-		},
-	}
 	client := &mockViewTeamClient{
-		data: data,
+		err: StatusError(http.StatusNotFound),
 	}
 	template := &mockTemplate{}
 

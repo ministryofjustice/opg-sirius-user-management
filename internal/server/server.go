@@ -23,6 +23,7 @@ type Client interface {
 	ListUsersClient
 	MyDetailsClient
 	ResendConfirmationClient
+	ViewTeamClient
 }
 
 type Template interface {

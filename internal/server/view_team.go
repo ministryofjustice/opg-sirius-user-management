@@ -10,7 +10,7 @@ import (
 )
 
 type ViewTeamClient interface {
-	Teams(context.Context, []*http.Cookie) ([]sirius.Team, error)
+	Team(context.Context, []*http.Cookie, int) (sirius.Team, error)
 }
 
 type viewTeamVars struct {
@@ -30,21 +30,9 @@ func viewTeam(client ViewTeamClient, tmpl Template, siriusURL string) Handler {
 			return StatusError(http.StatusNotFound)
 		}
 
-		teams, err := client.Teams(r.Context(), r.Cookies())
+		team, err := client.Team(r.Context(), r.Cookies(), id)
 		if err != nil {
 			return err
-		}
-
-		var team sirius.Team
-		for _, t := range teams {
-			if t.ID == id {
-				team = t
-				break
-			}
-		}
-
-		if team.ID == 0 {
-			return StatusError(http.StatusNotFound)
 		}
 
 		vars := viewTeamVars{
