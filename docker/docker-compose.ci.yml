@@ -36,7 +36,7 @@ services:
     build:
       context: ..
       dockerfile: ./docker/cypress/Dockerfile
-    command: ["--headless", "-b", "firefox"]
+    command: ["--headless", "-b", "chrome"]
     depends_on:
       - app
       - pact-stub
