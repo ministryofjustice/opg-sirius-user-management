@@ -84,6 +84,21 @@ func TestViewTeamNotFound(t *testing.T) {
 	assert.Equal(StatusError(http.StatusNotFound), err)
 }
 
+func TestViewTeamBadPath(t *testing.T) {
+	assert := assert.New(t)
+
+	client := &mockViewTeamClient{}
+	template := &mockTemplate{}
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("GET", "/teams/jeoi", nil)
+	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
+
+	err := viewTeam(client, template, "http://sirius")(w, r)
+
+	assert.Equal(StatusError(http.StatusNotFound), err)
+}
+
 func TestPostViewTeam(t *testing.T) {
 	assert := assert.New(t)
 
