@@ -51,7 +51,8 @@ func TestTeams(t *testing.T) {
 							"id":          dsl.Like(123),
 							"displayName": dsl.Like("Cool Team"),
 							"members": dsl.EachLike(map[string]interface{}{
-								"name": dsl.Like("John"),
+								"displayName": dsl.Like("John"),
+								"email":       dsl.Like("john@opgtest.com"),
 							}, 1),
 							"teamType": dsl.Like(map[string]interface{}{
 								"label": "Very Cool",
@@ -68,7 +69,13 @@ func TestTeams(t *testing.T) {
 					ID:          123,
 					DisplayName: "Cool Team",
 					Members:     1,
-					Type:        "Supervision — Very Cool",
+					MemberDetails: []TeamMember{
+						{
+							DisplayName: "John",
+							Email:       "john@opgtest.com",
+						},
+					},
+					Type: "Supervision — Very Cool",
 				},
 			},
 		},
@@ -96,7 +103,8 @@ func TestTeams(t *testing.T) {
 							"id":          dsl.Like(123),
 							"displayName": dsl.Like("Cool Team"),
 							"members": dsl.EachLike(map[string]interface{}{
-								"name": dsl.Like("John"),
+								"displayName": dsl.Like("Carline"),
+								"email":       dsl.Like("carline@opgtest.com"),
 							}, 1),
 						}, 1),
 					})
@@ -110,7 +118,13 @@ func TestTeams(t *testing.T) {
 					ID:          123,
 					DisplayName: "Cool Team",
 					Members:     1,
-					Type:        "LPA",
+					MemberDetails: []TeamMember{
+						{
+							DisplayName: "Carline",
+							Email:       "carline@opgtest.com",
+						},
+					},
+					Type: "LPA",
 				},
 			},
 		},
