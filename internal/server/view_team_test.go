@@ -33,8 +33,7 @@ func TestViewTeam(t *testing.T) {
 		ID:          16,
 		DisplayName: "Lay allocations",
 		Type:        "Allocations",
-		Members:     1,
-		MemberDetails: []sirius.TeamMember{
+		Members: []sirius.TeamMember{
 			{
 				DisplayName: "Stephani Bennard",
 				Email:       "s.bennard@opgtest.com",

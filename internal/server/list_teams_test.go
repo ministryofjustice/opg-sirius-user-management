@@ -32,7 +32,7 @@ func TestListTeams(t *testing.T) {
 		{
 			ID:          29,
 			DisplayName: "Milo Nihei",
-			Members:     10,
+			Members:     make([]sirius.TeamMember, 10),
 			Type:        "Top Notch",
 		},
 	}
@@ -70,13 +70,13 @@ func TestListTeamsSearch(t *testing.T) {
 		{
 			ID:          29,
 			DisplayName: "Milo Nihei",
-			Members:     10,
+			Members:     make([]sirius.TeamMember, 10),
 			Type:        "Top Notch",
 		},
 		{
 			ID:          3,
 			DisplayName: "Who",
-			Members:     5,
+			Members:     make([]sirius.TeamMember, 5),
 			Type:        "Terrible",
 		},
 	}
@@ -108,7 +108,7 @@ func TestListTeamsSearch(t *testing.T) {
 			{
 				ID:          29,
 				DisplayName: "Milo Nihei",
-				Members:     10,
+				Members:     make([]sirius.TeamMember, 10),
 				Type:        "Top Notch",
 			},
 		},
