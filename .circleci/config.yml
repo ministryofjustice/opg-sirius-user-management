@@ -9,9 +9,9 @@ workflows:
       - acceptance-test:
           requires: [test, lint]
       - cypress:
-          requires: [acceptance-test]
+          requires: [test, lint]
       - push:
-          requires: [cypress]
+          requires: [acceptance-test, cypress]
 
 orbs:
   codecov: codecov/codecov@1.1.1
