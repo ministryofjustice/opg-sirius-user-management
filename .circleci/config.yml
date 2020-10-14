@@ -6,10 +6,10 @@ workflows:
     jobs:
       - test
       - lint
-      - pa11y:
+      - acceptance-test:
           requires: [test, lint]
       - push:
-          requires: [pa11y]
+          requires: [acceptance-test]
 
 orbs:
   codecov: codecov/codecov@1.1.1
@@ -81,7 +81,7 @@ jobs:
           name: Lint
           command: golangci-lint run
 
-  pa11y:
+  acceptance-test:
     docker:
       - image: circleci/node
     resource_class: small
@@ -103,11 +103,11 @@ jobs:
       - run:
           name: Run pa11y
           command: |
-            docker-compose -f docker/docker-compose.ci.yml run pa11y
+            docker-compose -f docker/docker-compose.ci.yml run --entrypoint="pa11y-ci" puppeteer
       - run:
           name: Run Lighthouse
           command: |
-            docker-compose -f docker/docker-compose.ci.yml run --entrypoint="lhci autorun" pa11y
+            docker-compose -f docker/docker-compose.ci.yml run --entrypoint="lhci autorun" puppeteer
 
   push:
     executor: ecr/python
