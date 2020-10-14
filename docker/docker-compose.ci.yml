@@ -20,11 +20,15 @@ services:
         source: pacts_data
         target: /app/pacts
 
-  pa11y:
-    build: ./pa11y-ci
+  puppeteer:
+    build: ./puppeteer
     depends_on:
       - app
       - pact-stub
+    environment:
+      - LHCI_BUILD_CONTEXT__CURRENT_HASH=$CIRCLE_SHA1
+      - LHCI_BUILD_CONTEXT__GITHUB_REPO_SLUG=ministryofjustice/opg-sirius-user-management
+      - LHCI_GITHUB_APP_TOKEN
 
 volumes:
   pacts_data:
