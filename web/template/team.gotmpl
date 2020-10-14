@@ -1,0 +1,38 @@
+{{ template "page" . }}
+
+{{ define "backlink" }}
+  <a class="govuk-back-link" href="{{ prefix "/teams" }}">Back</a>
+{{ end }}
+
+{{ define "title" }}
+  {{ .Team.DisplayName }}
+{{ end }}
+
+{{ define "main" }}
+  <div class="moj-page-header-actions">
+    <div class="moj-page-header-actions__title">
+      <h1 class="govuk-heading-xl">{{ .Team.DisplayName }}</h1>
+    </div>
+  </div>
+
+  {{ if .Team.Members }}
+    <table class="govuk-table">
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header">Name</th>
+          <th scope="col" class="govuk-table__header">Email</th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        {{ range .Team.MemberDetails }}
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell">{{ .DisplayName }}</td>
+            <td class="govuk-table__cell">{{ .Email }}</td>
+          </tr>
+        {{ end }}
+      </tbody>
+    </table>
+  {{ else }}
+    <p class="govuk-body">This team currently has no users</p>
+  {{ end }}
+{{ end }}

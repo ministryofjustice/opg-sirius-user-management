@@ -47,6 +47,11 @@ func New(logger Logger, client Client, templates map[string]*template.Template, 
 			allowRoles(client, "System Admin", "Manager")(
 				listTeams(client, templates["teams.gotmpl"], siriusURL))))
 
+	mux.Handle("/teams/",
+		wrap(
+			allowRoles(client, "System Admin", "Manager")(
+				viewTeam(client, templates["team.gotmpl"], siriusURL))))
+
 	mux.Handle("/my-details",
 		wrap(
 			myDetails(client, templates["my-details.gotmpl"], siriusURL)))
