@@ -41,7 +41,7 @@ func TestEditTeam(t *testing.T) {
 		{
 			name: "OK",
 			team: Team{
-				ID:          123,
+				ID:          65,
 				DisplayName: "Test team",
 				Type:        "FINANCE",
 				PhoneNumber: "014729583920",
@@ -54,7 +54,7 @@ func TestEditTeam(t *testing.T) {
 					UponReceiving("A request to edit the team").
 					WithRequest(dsl.Request{
 						Method: http.MethodPut,
-						Path:   dsl.String("/api/team/123"),
+						Path:   dsl.String("/api/team/65"),
 						Headers: dsl.MapMatcher{
 							"X-XSRF-TOKEN":        dsl.String("abcde"),
 							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
@@ -77,7 +77,7 @@ func TestEditTeam(t *testing.T) {
 		{
 			name: "OKSendsMembers",
 			team: Team{
-				ID:          123,
+				ID:          65,
 				DisplayName: "Test team",
 				Type:        "FINANCE",
 				PhoneNumber: "014729583920",
@@ -99,7 +99,7 @@ func TestEditTeam(t *testing.T) {
 					UponReceiving("A request to edit the team with members").
 					WithRequest(dsl.Request{
 						Method: http.MethodPut,
-						Path:   dsl.String("/api/team/123"),
+						Path:   dsl.String("/api/team/65"),
 						Headers: dsl.MapMatcher{
 							"X-XSRF-TOKEN":        dsl.String("abcde"),
 							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
@@ -122,7 +122,7 @@ func TestEditTeam(t *testing.T) {
 		{
 			name: "Unauthorized",
 			team: Team{
-				ID:          123,
+				ID:          65,
 				DisplayName: "Test team",
 				Type:        "FINANCE",
 			},
@@ -133,7 +133,7 @@ func TestEditTeam(t *testing.T) {
 					UponReceiving("A request to edit the team without cookies").
 					WithRequest(dsl.Request{
 						Method: http.MethodPut,
-						Path:   dsl.String("/api/team/123"),
+						Path:   dsl.String("/api/team/65"),
 						Headers: dsl.MapMatcher{
 							"OPG-Bypass-Membrane": dsl.String("1"),
 						},
@@ -149,7 +149,7 @@ func TestEditTeam(t *testing.T) {
 		{
 			name: "Validation Errors",
 			team: Team{
-				ID:          123,
+				ID:          65,
 				DisplayName: "Test team",
 				Type:        "BAD_TYPE",
 			},
@@ -160,7 +160,7 @@ func TestEditTeam(t *testing.T) {
 					UponReceiving("A request to edit the team with an invalid type").
 					WithRequest(dsl.Request{
 						Method: http.MethodPut,
-						Path:   dsl.String("/api/team/123"),
+						Path:   dsl.String("/api/team/65"),
 						Headers: dsl.MapMatcher{
 							"X-XSRF-TOKEN":        dsl.String("abcde"),
 							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
