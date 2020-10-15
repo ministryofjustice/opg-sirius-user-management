@@ -27,6 +27,7 @@
         "http://app:8888/add-user",
         "http://app:8888/edit-user/123",
         "http://app:8888/teams",
+        "http://app:8888/teams/edit/123",
         "http://app:8888/teams/123"
     ]
 }
