@@ -9,6 +9,8 @@ import (
 type apiTeam struct {
 	ID          int    `json:"id"`
 	DisplayName string `json:"displayName"`
+	Email       string `json:"email"`
+	PhoneNumber string `json:"phoneNumber"`
 	Members     []struct {
 		DisplayName string `json:"displayName"`
 		Email       string `json:"email"`
@@ -28,6 +30,8 @@ type Team struct {
 	DisplayName string
 	Members     []TeamMember
 	Type        string
+	Email       string
+	PhoneNumber string
 }
 
 func (c *Client) Teams(ctx context.Context, cookies []*http.Cookie) ([]Team, error) {

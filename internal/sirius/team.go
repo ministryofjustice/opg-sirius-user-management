@@ -40,6 +40,8 @@ func (c *Client) Team(ctx context.Context, cookies []*http.Cookie, id int) (Team
 		ID:          v.Data.ID,
 		DisplayName: v.Data.DisplayName,
 		Type:        "LPA",
+		Email:       v.Data.Email,
+		PhoneNumber: v.Data.PhoneNumber,
 	}
 
 	for _, m := range v.Data.Members {
