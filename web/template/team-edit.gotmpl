@@ -35,27 +35,27 @@
 
             <div class="govuk-radios govuk-radios--conditional" data-module="govuk-radios">
               <div class="govuk-radios__item">
-                <input class="govuk-radios__input" id="f-service-conditional" name="service" type="radio" value="supervision" aria-controls="conditional-f-service-conditional" {{ if not (eq .Team.Type "LPA") }}checked{{ end }}>
+                <input class="govuk-radios__input" id="f-service-conditional" name="service" type="radio" value="supervision" aria-controls="conditional-f-service-conditional" {{ if not (eq .Team.Type "") }}checked{{ end }}>
                 <label class="govuk-label govuk-radios__label" for="f-service-conditional">
                   Supervision
                 </label>
               </div>
 
-              <div class="govuk-radios__conditional {{ if eq .Team.Type "LPA" }}govuk-radios__conditional--hidden{{ end }}" id="conditional-f-service-conditional">
+              <div class="govuk-radios__conditional {{ if eq .Team.Type "" }}govuk-radios__conditional--hidden{{ end }}" id="conditional-f-service-conditional">
                 <div class="govuk-form-group">
                   <label class="govuk-label" for="f-supervision-type">
                     Supervision team type
                   </label>
                   <select class="govuk-select" id="f-supervision-type" name="supervision-type">
-                    {{ range .TeamTypeOptions }}
-                      <option {{ if eq $.Team.Type (printf "Supervision — %s" .) }}selected{{ end }}>{{ . }}</option>
+                    {{ range $handle, $label := .TeamTypeOptions }}
+                      <option value="{{ $handle }}" {{ if eq $.Team.Type $handle }}selected{{ end }}>{{ $label }}</option>
                     {{ end }}
                   </select>
                 </div>
               </div>
 
               <div class="govuk-radios__item">
-                <input class="govuk-radios__input" id="f-service-conditional-2" name="service" type="radio" value="lpa" {{ if eq .Team.Type "LPA" }}checked{{ end }}>
+                <input class="govuk-radios__input" id="f-service-conditional-2" name="service" type="radio" value="lpa" {{ if eq .Team.Type "" }}checked{{ end }}>
                 <label class="govuk-label govuk-radios__label" for="f-service-conditional-2">
                   LPA
                 </label>

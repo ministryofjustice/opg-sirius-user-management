@@ -39,7 +39,7 @@ func (c *Client) Team(ctx context.Context, cookies []*http.Cookie, id int) (Team
 	team := Team{
 		ID:          v.Data.ID,
 		DisplayName: v.Data.DisplayName,
-		Type:        "LPA",
+		Type:        "",
 		Email:       v.Data.Email,
 		PhoneNumber: v.Data.PhoneNumber,
 	}
@@ -53,7 +53,7 @@ func (c *Client) Team(ctx context.Context, cookies []*http.Cookie, id int) (Team
 	}
 
 	if v.Data.TeamType != nil {
-		team.Type = "Supervision — " + v.Data.TeamType.Label
+		team.Type = v.Data.TeamType.Handle
 	}
 
 	return team, nil

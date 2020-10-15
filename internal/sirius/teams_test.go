@@ -55,7 +55,7 @@ func TestTeams(t *testing.T) {
 								"email":       dsl.Like("john@opgtest.com"),
 							}, 1),
 							"teamType": dsl.Like(map[string]interface{}{
-								"label": "Very Cool",
+								"handle": "ALLOCATIONS",
 							}),
 						}, 1),
 					})
@@ -74,7 +74,8 @@ func TestTeams(t *testing.T) {
 							Email:       "john@opgtest.com",
 						},
 					},
-					Type: "Supervision — Very Cool",
+					Type:      "ALLOCATIONS",
+					TypeLabel: "Supervision — Allocations",
 				},
 			},
 		},
@@ -122,7 +123,8 @@ func TestTeams(t *testing.T) {
 							Email:       "john@opgtest.com",
 						},
 					},
-					Type: "LPA",
+					Type:      "",
+					TypeLabel: "LPA",
 				},
 			},
 		},

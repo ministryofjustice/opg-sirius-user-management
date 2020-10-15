@@ -17,7 +17,7 @@ type apiTeam struct {
 		Email       string `json:"email"`
 	} `json:"members"`
 	TeamType *struct {
-		Label string `json:"label"`
+		Handle string `json:"handle"`
 	} `json:"teamType"`
 }
 
@@ -32,8 +32,23 @@ type Team struct {
 	DisplayName string
 	Members     []TeamMember
 	Type        string
+	TypeLabel   string
 	Email       string
 	PhoneNumber string
+}
+
+var TeamTypeOptions = map[string]string{
+	"ALLOCATIONS":     "Allocations",
+	"COMPLAINTS":      "Complaints",
+	"CORPORATE":       "Corporate",
+	"FINANCE":         "Finance",
+	"HW":              "HW",
+	"INVESTIGATIONS":  "Investigations",
+	"LAY":             "Lay",
+	"NOT_APPROPRIATE": "Not appropriate",
+	"PA":              "PA",
+	"PRO":             "Pro",
+	"VISITS":          "Visits",
 }
 
 func (c *Client) Teams(ctx context.Context, cookies []*http.Cookie) ([]Team, error) {
@@ -67,7 +82,8 @@ func (c *Client) Teams(ctx context.Context, cookies []*http.Cookie) ([]Team, err
 		teams[i] = Team{
 			ID:          t.ID,
 			DisplayName: t.DisplayName,
-			Type:        "LPA",
+			Type:        "",
+			TypeLabel:   "LPA",
 		}
 
 		for _, m := range t.Members {
@@ -78,7 +94,8 @@ func (c *Client) Teams(ctx context.Context, cookies []*http.Cookie) ([]Team, err
 		}
 
 		if t.TeamType != nil {
-			teams[i].Type = "Supervision — " + t.TeamType.Label
+			teams[i].Type = t.TeamType.Handle
+			teams[i].TypeLabel = "Supervision — " + TeamTypeOptions[t.TeamType.Handle]
 		}
 	}
 

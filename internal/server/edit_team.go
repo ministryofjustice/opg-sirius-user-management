@@ -18,7 +18,7 @@ type editTeamVars struct {
 	Path            string
 	SiriusURL       string
 	Team            sirius.Team
-	TeamTypeOptions []string
+	TeamTypeOptions map[string]string
 	Success         bool
 	Errors          sirius.ValidationErrors
 }
@@ -36,22 +36,10 @@ func editTeam(client EditTeamClient, tmpl Template, siriusURL string) Handler {
 		}
 
 		vars := editTeamVars{
-			Path:      r.URL.Path,
-			SiriusURL: siriusURL,
-			Team:      team,
-			TeamTypeOptions: []string{
-				"Allocations",
-				"Complaints",
-				"Corporate",
-				"Finance",
-				"HW",
-				"Investigations",
-				"Lay",
-				"Not appropriate",
-				"PA",
-				"Pro",
-				"Visits",
-			},
+			Path:            r.URL.Path,
+			SiriusURL:       siriusURL,
+			Team:            team,
+			TeamTypeOptions: sirius.TeamTypeOptions,
 		}
 
 		switch r.Method {
@@ -63,9 +51,9 @@ func editTeam(client EditTeamClient, tmpl Template, siriusURL string) Handler {
 			vars.Team.Email = r.PostFormValue("email")
 
 			if r.PostFormValue("service") == "supervision" {
-				vars.Team.Type = "Supervision — " + r.PostFormValue("supervision-type")
+				vars.Team.Type = r.PostFormValue("supervision-type")
 			} else {
-				vars.Team.Type = "LPA"
+				vars.Team.Type = ""
 			}
 
 			// Attempt to save

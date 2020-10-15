@@ -16,7 +16,7 @@ func (c *Client) EditTeam(ctx context.Context, cookies []*http.Cookie, team Team
 		"name":             {team.DisplayName},
 		"email":            {team.Email},
 		"phoneNumber":      {team.PhoneNumber},
-		"teamType[handle]": {"ALLOCATIONS"},
+		"teamType[handle]": {team.Type},
 	}
 
 	for i, member := range team.Members {
