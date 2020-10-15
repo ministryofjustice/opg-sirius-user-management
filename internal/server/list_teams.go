@@ -13,10 +13,10 @@ type ListTeamsClient interface {
 }
 
 type listTeamsVars struct {
-	Path            string
-	SiriusURL       string
-	Search          string
-	Teams           []sirius.Team
+	Path      string
+	SiriusURL string
+	Search    string
+	Teams     []sirius.Team
 }
 
 func listTeams(client ListTeamsClient, tmpl Template, siriusURL string) Handler {
@@ -45,10 +45,10 @@ func listTeams(client ListTeamsClient, tmpl Template, siriusURL string) Handler 
 		}
 
 		vars := listTeamsVars{
-			Path:            r.URL.Path,
-			SiriusURL:       siriusURL,
-			Search:          search,
-			Teams:           teams,
+			Path:      r.URL.Path,
+			SiriusURL: siriusURL,
+			Search:    search,
+			Teams:     teams,
 		}
 
 		return tmpl.ExecuteTemplate(w, "page", vars)
