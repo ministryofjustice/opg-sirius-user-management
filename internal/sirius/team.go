@@ -46,6 +46,7 @@ func (c *Client) Team(ctx context.Context, cookies []*http.Cookie, id int) (Team
 
 	for _, m := range v.Data.Members {
 		team.Members = append(team.Members, TeamMember{
+			ID:          m.ID,
 			DisplayName: m.DisplayName,
 			Email:       m.Email,
 		})

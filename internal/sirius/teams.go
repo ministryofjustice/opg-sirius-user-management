@@ -12,6 +12,7 @@ type apiTeam struct {
 	Email       string `json:"email"`
 	PhoneNumber string `json:"phoneNumber"`
 	Members     []struct {
+		ID          int    `json:"id"`
 		DisplayName string `json:"displayName"`
 		Email       string `json:"email"`
 	} `json:"members"`
@@ -21,6 +22,7 @@ type apiTeam struct {
 }
 
 type TeamMember struct {
+	ID          int
 	DisplayName string
 	Email       string
 }

@@ -18,6 +18,7 @@ type Client interface {
 	AllowRolesClient
 	ChangePasswordClient
 	EditMyDetailsClient
+	EditTeamClient
 	EditUserClient
 	ListTeamsClient
 	ListUsersClient
@@ -52,6 +53,11 @@ func New(logger Logger, client Client, templates map[string]*template.Template, 
 		wrap(
 			allowRoles(client, "System Admin", "Manager")(
 				viewTeam(client, templates["team.gotmpl"], siriusURL))))
+
+	mux.Handle("/teams/edit/",
+		wrap(
+			allowRoles(client, "System Admin", "Manager")(
+				editTeam(client, templates["team-edit.gotmpl"], siriusURL))))
 
 	mux.Handle("/my-details",
 		wrap(
