@@ -43,10 +43,10 @@
 
               <div class="govuk-radios__conditional {{ if eq .Team.Type "" }}govuk-radios__conditional--hidden{{ end }}" id="conditional-f-service-conditional">
                 <div class="govuk-form-group">
-                  <label class="govuk-label" for="f-supervision-type">
+                  <label class="govuk-label" for="f-teamType">
                     Supervision team type
                   </label>
-                  <select class="govuk-select" id="f-supervision-type" name="supervision-type">
+                  <select class="govuk-select" id="f-teamType" name="supervision-type">
                     {{ range $handle, $label := .TeamTypeOptions }}
                       <option value="{{ $handle }}" {{ if eq $.Team.Type $handle }}selected{{ end }}>{{ $label }}</option>
                     {{ end }}
@@ -65,11 +65,11 @@
         </div>
 
         <div class="govuk-form-group">
-          <label class="govuk-label" for="f-phone">
+          <label class="govuk-label" for="f-phoneNumber">
             Phone number
           </label>
 
-          <input class="govuk-input govuk-!-width-one-third" id="f-phone" name="phone" type="text" value="{{ .Team.PhoneNumber }}">
+          <input class="govuk-input govuk-!-width-one-third" id="f-phoneNumber" name="phone" type="text" value="{{ .Team.PhoneNumber }}">
         </div>
 
         <div class="govuk-form-group">
