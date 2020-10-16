@@ -21,6 +21,13 @@ type mockEditTeamClient struct {
 		err         error
 	}
 
+	teamTypes struct {
+		count       int
+		lastCookies []*http.Cookie
+		data        []sirius.RefDataTeamType
+		err         error
+	}
+
 	editTeam struct {
 		count       int
 		lastCookies []*http.Cookie
@@ -37,6 +44,13 @@ func (m *mockEditTeamClient) Team(ctx context.Context, cookies []*http.Cookie, i
 	return m.team.data, m.team.err
 }
 
+func (m *mockEditTeamClient) TeamTypes(ctx context.Context, cookies []*http.Cookie) ([]sirius.RefDataTeamType, error) {
+	m.teamTypes.count += 1
+	m.teamTypes.lastCookies = cookies
+
+	return m.teamTypes.data, m.teamTypes.err
+}
+
 func (m *mockEditTeamClient) EditTeam(ctx context.Context, cookies []*http.Cookie, team sirius.Team) error {
 	m.editTeam.count += 1
 	m.editTeam.lastCookies = cookies
@@ -50,6 +64,12 @@ func TestGetEditTeam(t *testing.T) {
 
 	client := &mockEditTeamClient{}
 	client.team.data = sirius.Team{DisplayName: "Complaints team"}
+	client.teamTypes.data = []sirius.RefDataTeamType{
+		{
+			Handle: "TEST",
+			Label:  "Test type",
+		},
+	}
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
@@ -68,7 +88,7 @@ func TestGetEditTeam(t *testing.T) {
 		Path:            "/teams/edit/123",
 		SiriusURL:       "http://sirius",
 		Team:            client.team.data,
-		TeamTypeOptions: sirius.TeamTypeOptions,
+		TeamTypeOptions: client.teamTypes.data,
 	}, template.lastVars)
 }
 
@@ -109,6 +129,7 @@ func TestPostEditTeam(t *testing.T) {
 		Email:       "complaint@opgtest.com",
 		PhoneNumber: "01234",
 	}
+	client.teamTypes.data = []sirius.RefDataTeamType{}
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
@@ -136,7 +157,7 @@ func TestPostEditTeam(t *testing.T) {
 			Email:       "new@opgtest.com",
 			PhoneNumber: "9876",
 		},
-		TeamTypeOptions: sirius.TeamTypeOptions,
+		TeamTypeOptions: client.teamTypes.data,
 		Success:         true,
 	}, template.lastVars)
 }
@@ -179,7 +200,7 @@ func TestPostEditLpaTeam(t *testing.T) {
 			Email:       "new@opgtest.com",
 			PhoneNumber: "9876",
 		},
-		TeamTypeOptions: sirius.TeamTypeOptions,
+		TeamTypeOptions: client.teamTypes.data,
 		Success:         true,
 	}, template.lastVars)
 }
@@ -227,7 +248,7 @@ func TestPostEditTeamValidationError(t *testing.T) {
 			Email:       "new@opgtest.com",
 			PhoneNumber: "9876",
 		},
-		TeamTypeOptions: sirius.TeamTypeOptions,
+		TeamTypeOptions: client.teamTypes.data,
 		Errors:          validationErrors,
 	}, template.lastVars)
 }
@@ -258,6 +279,24 @@ func TestPostEditTeamRetrieveError(t *testing.T) {
 
 	client := &mockEditTeamClient{}
 	client.team.err = StatusError(http.StatusNotFound)
+	template := &mockTemplate{}
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("POST", "/teams/edit/123", nil)
+
+	err := editTeam(client, template, "http://sirius")(w, r)
+
+	assert.Equal(StatusError(http.StatusNotFound), err)
+
+	assert.Equal(0, client.editTeam.count)
+	assert.Equal(0, template.count)
+}
+
+func TestPostEditTeamRefDataError(t *testing.T) {
+	assert := assert.New(t)
+
+	client := &mockEditTeamClient{}
+	client.teamTypes.err = StatusError(http.StatusNotFound)
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()

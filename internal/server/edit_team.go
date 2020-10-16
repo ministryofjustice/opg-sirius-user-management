@@ -12,13 +12,14 @@ import (
 type EditTeamClient interface {
 	Team(context.Context, []*http.Cookie, int) (sirius.Team, error)
 	EditTeam(context.Context, []*http.Cookie, sirius.Team) error
+	TeamTypes(context.Context, []*http.Cookie) ([]sirius.RefDataTeamType, error)
 }
 
 type editTeamVars struct {
 	Path            string
 	SiriusURL       string
 	Team            sirius.Team
-	TeamTypeOptions map[string]string
+	TeamTypeOptions []sirius.RefDataTeamType
 	Success         bool
 	Errors          sirius.ValidationErrors
 }
@@ -35,11 +36,16 @@ func editTeam(client EditTeamClient, tmpl Template, siriusURL string) Handler {
 			return err
 		}
 
+		teamTypes, err := client.TeamTypes(r.Context(), r.Cookies())
+		if err != nil {
+			return err
+		}
+
 		vars := editTeamVars{
 			Path:            r.URL.Path,
 			SiriusURL:       siriusURL,
 			Team:            team,
-			TeamTypeOptions: sirius.TeamTypeOptions,
+			TeamTypeOptions: teamTypes,
 		}
 
 		switch r.Method {

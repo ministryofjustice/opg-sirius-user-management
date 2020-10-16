@@ -56,6 +56,7 @@ func TestTeams(t *testing.T) {
 							}, 1),
 							"teamType": dsl.Like(map[string]interface{}{
 								"handle": "ALLOCATIONS",
+								"label":  "Allocations",
 							}),
 						}, 1),
 					})

@@ -59,8 +59,8 @@
                     Supervision team type
                   </label>
                   <select class="govuk-select {{ if .Errors.teamType }}govuk-select--error{{ end }}" id="f-teamType" name="supervision-type">
-                    {{ range $handle, $label := .TeamTypeOptions }}
-                      <option value="{{ $handle }}" {{ if eq $.Team.Type $handle }}selected{{ end }}>{{ $label }}</option>
+                    {{ range .TeamTypeOptions }}
+                      <option value="{{ .Handle }}" {{ if eq $.Team.Type .Handle }}selected{{ end }}>{{ .Label }}</option>
                     {{ end }}
                   </select>
                 </div>
