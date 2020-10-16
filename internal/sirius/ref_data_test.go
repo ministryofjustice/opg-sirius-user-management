@@ -108,8 +108,7 @@ func TestTeamTypes(t *testing.T) {
 						Status: http.StatusUnauthorized,
 					})
 			},
-			expectedResponse: []RefDataTeamType{},
-			expectedError:    ErrUnauthorized,
+			expectedError: ErrUnauthorized,
 		},
 	}
 

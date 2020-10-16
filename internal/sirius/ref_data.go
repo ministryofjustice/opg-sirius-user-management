@@ -18,7 +18,7 @@ func (c *Client) TeamTypes(ctx context.Context, cookies []*http.Cookie) ([]RefDa
 		Data []RefDataTeamType `json:"teamType"`
 	}
 
-	types := []RefDataTeamType{}
+	var types []RefDataTeamType
 
 	req, err := c.newRequest(ctx, http.MethodGet, "/api/v1/reference-data?filter=teamType", nil, cookies)
 	if err != nil {
