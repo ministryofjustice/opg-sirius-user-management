@@ -50,10 +50,20 @@ func TestTeamTypes(t *testing.T) {
 					WillRespondWith(dsl.Response{
 						Status: http.StatusOK,
 						Body: dsl.Like(map[string]interface{}{
-							"teamType": dsl.EachLike(map[string]interface{}{
-								"handle": dsl.String("INVESTIGATIONS"),
-								"label":  dsl.String("Investigations"),
-							}, 1),
+							"teamType": []map[string]interface{}{
+								{
+									"handle": dsl.String("ALLOCATIONS"),
+									"label":  dsl.String("Allocations"),
+								},
+								{
+									"handle": dsl.String("COMPLAINTS"),
+									"label":  dsl.String("Complaints"),
+								},
+								{
+									"handle": dsl.String("INVESTIGATIONS"),
+									"label":  dsl.String("Investigations"),
+								},
+							},
 						}),
 					})
 			},
@@ -62,6 +72,14 @@ func TestTeamTypes(t *testing.T) {
 				{Name: "Other", Value: "other"},
 			},
 			expectedResponse: []RefDataTeamType{
+				{
+					Handle: "ALLOCATIONS",
+					Label:  "Allocations",
+				},
+				{
+					Handle: "COMPLAINTS",
+					Label:  "Complaints",
+				},
 				{
 					Handle: "INVESTIGATIONS",
 					Label:  "Investigations",
