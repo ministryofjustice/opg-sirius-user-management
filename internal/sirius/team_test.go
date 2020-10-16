@@ -53,12 +53,14 @@ func TestTeam(t *testing.T) {
 							"data": map[string]interface{}{
 								"id":          dsl.Like(65),
 								"displayName": dsl.Like("Cool Team"),
+								"email":       dsl.Like("coolteam@opgtest.com"),
+								"phoneNumber": dsl.Like("01818118181"),
 								"members": dsl.EachLike(map[string]interface{}{
 									"displayName": dsl.Like("John"),
 									"email":       dsl.Like("john@opgtest.com"),
 								}, 1),
 								"teamType": dsl.Like(map[string]interface{}{
-									"label": "Very Cool",
+									"handle": "ALLOCATIONS",
 								}),
 							},
 						}),
@@ -71,13 +73,15 @@ func TestTeam(t *testing.T) {
 			expectedResponse: Team{
 				ID:          65,
 				DisplayName: "Cool Team",
+				Email:       "coolteam@opgtest.com",
+				PhoneNumber: "01818118181",
 				Members: []TeamMember{
 					{
 						DisplayName: "John",
 						Email:       "john@opgtest.com",
 					},
 				},
-				Type: "Supervision — Very Cool",
+				Type: "ALLOCATIONS",
 			},
 			expectedError: func(port int) error { return nil },
 		},
@@ -126,7 +130,7 @@ func TestTeam(t *testing.T) {
 						Email:       "carline@opgtest.com",
 					},
 				},
-				Type: "LPA",
+				Type: "",
 			},
 			expectedError: func(port int) error { return nil },
 		},

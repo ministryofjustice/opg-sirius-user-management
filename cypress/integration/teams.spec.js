@@ -8,7 +8,7 @@ describe("Teams", () => {
     it("lists all teams", () => {
         cy.get(".govuk-table__row").should("have.length", 2);
 
-        const expected = ["Cool Team", "Supervision — Very Cool", "1"];
+        const expected = ["Cool Team", "Supervision — Allocations", "1"];
 
         cy.get(".govuk-table__body > .govuk-table__row")
             .children()
