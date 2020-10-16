@@ -270,3 +270,22 @@ func TestPostEditTeamRetrieveError(t *testing.T) {
 	assert.Equal(0, client.editTeam.count)
 	assert.Equal(0, template.count)
 }
+
+func TestBadMethodEditTeam(t *testing.T) {
+	assert := assert.New(t)
+
+	client := &mockEditTeamClient{}
+	client.team.data = sirius.Team{
+		DisplayName: "Complaints team",
+	}
+	template := &mockTemplate{}
+
+	r, _ := http.NewRequest("DELETE", "/teams/edit/123", nil)
+
+	err := editTeam(client, template, "http://sirius")(nil, r)
+
+	assert.Equal(StatusError(http.StatusMethodNotAllowed), err)
+
+	assert.Equal(0, client.editTeam.count)
+	assert.Equal(0, template.count)
+}
