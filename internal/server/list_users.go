@@ -34,17 +34,19 @@ func listUsers(client ListUsersClient, tmpl Template, siriusURL string) Handler 
 			Search:    search,
 		}
 
-		if len(search) >= 3 {
+		if search != "" {
 			users, err := client.SearchUsers(r.Context(), r.Cookies(), search)
-			if err != nil {
+
+			if _, ok := err.(sirius.ClientError); ok {
+				vars.Errors = sirius.ValidationErrors{
+					"search": {
+						"": err.Error(),
+					},
+				}
+			} else if err != nil {
 				return err
-			}
-			vars.Users = users
-		} else if search != "" {
-			vars.Errors = sirius.ValidationErrors{
-				"search": {
-					"": "Search term must be at least three characters",
-				},
+			} else {
+				vars.Users = users
 			}
 		}
 

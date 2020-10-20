@@ -152,6 +152,45 @@ func TestGetAddTeamMemberTeamError(t *testing.T) {
 	assert.Equal(0, template.count)
 }
 
+func TestGetAddTeamMemberSearchClientError(t *testing.T) {
+	assert := assert.New(t)
+
+	client := &mockAddTeamMemberClient{}
+	client.team.data = sirius.Team{
+		Members: []sirius.TeamMember{
+			{ID: 5},
+		},
+	}
+	client.searchUsers.err = sirius.ClientError("problem")
+	template := &mockTemplate{}
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("GET", "/teams/add-member/123?search=admin", nil)
+	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
+
+	err := addTeamMember(client, template, "http://sirius")(w, r)
+	assert.Nil(err)
+
+	assert.Equal(1, client.team.count)
+	assert.Equal(1, client.searchUsers.count)
+	assert.Equal(0, client.editTeam.count)
+
+	assert.Equal(1, template.count)
+	assert.Equal("page", template.lastName)
+	assert.Equal(addTeamMemberVars{
+		Path:      "/teams/add-member/123",
+		SiriusURL: "http://sirius",
+		Search:    "admin",
+		Team:      client.team.data,
+		Users:     nil,
+		Errors: sirius.ValidationErrors{
+			"search": {
+				"": "problem",
+			},
+		},
+	}, template.lastVars)
+}
+
 func TestGetAddTeamMemberSearchError(t *testing.T) {
 	assert := assert.New(t)
 

@@ -74,24 +74,25 @@ func addTeamMember(client AddTeamMemberClient, tmpl Template, siriusURL string) 
 
 		vars.Search = r.FormValue("search")
 
-		if len(vars.Search) >= 3 {
+		if vars.Search != "" {
 			users, err := client.SearchUsers(r.Context(), r.Cookies(), vars.Search)
-			if err != nil {
+
+			if _, ok := err.(sirius.ClientError); ok {
+				vars.Errors = sirius.ValidationErrors{
+					"search": {
+						"": err.Error(),
+					},
+				}
+			} else if err != nil {
 				return err
-			}
+			} else {
+				members := map[int]bool{}
+				for _, member := range team.Members {
+					members[member.ID] = true
+				}
 
-			members := map[int]bool{}
-			for _, member := range team.Members {
-				members[member.ID] = true
-			}
-
-			vars.Users = users
-			vars.Members = members
-		} else if vars.Search != "" {
-			vars.Errors = sirius.ValidationErrors{
-				"search": {
-					"": "Search term must be at least three characters",
-				},
+				vars.Users = users
+				vars.Members = members
 			}
 		}
 
