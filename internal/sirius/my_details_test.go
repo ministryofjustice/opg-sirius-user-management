@@ -146,13 +146,15 @@ func TestEditMyDetails(t *testing.T) {
 	}
 	defer pact.Teardown()
 
-	testCases := map[string]struct {
+	testCases := []struct {
+		name          string
 		phoneNumber   string
 		setup         func()
 		cookies       []*http.Cookie
 		expectedError error
 	}{
-		"OK": {
+		{
+			name:        "OK",
 			phoneNumber: "01210930320",
 			setup: func() {
 				pact.
@@ -199,7 +201,8 @@ func TestEditMyDetails(t *testing.T) {
 			},
 		},
 
-		"BadRequest": {
+		{
+			name:        "BadRequest",
 			phoneNumber: "invalid phone number",
 			setup: func() {
 				pact.
@@ -238,7 +241,8 @@ func TestEditMyDetails(t *testing.T) {
 			},
 		},
 
-		"Unauthorized": {
+		{
+			name:        "Unauthorized",
 			phoneNumber: "01210930320",
 			setup: func() {
 				pact.
@@ -263,8 +267,8 @@ func TestEditMyDetails(t *testing.T) {
 		},
 	}
 
-	for name, tc := range testCases {
-		t.Run(name, func(t *testing.T) {
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
 			tc.setup()
 
 			assert.Nil(t, pact.Verify(func() error {
