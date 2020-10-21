@@ -19,6 +19,9 @@
           <a href="{{ prefix (printf "/teams/edit/%d" .Team.ID) }}" role="button" draggable="false" class="govuk-button moj-button-menu__item govuk-button--secondary moj-page-header-actions__action" data-module="govuk-button">
             Edit team
           </a>
+          <a href="{{ prefix (printf "/teams/add-member/%d" .Team.ID) }}" role="button" draggable="false" class="govuk-button moj-button-menu__item govuk-button--secondary moj-page-header-actions__action" data-module="govuk-button">
+            Add user to team
+          </a>
         </div>
       </div>
     </div>

@@ -122,3 +122,11 @@ func TestSearchUsers(t *testing.T) {
 		})
 	}
 }
+
+func TestSearchUsersTooShort(t *testing.T) {
+	client, _ := NewClient(http.DefaultClient, "")
+
+	users, err := client.SearchUsers(context.Background(), nil, "ad")
+	assert.Nil(t, users)
+	assert.Equal(t, ClientError("Search term must be at least three characters"), err)
+}

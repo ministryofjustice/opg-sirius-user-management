@@ -118,19 +118,11 @@ func TestListUsersRequiresSearch(t *testing.T) {
 	}, template.lastVars)
 }
 
-func TestListUsersWarnsShortSearches(t *testing.T) {
+func TestListUsersClientError(t *testing.T) {
 	assert := assert.New(t)
 
-	data := []sirius.User{
-		{
-			ID:          29,
-			DisplayName: "Milo Nihei",
-			Email:       "milo.nihei@opgtest.com",
-			Status:      "Active",
-		},
-	}
 	client := &mockListUsersClient{
-		data: data,
+		err: sirius.ClientError("problem"),
 	}
 	template := &mockTemplate{}
 
@@ -146,7 +138,7 @@ func TestListUsersWarnsShortSearches(t *testing.T) {
 	resp := w.Result()
 	assert.Equal(http.StatusOK, resp.StatusCode)
 
-	assert.Equal(0, client.count)
+	assert.Equal(1, client.count)
 
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
@@ -158,7 +150,7 @@ func TestListUsersWarnsShortSearches(t *testing.T) {
 		Users:  nil,
 		Errors: sirius.ValidationErrors{
 			"search": {
-				"": "Search term must be at least three characters",
+				"": "problem",
 			},
 		},
 	}, template.lastVars)

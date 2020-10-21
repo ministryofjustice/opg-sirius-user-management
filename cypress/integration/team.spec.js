@@ -24,4 +24,8 @@ describe("Team", () => {
     it("allows me to edit the team", () => {
         cy.contains(".govuk-button", "Edit team");
     });
+
+    it("allows me to add a team member", () => {
+        cy.contains(".govuk-button", "Add user to team");
+    });
 });
