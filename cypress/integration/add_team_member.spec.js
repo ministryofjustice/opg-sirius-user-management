@@ -5,7 +5,7 @@ describe("Add team member", () => {
         cy.visit("/teams/add-member/65");
     });
 
-    it("allows me to a user to a team", () => {
+    it("allows me to add a user to a team", () => {
         cy.get(".govuk-table").should("not.exist");
 
         cy.get("#f-search").clear().type("admin");

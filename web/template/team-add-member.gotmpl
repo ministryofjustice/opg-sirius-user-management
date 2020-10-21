@@ -15,11 +15,7 @@
     {{ template "success-banner" (printf "You have successfully added %s to the team." .Success) }}
   {{ end }}
 
-  <div class="moj-page-header-actions">
-    <div class="moj-page-header-actions__title">
-      <h1 class="govuk-heading-xl">Add user to {{ .Team.DisplayName }}</h1>
-    </div>
-  </div>
+  <h1 class="govuk-heading-xl">Add user to {{ .Team.DisplayName }}</h1>
 
   <div class="govuk-form-group">
     <div class="moj-search">
