@@ -411,6 +411,24 @@ func TestPostEditTeamRefDataError(t *testing.T) {
 	assert.Equal(0, template.count)
 }
 
+func TestPostEditTeamHasPermissionError(t *testing.T) {
+	assert := assert.New(t)
+
+	client := &mockEditTeamClient{}
+	client.hasPermission.err = StatusError(http.StatusInternalServerError)
+	template := &mockTemplate{}
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("POST", "/teams/edit/123", nil)
+
+	err := editTeam(client, template, "http://sirius")(w, r)
+
+	assert.Equal(StatusError(http.StatusInternalServerError), err)
+
+	assert.Equal(0, client.editTeam.count)
+	assert.Equal(0, template.count)
+}
+
 func TestBadMethodEditTeam(t *testing.T) {
 	assert := assert.New(t)
 
