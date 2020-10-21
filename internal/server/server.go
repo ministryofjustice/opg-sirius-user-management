@@ -14,6 +14,7 @@ type Logger interface {
 }
 
 type Client interface {
+	AddTeamClient
 	AddUserClient
 	AllowRolesClient
 	ChangePasswordClient
@@ -53,6 +54,11 @@ func New(logger Logger, client Client, templates map[string]*template.Template, 
 		wrap(
 			allowRoles(client, "System Admin", "Manager")(
 				viewTeam(client, templates["team.gotmpl"], siriusURL))))
+
+	mux.Handle("/teams/add/",
+		wrap(
+			systemAdminOnly(
+				addTeam(client, templates["team-add.gotmpl"], siriusURL))))
 
 	mux.Handle("/teams/edit/",
 		wrap(

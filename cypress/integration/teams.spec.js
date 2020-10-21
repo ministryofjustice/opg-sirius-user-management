@@ -28,4 +28,8 @@ describe("Teams", () => {
 
         cy.get(".govuk-table__body > .govuk-table__row").should("have.length", 0);
     });
+
+    it("allows me to add a new team", () => {
+        cy.contains(".govuk-button", "Add new team");
+    });
 });
