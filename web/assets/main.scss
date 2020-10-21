@@ -17,3 +17,13 @@ $govuk-include-default-font-face: false;
     font-size: 1.1875rem;
     cursor: pointer;
 }
+
+.govuk-checkboxes--small .govuk-checkboxes__label {
+    &::before {
+        top: 0;
+    }
+
+    &::after {
+        top: 8px;
+    }
+}
