@@ -28,6 +28,15 @@ type mockEditTeamClient struct {
 		err         error
 	}
 
+	hasPermission struct {
+		count       int
+		lastCookies []*http.Cookie
+		lastGroup   string
+		lastMethod  string
+		data        bool
+		err         error
+	}
+
 	editTeam struct {
 		count       int
 		lastCookies []*http.Cookie
@@ -59,6 +68,15 @@ func (m *mockEditTeamClient) EditTeam(ctx context.Context, cookies []*http.Cooki
 	return m.editTeam.err
 }
 
+func (m *mockEditTeamClient) HasPermission(ctx context.Context, cookies []*http.Cookie, group string, method string) (bool, error) {
+	m.hasPermission.count += 1
+	m.hasPermission.lastCookies = cookies
+	m.hasPermission.lastGroup = group
+	m.hasPermission.lastMethod = method
+
+	return m.hasPermission.data, m.hasPermission.err
+}
+
 func TestGetEditTeam(t *testing.T) {
 	assert := assert.New(t)
 
@@ -70,6 +88,7 @@ func TestGetEditTeam(t *testing.T) {
 			Label:  "Test type",
 		},
 	}
+	client.hasPermission.data = true
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
@@ -80,10 +99,46 @@ func TestGetEditTeam(t *testing.T) {
 
 	assert.Equal(1, client.team.count)
 	assert.Equal(123, client.team.lastID)
+
+	assert.Equal(1, client.teamTypes.count)
+
+	assert.Equal(1, client.hasPermission.count)
+	assert.Equal("team", client.hasPermission.lastGroup)
+	assert.Equal("post", client.hasPermission.lastMethod)
+
 	assert.Equal(0, client.editTeam.count)
 
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
+	assert.Equal(editTeamVars{
+		Path:            "/teams/edit/123",
+		SiriusURL:       "http://sirius",
+		Team:            client.team.data,
+		TeamTypeOptions: client.teamTypes.data,
+		CanEditTeamType: true,
+	}, template.lastVars)
+}
+
+func TestGetEditTeamWithoutTypeEditPermission(t *testing.T) {
+	assert := assert.New(t)
+
+	client := &mockEditTeamClient{}
+	client.team.data = sirius.Team{DisplayName: "Complaints team"}
+	client.teamTypes.data = []sirius.RefDataTeamType{
+		{
+			Handle: "TEST",
+			Label:  "Test type",
+		},
+	}
+	client.hasPermission.data = false
+	template := &mockTemplate{}
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("GET", "/teams/edit/123", nil)
+
+	err := editTeam(client, template, "http://sirius")(w, r)
+	assert.Nil(err)
+
 	assert.Equal(editTeamVars{
 		Path:            "/teams/edit/123",
 		SiriusURL:       "http://sirius",
@@ -130,6 +185,7 @@ func TestPostEditTeam(t *testing.T) {
 		PhoneNumber: "01234",
 	}
 	client.teamTypes.data = []sirius.RefDataTeamType{}
+	client.hasPermission.data = true
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
@@ -158,6 +214,7 @@ func TestPostEditTeam(t *testing.T) {
 			PhoneNumber: "9876",
 		},
 		TeamTypeOptions: client.teamTypes.data,
+		CanEditTeamType: true,
 		Success:         true,
 	}, template.lastVars)
 }
@@ -173,6 +230,7 @@ func TestPostEditLpaTeam(t *testing.T) {
 		Email:       "complaint@opgtest.com",
 		PhoneNumber: "01234",
 	}
+	client.hasPermission.data = true
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
@@ -201,6 +259,47 @@ func TestPostEditLpaTeam(t *testing.T) {
 			PhoneNumber: "9876",
 		},
 		TeamTypeOptions: client.teamTypes.data,
+		CanEditTeamType: true,
+		Success:         true,
+	}, template.lastVars)
+}
+
+func TestPostEditTeamWithoutPermission(t *testing.T) {
+	assert := assert.New(t)
+
+	client := &mockEditTeamClient{}
+	client.team.data = sirius.Team{
+		ID:          123,
+		DisplayName: "Complaints team",
+		Type:        "COMPLAINTS",
+		Email:       "complaint@opgtest.com",
+		PhoneNumber: "01234",
+	}
+	client.teamTypes.data = []sirius.RefDataTeamType{}
+	client.hasPermission.data = false
+	template := &mockTemplate{}
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("POST", "/teams/edit/123", strings.NewReader("name=New+name&service=lpa&email=new@opgtest.com&phone=9876"))
+	r.Header.Add("Content-type", "application/x-www-form-urlencoded")
+
+	err := editTeam(client, template, "http://sirius")(w, r)
+	assert.Nil(err)
+
+	assert.Equal(1, client.editTeam.count)
+	assert.Equal("COMPLAINTS", client.editTeam.lastTeam.Type)
+
+	assert.Equal(editTeamVars{
+		Path:      "/teams/edit/123",
+		SiriusURL: "http://sirius",
+		Team: sirius.Team{
+			ID:          123,
+			DisplayName: "New name",
+			Type:        "COMPLAINTS",
+			Email:       "new@opgtest.com",
+			PhoneNumber: "9876",
+		},
+		TeamTypeOptions: client.teamTypes.data,
 		Success:         true,
 	}, template.lastVars)
 }
@@ -222,6 +321,7 @@ func TestPostEditTeamValidationError(t *testing.T) {
 		Email:       "complaint@opgtest.com",
 		PhoneNumber: "01234",
 	}
+	client.hasPermission.data = true
 	client.editTeam.err = &sirius.ValidationError{
 		Errors: validationErrors,
 	}
@@ -249,6 +349,7 @@ func TestPostEditTeamValidationError(t *testing.T) {
 			PhoneNumber: "9876",
 		},
 		TeamTypeOptions: client.teamTypes.data,
+		CanEditTeamType: true,
 		Errors:          validationErrors,
 	}, template.lastVars)
 }
