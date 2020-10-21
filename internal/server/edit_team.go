@@ -13,6 +13,7 @@ type EditTeamClient interface {
 	Team(context.Context, []*http.Cookie, int) (sirius.Team, error)
 	EditTeam(context.Context, []*http.Cookie, sirius.Team) error
 	TeamTypes(context.Context, []*http.Cookie) ([]sirius.RefDataTeamType, error)
+	HasPermission(context.Context, []*http.Cookie, string, string) (bool, error)
 }
 
 type editTeamVars struct {
@@ -20,6 +21,7 @@ type editTeamVars struct {
 	SiriusURL       string
 	Team            sirius.Team
 	TeamTypeOptions []sirius.RefDataTeamType
+	CanEditTeamType bool
 	Success         bool
 	Errors          sirius.ValidationErrors
 }
@@ -36,6 +38,11 @@ func editTeam(client EditTeamClient, tmpl Template, siriusURL string) Handler {
 			return err
 		}
 
+		canEditTeamType, err := client.HasPermission(r.Context(), r.Cookies(), "team", "post")
+		if err != nil {
+			return err
+		}
+
 		teamTypes, err := client.TeamTypes(r.Context(), r.Cookies())
 		if err != nil {
 			return err
@@ -46,6 +53,7 @@ func editTeam(client EditTeamClient, tmpl Template, siriusURL string) Handler {
 			SiriusURL:       siriusURL,
 			Team:            team,
 			TeamTypeOptions: teamTypes,
+			CanEditTeamType: canEditTeamType,
 		}
 
 		switch r.Method {
@@ -56,10 +64,14 @@ func editTeam(client EditTeamClient, tmpl Template, siriusURL string) Handler {
 			vars.Team.PhoneNumber = r.PostFormValue("phone")
 			vars.Team.Email = r.PostFormValue("email")
 
-			if r.PostFormValue("service") == "supervision" {
-				vars.Team.Type = r.PostFormValue("supervision-type")
+			if canEditTeamType {
+				if r.PostFormValue("service") == "supervision" {
+					vars.Team.Type = r.PostFormValue("supervision-type")
+				} else {
+					vars.Team.Type = ""
+				}
 			} else {
-				vars.Team.Type = ""
+				vars.Team.Type = team.Type
 			}
 
 			// Attempt to save

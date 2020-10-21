@@ -58,6 +58,9 @@ func TestPermissions(t *testing.T) {
 								"user": map[string]interface{}{
 									"permissions": dsl.EachLike("PATCH", 1),
 								},
+								"team": map[string]interface{}{
+									"permissions": dsl.EachLike("POST", 1),
+								},
 							},
 						}),
 					})
