@@ -45,7 +45,11 @@ func removeTeamMember(client RemoveTeamMemberClient, tmpl Template, siriusURL st
 			Team:      team,
 		}
 
-		r.ParseForm()
+		err = r.ParseForm()
+		if err != nil {
+			return StatusError(http.StatusBadRequest)
+		}
+
 		for _, id := range r.PostForm["selected[]"] {
 			userID, err := strconv.Atoi(id)
 			if err != nil {

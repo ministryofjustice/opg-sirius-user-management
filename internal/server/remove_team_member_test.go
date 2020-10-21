@@ -26,13 +26,6 @@ type mockRemoveTeamMemberClient struct {
 		lastTeam    sirius.Team
 		err         error
 	}
-	searchUsers struct {
-		count       int
-		lastCookies []*http.Cookie
-		lastSearch  string
-		data        []sirius.User
-		err         error
-	}
 }
 
 func (c *mockRemoveTeamMemberClient) Team(ctx context.Context, cookies []*http.Cookie, id int) (sirius.Team, error) {
@@ -139,21 +132,28 @@ func TestPostRemoveTeamMemberTeamError(t *testing.T) {
 }
 
 func TestPostRemoveTeamMemberBadData(t *testing.T) {
-	assert := assert.New(t)
+	for name, data := range map[string]string{
+		"invalid":     "%1",
+		"non-numeric": "selected[]=string",
+	} {
+		t.Run(name, func(t *testing.T) {
+			assert := assert.New(t)
 
-	client := &mockRemoveTeamMemberClient{}
-	template := &mockTemplate{}
+			client := &mockRemoveTeamMemberClient{}
+			template := &mockTemplate{}
 
-	w := httptest.NewRecorder()
-	r, _ := http.NewRequest("POST", "/teams/remove-member/123", strings.NewReader("selected[]=string"))
-	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
+			w := httptest.NewRecorder()
+			r, _ := http.NewRequest("POST", "/teams/remove-member/123", strings.NewReader(data))
+			r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+			r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	err := removeTeamMember(client, template, "http://sirius")(w, r)
-	assert.Equal(StatusError(http.StatusBadRequest), err)
+			err := removeTeamMember(client, template, "http://sirius")(w, r)
+			assert.Equal(StatusError(http.StatusBadRequest), err)
 
-	assert.Equal(1, client.team.count)
-	assert.Equal(0, client.editTeam.count)
+			assert.Equal(1, client.team.count)
+			assert.Equal(0, client.editTeam.count)
+		})
+	}
 }
 
 func TestPostRemoveTeamMemberIgnoresBadIds(t *testing.T) {
