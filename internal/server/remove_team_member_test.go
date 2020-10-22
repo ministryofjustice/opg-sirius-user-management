@@ -97,6 +97,7 @@ func TestPostRemoveTeamMemberBadPath(t *testing.T) {
 		"empty":       "/teams/remove-member/",
 		"non-numeric": "/teams/remove-member/hello",
 		"suffixed":    "/teams/remove-member/123/no",
+		"elsewhere":   "/teams/add-member/123",
 	} {
 		t.Run(name, func(t *testing.T) {
 			assert := assert.New(t)
