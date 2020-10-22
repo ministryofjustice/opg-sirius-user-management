@@ -207,7 +207,7 @@ func TestConfirmPostRemoveTeamMember(t *testing.T) {
 	}, client.editTeam.lastTeam.Members)
 }
 
-func TestConfirmPostRemoveTeamMemberValidationError(t *testing.T) {
+func TestConfirmPostRemoveTeamMemberClientError(t *testing.T) {
 	assert := assert.New(t)
 
 	client := &mockRemoveTeamMemberClient{}

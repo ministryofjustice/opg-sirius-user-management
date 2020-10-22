@@ -4,7 +4,9 @@
   <a class="govuk-back-link" href="{{ prefix (printf "/teams/%d" .Team.ID) }}">Back</a>
 {{ end }}
 
-{{ define "title" }}Remove users from team{{ end }}
+{{ define "title" }}
+  {{ if .Errors }}Error: {{ end }}Remove users from team
+{{ end }}
 
 {{ define "main" }}
   {{ template "error-summary" .Errors }}
@@ -13,7 +15,7 @@
     <div class="govuk-grid-column-two-thirds">
       <h1 class="govuk-heading-xl">Remove users from team</h1>
 
-      {{ if gt (len .Selected) 2 }}
+      {{ if gt (len .Selected) 1 }}
         <p class="govuk-body">
           Are you sure you want to remove the following members from the <strong>{{ .Team.DisplayName }}</strong> team?
         </p>
@@ -22,10 +24,6 @@
             <li><strong>{{ .DisplayName }}</strong></li>
           {{ end }}
         </ul>
-      {{ else if gt (len $.Selected) 1 }}
-        <p class="govuk-body">
-          Are you sure you want to remove <strong>{{ (index .Selected 0).DisplayName }}</strong> and <strong>{{ (index .Selected 1).DisplayName }}</strong> from the <strong>{{ .Team.DisplayName }}</strong> team?
-        </p>
       {{ else }}
         <p class="govuk-body">
           Are you sure you want to remove <strong>{{ (index .Selected 0).DisplayName }}</strong> from the <strong>{{ .Team.DisplayName }}</strong> team?
@@ -37,7 +35,7 @@
           <input type="hidden" name="selected[]" value="{{ .ID }}" />
         {{ end }}
 
-        <button type="submit"  class="govuk-button" data-module="govuk-button" name="confirm" value="confirm">
+        <button type="submit" class="govuk-button govuk-!-margin-right-1" data-module="govuk-button" name="confirm" value="confirm">
           Remove users
         </button>
 
