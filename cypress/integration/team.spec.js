@@ -28,4 +28,10 @@ describe("Team", () => {
     it("allows me to add a team member", () => {
         cy.contains(".govuk-button", "Add user to team");
     });
+
+    it("allows me to remove team members", () => {
+        cy.contains(".govuk-button", "Remove selected from team");
+
+        cy.get(".govuk-table__body > .govuk-table__row input[type=checkbox]").should("have.length", 1);
+    });
 });
