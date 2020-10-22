@@ -15,24 +15,24 @@
     <div class="govuk-grid-column-two-thirds">
       <h1 class="govuk-heading-xl">Remove users from team</h1>
 
-      {{ if gt (len .Selected) 1 }}
+      {{ if eq (len .Selected) 1 }}
+        <p class="govuk-body">
+          Are you sure you want to remove <strong>{{ range .Selected }}{{ . }}{{ end }}</strong> from the <strong>{{ .Team.DisplayName }}</strong> team?
+        </p>
+      {{ else }}
         <p class="govuk-body">
           Are you sure you want to remove the following members from the <strong>{{ .Team.DisplayName }}</strong> team?
         </p>
         <ul class="govuk-list govuk-list--bullet">
           {{ range .Selected }}
-            <li><strong>{{ .DisplayName }}</strong></li>
+            <li><strong>{{ . }}</strong></li>
           {{ end }}
         </ul>
-      {{ else }}
-        <p class="govuk-body">
-          Are you sure you want to remove <strong>{{ (index .Selected 0).DisplayName }}</strong> from the <strong>{{ .Team.DisplayName }}</strong> team?
-        </p>
       {{ end }}
 
       <form class="form" action="" method="post">
-        {{ range .Selected }}
-          <input type="hidden" name="selected[]" value="{{ .ID }}" />
+        {{ range $id, $name := .Selected }}
+          <input type="hidden" name="selected[]" value="{{ $id }}" />
         {{ end }}
 
         <button type="submit" class="govuk-button govuk-!-margin-right-1" data-module="govuk-button" name="confirm" value="confirm">

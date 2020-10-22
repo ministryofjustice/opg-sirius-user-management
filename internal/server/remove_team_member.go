@@ -19,7 +19,7 @@ type removeTeamMemberVars struct {
 	Path      string
 	SiriusURL string
 	Team      sirius.Team
-	Selected  []sirius.TeamMember
+	Selected  map[int]string
 	Errors    sirius.ValidationErrors
 }
 
@@ -43,6 +43,7 @@ func removeTeamMember(client RemoveTeamMemberClient, tmpl Template, siriusURL st
 			Path:      r.URL.Path,
 			SiriusURL: siriusURL,
 			Team:      team,
+			Selected:  make(map[int]string),
 		}
 
 		err = r.ParseForm()
@@ -58,7 +59,7 @@ func removeTeamMember(client RemoveTeamMemberClient, tmpl Template, siriusURL st
 
 			for _, user := range team.Members {
 				if userID == user.ID {
-					vars.Selected = append(vars.Selected, user)
+					vars.Selected[userID] = user.DisplayName
 				}
 			}
 		}
@@ -66,14 +67,7 @@ func removeTeamMember(client RemoveTeamMemberClient, tmpl Template, siriusURL st
 		if r.PostFormValue("confirm") != "" {
 			var members []sirius.TeamMember
 			for _, member := range team.Members {
-				stillInTeam := true
-				for _, selected := range vars.Selected {
-					if member.ID == selected.ID {
-						stillInTeam = false
-					}
-				}
-
-				if stillInTeam {
+				if _, ok := vars.Selected[member.ID]; !ok {
 					members = append(members, member)
 				}
 			}

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -51,7 +52,8 @@ func generateTeamWithIds(ids ...int) sirius.Team {
 
 	for _, id := range ids {
 		team.Members = append(team.Members, sirius.TeamMember{
-			ID: id,
+			ID:          id,
+			DisplayName: "User " + strconv.Itoa(id),
 		})
 	}
 
@@ -85,9 +87,9 @@ func TestPostRemoveTeamMember(t *testing.T) {
 		Path:      "/teams/remove-member/123",
 		SiriusURL: "http://sirius",
 		Team:      client.team.data,
-		Selected: []sirius.TeamMember{
-			{ID: 12},
-			{ID: 45},
+		Selected: map[int]string{
+			12: "User 12",
+			45: "User 45",
 		},
 	}, template.lastVars)
 }
@@ -176,8 +178,8 @@ func TestPostRemoveTeamMemberIgnoresBadIds(t *testing.T) {
 		Path:      "/teams/remove-member/123",
 		SiriusURL: "http://sirius",
 		Team:      client.team.data,
-		Selected: []sirius.TeamMember{
-			{ID: 45},
+		Selected: map[int]string{
+			45: "User 45",
 		},
 	}, template.lastVars)
 }
@@ -202,7 +204,8 @@ func TestConfirmPostRemoveTeamMember(t *testing.T) {
 
 	assert.Equal([]sirius.TeamMember{
 		{
-			ID: 16,
+			ID:          16,
+			DisplayName: "User 16",
 		},
 	}, client.editTeam.lastTeam.Members)
 }
@@ -230,9 +233,9 @@ func TestConfirmPostRemoveTeamMemberClientError(t *testing.T) {
 		Path:      "/teams/remove-member/123",
 		SiriusURL: "http://sirius",
 		Team:      client.team.data,
-		Selected: []sirius.TeamMember{
-			{ID: 12},
-			{ID: 45},
+		Selected: map[int]string{
+			12: "User 12",
+			45: "User 45",
 		},
 		Errors: sirius.ValidationErrors{
 			"_": {
