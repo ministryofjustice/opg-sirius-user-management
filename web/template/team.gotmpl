@@ -28,22 +28,39 @@
   </div>
 
   {{ if .Team.Members }}
-    <table class="govuk-table">
-      <thead class="govuk-table__head">
-        <tr class="govuk-table__row">
-          <th scope="col" class="govuk-table__header">Name</th>
-          <th scope="col" class="govuk-table__header">Email</th>
-        </tr>
-      </thead>
-      <tbody class="govuk-table__body">
-        {{ range .Team.Members }}
+    <form action="{{ prefix (printf "/teams/remove-member/%d" .Team.ID) }}" method="POST">
+      <button type="submit" class="govuk-button govuk-button--secondary">
+        Remove selected from team
+      </button>
+
+      <table class="govuk-table">
+        <thead class="govuk-table__head">
           <tr class="govuk-table__row">
-            <td class="govuk-table__cell">{{ .DisplayName }}</td>
-            <td class="govuk-table__cell">{{ .Email }}</td>
+            <th scope="col" class="govuk-table__header"><span class="govuk-visually-hidden">Select</span></th>
+            <th scope="col" class="govuk-table__header">Name</th>
+            <th scope="col" class="govuk-table__header">Email</th>
           </tr>
-        {{ end }}
-      </tbody>
-    </table>
+        </thead>
+        <tbody class="govuk-table__body">
+          {{ range .Team.Members }}
+            <tr class="govuk-table__row">
+              <th scope="row" class="govuk-table__header">
+                <div class="govuk-checkboxes govuk-checkboxes--small">
+                  <div class="govuk-checkboxes__item">
+                    <input class="govuk-checkboxes__input" name="selected[]" type="checkbox" value="{{ .ID }}">
+                    <label class="govuk-label govuk-checkboxes__label">
+                      <span class="govuk-visually-hidden">Select {{ .DisplayName }}</span>
+                    </label>
+                  </div>
+                </div>
+              </th>
+              <td class="govuk-table__cell">{{ .DisplayName }}</td>
+              <td class="govuk-table__cell">{{ .Email }}</td>
+            </tr>
+          {{ end }}
+        </tbody>
+      </table>
+    </form>
   {{ else }}
     <p class="govuk-body">This team currently has no users</p>
   {{ end }}

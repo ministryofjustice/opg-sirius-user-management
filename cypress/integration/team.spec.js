@@ -12,7 +12,7 @@ describe("Team", () => {
     it("shows team members", () => {
         cy.get(".govuk-table__row").should("have.length", 2);
 
-        const expected = ["John", "john@opgtest.com"];
+        const expected = ["Select", "John", "john@opgtest.com"];
 
         cy.get(".govuk-table__body > .govuk-table__row")
             .children()
@@ -27,5 +27,11 @@ describe("Team", () => {
 
     it("allows me to add a team member", () => {
         cy.contains(".govuk-button", "Add user to team");
+    });
+
+    it("allows me to remove team members", () => {
+        cy.contains(".govuk-button", "Remove selected from team");
+
+        cy.get(".govuk-table__body > .govuk-table__row input[type=checkbox]").should("have.length", 1);
     });
 });
