@@ -13,16 +13,24 @@
     <div class="govuk-grid-column-two-thirds">
       <h1 class="govuk-heading-xl">Remove users from team</h1>
 
-      <p class="govuk-body">
-        Are you sure you want to remove
-        {{ range $index, $selected := .Selected }}
-          <strong>{{ $selected.DisplayName }}</strong>
-          {{ if lt $index (len $.Selected) }}
-            and
+      {{ if gt (len .Selected) 2 }}
+        <p class="govuk-body">
+          Are you sure you want to remove the following members from the <strong>{{ .Team.DisplayName }}</strong> team?
+        </p>
+        <ul class="govuk-list govuk-list--bullet">
+          {{ range .Selected }}
+            <li><strong>{{ .DisplayName }}</strong></li>
           {{ end }}
-        {{ end }}
-        from the <strong>{{ .Team.DisplayName }}</strong> team?
-      </p>
+        </ul>
+      {{ else if gt (len $.Selected) 1 }}
+        <p class="govuk-body">
+          Are you sure you want to remove <strong>{{ (index .Selected 0).DisplayName }}</strong> and <strong>{{ (index .Selected 1).DisplayName }}</strong> from the <strong>{{ .Team.DisplayName }}</strong> team?
+        </p>
+      {{ else }}
+        <p class="govuk-body">
+          Are you sure you want to remove <strong>{{ (index .Selected 0).DisplayName }}</strong> from the <strong>{{ .Team.DisplayName }}</strong> team?
+        </p>
+      {{ end }}
 
       <form class="form" action="" method="post">
         {{ range .Selected }}
