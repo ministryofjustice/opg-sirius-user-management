@@ -327,6 +327,51 @@ func TestPostAddTeamMemberClientError(t *testing.T) {
 	}, template.lastVars)
 }
 
+func TestPostAddTeamMemberValidationError(t *testing.T) {
+	assert := assert.New(t)
+
+	validationErrors := sirius.ValidationErrors{
+		"teamType": {
+			"teamTypeInUse": "This team type is already in use",
+		},
+	}
+
+	client := &mockAddTeamMemberClient{}
+	client.team.data = sirius.Team{
+		Members: []sirius.TeamMember{
+			{ID: 4},
+		},
+	}
+	client.editTeam.err = &sirius.ValidationError{
+		Errors: validationErrors,
+	}
+	template := &mockTemplate{}
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("POST", "/teams/add-member/123", strings.NewReader("id=5&search=admin&email=system.admin@opgtest.com"))
+	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
+
+	err := addTeamMember(client, template, "http://sirius")(w, r)
+	assert.Nil(err)
+
+	assert.Equal(1, client.team.count)
+	assert.Equal(1, client.editTeam.count)
+	assert.Equal(1, client.searchUsers.count)
+
+	assert.Equal(1, template.count)
+	assert.Equal("page", template.lastName)
+	assert.Equal(addTeamMemberVars{
+		Path:      "/teams/add-member/123",
+		SiriusURL: "http://sirius",
+		Search:    "admin",
+		Team:      client.team.data,
+		Users:     client.searchUsers.data,
+		Members:   map[int]bool{4: true, 5: true},
+		Errors:    validationErrors,
+	}, template.lastVars)
+}
+
 func TestPostAddTeamMemberOtherError(t *testing.T) {
 	assert := assert.New(t)
 
