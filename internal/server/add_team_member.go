@@ -65,6 +65,9 @@ func addTeamMember(client AddTeamMemberClient, tmpl Template, siriusURL string) 
 					},
 				}
 				w.WriteHeader(http.StatusBadRequest)
+			} else if verr, ok := err.(*sirius.ValidationError); ok {
+				vars.Errors = verr.Errors
+				w.WriteHeader(http.StatusBadRequest)
 			} else if err != nil {
 				return err
 			} else {
