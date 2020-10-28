@@ -35,7 +35,7 @@ func TestTeam(t *testing.T) {
 			setup: func() {
 				pact.
 					AddInteraction().
-					Given("User exists and supervision team exists").
+					Given("Supervision team with members exists").
 					UponReceiving("A request for a team").
 					WithRequest(dsl.Request{
 						Method: http.MethodGet,
@@ -91,7 +91,7 @@ func TestTeam(t *testing.T) {
 			setup: func() {
 				pact.
 					AddInteraction().
-					Given("User exists and LPA team exists").
+					Given("LPA team with members exists").
 					UponReceiving("A request for an LPA team").
 					WithRequest(dsl.Request{
 						Method: http.MethodGet,

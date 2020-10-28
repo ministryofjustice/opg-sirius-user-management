@@ -13,7 +13,7 @@ import (
 type addUserBadRequestResponse struct {
 	ErrorMessages *struct {
 		Email *struct {
-			StringLengthTooLong string `json:"stringLengthTooLong" pact:"example=The input is more than 255 characters long"`
+			EmailAddressLengthExceeded string `json:"emailAddressLengthExceeded" pact:"example=The input is more than 255 characters long"`
 		} `json:"email"`
 	} `json:"errorMessages"`
 }
@@ -110,7 +110,16 @@ func TestAddUser(t *testing.T) {
 						Method: http.MethodPost,
 						Path:   dsl.String("/auth/user"),
 						Headers: dsl.MapMatcher{
+							"X-XSRF-TOKEN":        dsl.String("abcde"),
+							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
 							"OPG-Bypass-Membrane": dsl.String("1"),
+							"Content-Type":        dsl.String("application/json"),
+						},
+						Body: map[string]interface{}{
+							"firstname": "John",
+							"surname":   "Doe",
+							"email":     "john.doefkhjgerhergjgerjkrgejgerjgerjegrjhkgrehjergjgerhjkgerhjkegrhjkgerhjkegrhjkegrhjkegrhjkgerhjkgerhjkgerhjkgerhjkgerhjkgerhjkegrhjkgerhjkgerhjkgerhjkgerhjkerghjkgerhjkgerhjkgerhjkgrhjkgrehjgerhjkgerhjkegrhjkgerhjkgrerghger@example.com",
+							"roles":     []string{"COP User", "other1", "other2"},
 						},
 					}).
 					WillRespondWith(dsl.Response{
@@ -118,10 +127,19 @@ func TestAddUser(t *testing.T) {
 						Body:   dsl.Match(addUserBadRequestResponse{}),
 					})
 			},
+			cookies: []*http.Cookie{
+				{Name: "XSRF-TOKEN", Value: "abcde"},
+				{Name: "Other", Value: "other"},
+			},
+			firstName:    "John",
+			lastName:     "Doe",
+			email:        "john.doefkhjgerhergjgerjkrgejgerjgerjegrjhkgrehjergjgerhjkgerhjkegrhjkgerhjkegrhjkegrhjkegrhjkgerhjkgerhjkgerhjkgerhjkgerhjkgerhjkegrhjkgerhjkgerhjkgerhjkgerhjkerghjkgerhjkgerhjkgerhjkgrhjkgrehjgerhjkgerhjkegrhjkgerhjkgrerghger@example.com",
+			organisation: "COP User",
+			roles:        []string{"other1", "other2"},
 			expectedError: ValidationError{
 				Errors: ValidationErrors{
 					"email": {
-						"stringLengthTooLong": "The input is more than 255 characters long",
+						"emailAddressLengthExceeded": "The input is more than 255 characters long",
 					},
 				},
 			},

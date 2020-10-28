@@ -13,7 +13,7 @@ services:
   pact-stub:
     build: ./pact-stub
     environment:
-      PACT_PATH: ./pacts/sirius-user-management-sirius.json
+      PACT_DIR: ./pacts
       PORT: 8080
     volumes:
       - "../pacts:/app/pacts"

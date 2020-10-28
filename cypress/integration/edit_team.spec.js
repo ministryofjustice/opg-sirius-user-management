@@ -16,7 +16,7 @@ describe("Edit a team", () => {
 
     it("allows me to change the team's details", () => {
         cy.get("#f-name").clear().type("Another team");
-        cy.get("#f-teamType").select("COMPLAINTS");
+        cy.get("#f-teamType").select("ALLOCATIONS");
         cy.get("#f-phoneNumber").clear().type("03573953");
         cy.get("#f-email").clear().type("other.team@opgtest.com");
         cy.get("button[type=submit]").click();

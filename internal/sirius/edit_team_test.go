@@ -14,7 +14,7 @@ type editTeamErrorsResponse struct {
 	Data *struct {
 		Errors *struct {
 			TeamType *struct {
-				InvalidTeamType string `json:"invalidTeamType" pact:"example=Invalid team type"`
+				TeamTypeAlreadyInUse string `json:"teamTypeAlreadyInUse" pact:"example=Invalid team type"`
 			} `json:"teamType"`
 		} `json:"errorMessages"`
 	} `json:"data"`
@@ -43,7 +43,7 @@ func TestEditTeam(t *testing.T) {
 			team: Team{
 				ID:          65,
 				DisplayName: "Test team",
-				Type:        "FINANCE",
+				Type:        "INVESTIGATIONS",
 				PhoneNumber: "014729583920",
 				Email:       "test.team@opgtest.com",
 			},
@@ -61,7 +61,7 @@ func TestEditTeam(t *testing.T) {
 							"OPG-Bypass-Membrane": dsl.String("1"),
 							"Content-Type":        dsl.String("application/x-www-form-urlencoded"),
 						},
-						Body: "email=test.team%40opgtest.com&name=Test+team&phoneNumber=014729583920&teamType%5Bhandle%5D=FINANCE",
+						Body: "email=test.team%40opgtest.com&name=Test+team&phoneNumber=014729583920&teamType%5Bhandle%5D=INVESTIGATIONS",
 					}).
 					WillRespondWith(dsl.Response{
 						Status: http.StatusOK,
@@ -79,7 +79,7 @@ func TestEditTeam(t *testing.T) {
 			team: Team{
 				ID:          65,
 				DisplayName: "Test team",
-				Type:        "FINANCE",
+				Type:        "INVESTIGATIONS",
 				PhoneNumber: "014729583920",
 				Email:       "test.team@opgtest.com",
 				Members: []TeamMember{
@@ -106,7 +106,7 @@ func TestEditTeam(t *testing.T) {
 							"OPG-Bypass-Membrane": dsl.String("1"),
 							"Content-Type":        dsl.String("application/x-www-form-urlencoded"),
 						},
-						Body: "email=test.team%40opgtest.com&members%5B0%5D%5Bid%5D=23&members%5B1%5D%5Bid%5D=87&name=Test+team&phoneNumber=014729583920&teamType%5Bhandle%5D=FINANCE",
+						Body: "email=test.team%40opgtest.com&members%5B0%5D%5Bid%5D=23&members%5B1%5D%5Bid%5D=87&name=Test+team&phoneNumber=014729583920&teamType%5Bhandle%5D=INVESTIGATIONS",
 					}).
 					WillRespondWith(dsl.Response{
 						Status: http.StatusOK,
@@ -151,13 +151,13 @@ func TestEditTeam(t *testing.T) {
 			team: Team{
 				ID:          65,
 				DisplayName: "Test team",
-				Type:        "BAD_TYPE",
+				Type:        "FINANCE",
 			},
 			setup: func() {
 				pact.
 					AddInteraction().
 					Given("A user and a team").
-					UponReceiving("A request to edit the team with an invalid type").
+					UponReceiving("A request to edit the team with an non-unique type").
 					WithRequest(dsl.Request{
 						Method: http.MethodPut,
 						Path:   dsl.String("/api/team/65"),
@@ -167,7 +167,7 @@ func TestEditTeam(t *testing.T) {
 							"OPG-Bypass-Membrane": dsl.String("1"),
 							"Content-Type":        dsl.String("application/x-www-form-urlencoded"),
 						},
-						Body: "email=&name=Test+team&phoneNumber=&teamType%5Bhandle%5D=BAD_TYPE",
+						Body: "email=&name=Test+team&phoneNumber=&teamType%5Bhandle%5D=FINANCE",
 					}).
 					WillRespondWith(dsl.Response{
 						Status: http.StatusBadRequest,
@@ -182,7 +182,7 @@ func TestEditTeam(t *testing.T) {
 				return &ValidationError{
 					Errors: ValidationErrors{
 						"teamType": {
-							"invalidTeamType": "Invalid team type",
+							"teamTypeAlreadyInUse": "Invalid team type",
 						},
 					},
 				}

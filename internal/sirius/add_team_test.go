@@ -48,7 +48,7 @@ func TestAddTeam(t *testing.T) {
 							"OPG-Bypass-Membrane": dsl.String("1"),
 							"Content-Type":        dsl.String("application/x-www-form-urlencoded"),
 						},
-						Body: "email=a&name=b&phone=c&type=&teamType=",
+						Body: "email=john.doe@example.com&name=testteam&phone=0300456090&type=&teamType=",
 					}).
 					WillRespondWith(dsl.Response{
 						Status: http.StatusCreated,
@@ -63,9 +63,9 @@ func TestAddTeam(t *testing.T) {
 				{Name: "XSRF-TOKEN", Value: "abcde"},
 				{Name: "Other", Value: "other"},
 			},
-			email:         "a",
-			name:          "b",
-			phone:         "c",
+			email:         "john.doe@example.com",
+			name:          "testteam",
+			phone:         "0300456090",
 			teamType:      "",
 			expectedID:    123,
 			expectedError: func(port int) error { return nil },
@@ -87,7 +87,7 @@ func TestAddTeam(t *testing.T) {
 							"OPG-Bypass-Membrane": dsl.String("1"),
 							"Content-Type":        dsl.String("application/x-www-form-urlencoded"),
 						},
-						Body: "email=a&name=b&phone=c&type=&teamType=&teamType[handle]=WHAT",
+						Body: "email=john.doe@example.com&name=supervisiontestteam&phone=0300456090&type=&teamType=&teamType[handle]=INVESTIGATIONS",
 					}).
 					WillRespondWith(dsl.Response{
 						Status: http.StatusCreated,
@@ -102,10 +102,10 @@ func TestAddTeam(t *testing.T) {
 				{Name: "XSRF-TOKEN", Value: "abcde"},
 				{Name: "Other", Value: "other"},
 			},
-			email:         "a",
-			name:          "b",
-			phone:         "c",
-			teamType:      "WHAT",
+			email:         "john.doe@example.com",
+			name:          "supervisiontestteam",
+			phone:         "0300456090",
+			teamType:      "INVESTIGATIONS",
 			expectedID:    123,
 			expectedError: func(port int) error { return nil },
 		},
@@ -142,8 +142,12 @@ func TestAddTeam(t *testing.T) {
 						Method: http.MethodPost,
 						Path:   dsl.String("/api/team"),
 						Headers: dsl.MapMatcher{
+							"X-XSRF-TOKEN":        dsl.String("abcde"),
+							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
 							"OPG-Bypass-Membrane": dsl.String("1"),
+							"Content-Type":        dsl.String("application/x-www-form-urlencoded"),
 						},
+						Body: "email=john.doehrfgjuerhujghejrhrgherjrghgjrehergeghrjkrghkerhgerjkhgerjkheghergkhgekrhgerherhjghkjerhgherghjkerhgekjherkjhgerhgjehherkjhgkjehrghrehgkjrehjkghrjkehgrehehgkjhrejghhehgkjerhegjrhegrjhrjkhgkrhrghrkjegrkjehrghjkerhgjkhergjhrjkerregjhrekjhrgrehjkg@example.com&name=testteam&phone=0300456090&type=&teamType=",
 					}).
 					WillRespondWith(dsl.Response{
 						Status: http.StatusBadRequest,
@@ -151,18 +155,26 @@ func TestAddTeam(t *testing.T) {
 							"data": dsl.Like(map[string]interface{}{
 								"errorMessages": dsl.Like(map[string]interface{}{
 									"email": dsl.Like(map[string]interface{}{
-										"stringLengthTooLong": "The input is more than 255 characters long",
+										"emailAddressLengthExceeded": "The input is more than 255 characters long",
 									}),
 								}),
 							}),
 						}),
 					})
 			},
+			cookies: []*http.Cookie{
+				{Name: "XSRF-TOKEN", Value: "abcde"},
+				{Name: "Other", Value: "other"},
+			},
+			email:    "john.doehrfgjuerhujghejrhrgherjrghgjrehergeghrjkrghkerhgerjkhgerjkheghergkhgekrhgerherhjghkjerhgherghjkerhgekjherkjhgerhgjehherkjhgkjehrghrehgkjrehjkghrjkehgrehehgkjhrejghhehgkjerhegjrhegrjhrjkhgkrhrghrkjegrkjehrghjkerhgjkhergjhrjkerregjhrekjhrgrehjkg@example.com",
+			name:     "testteam",
+			phone:    "0300456090",
+			teamType: "",
 			expectedError: func(_ int) error {
 				return ValidationError{
 					Errors: ValidationErrors{
 						"email": {
-							"stringLengthTooLong": "The input is more than 255 characters long",
+							"emailAddressLengthExceeded": "The input is more than 255 characters long",
 						},
 					},
 				}

@@ -30,6 +30,8 @@ func TestChangePassword(t *testing.T) {
 		setup            func()
 		cookies          []*http.Cookie
 		existingPassword string
+		password         string
+		confirmPassword  string
 		expectedError    error
 	}{
 		{
@@ -46,7 +48,9 @@ func TestChangePassword(t *testing.T) {
 							"X-XSRF-TOKEN":        dsl.String("abcde"),
 							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
 							"OPG-Bypass-Membrane": dsl.String("1"),
+							"Content-Type":        dsl.String("application/x-www-form-urlencoded"),
 						},
+						Body: "existingPassword=Password1&password=Password1&confirmPassword=Password1",
 					}).
 					WillRespondWith(dsl.Response{
 						Status: http.StatusOK,
@@ -56,6 +60,9 @@ func TestChangePassword(t *testing.T) {
 				{Name: "XSRF-TOKEN", Value: "abcde"},
 				{Name: "Other", Value: "other"},
 			},
+			existingPassword: "Password1",
+			password:         "Password1",
+			confirmPassword:  "Password1",
 		},
 
 		{
@@ -90,15 +97,26 @@ func TestChangePassword(t *testing.T) {
 						Method: http.MethodPost,
 						Path:   dsl.String("/auth/change-password"),
 						Headers: dsl.MapMatcher{
+							"X-XSRF-TOKEN":        dsl.String("abcde"),
+							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
 							"OPG-Bypass-Membrane": dsl.String("1"),
+							"Content-Type":        dsl.String("application/x-www-form-urlencoded"),
 						},
+						Body: "existingPassword=x&password=y&confirmPassword=z",
 					}).
 					WillRespondWith(dsl.Response{
 						Status: http.StatusBadRequest,
 						Body:   dsl.Match(errorsResponse{}),
 					})
 			},
-			expectedError: ClientError("oops"),
+			cookies: []*http.Cookie{
+				{Name: "XSRF-TOKEN", Value: "abcde"},
+				{Name: "Other", Value: "other"},
+			},
+			existingPassword: "x",
+			password:         "y",
+			confirmPassword:  "z",
+			expectedError:    ClientError("oops"),
 		},
 	}
 
@@ -109,7 +127,7 @@ func TestChangePassword(t *testing.T) {
 			assert.Nil(t, pact.Verify(func() error {
 				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
 
-				err := client.ChangePassword(context.Background(), tc.cookies, "a", "b", "c")
+				err := client.ChangePassword(context.Background(), tc.cookies, tc.existingPassword, tc.password, tc.confirmPassword)
 				assert.Equal(t, tc.expectedError, err)
 				return nil
 			}))

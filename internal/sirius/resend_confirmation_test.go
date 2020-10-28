@@ -44,7 +44,7 @@ func TestResendConfirmation(t *testing.T) {
 							"OPG-Bypass-Membrane": dsl.String("1"),
 							"Content-Type":        dsl.String("application/x-www-form-urlencoded"),
 						},
-						Body: "email=john.doe@example.com",
+						Body: "email=system.admin@opgtest.com",
 					}).
 					WillRespondWith(dsl.Response{
 						Status: http.StatusOK,
@@ -54,7 +54,7 @@ func TestResendConfirmation(t *testing.T) {
 				{Name: "XSRF-TOKEN", Value: "abcde"},
 				{Name: "Other", Value: "other"},
 			},
-			email:         "john.doe@example.com",
+			email:         "system.admin@opgtest.com",
 			expectedError: func(port int) error { return nil },
 		},
 
@@ -90,16 +90,25 @@ func TestResendConfirmation(t *testing.T) {
 						Method: http.MethodPost,
 						Path:   dsl.String("/auth/resend-confirmation"),
 						Headers: dsl.MapMatcher{
+							"X-XSRF-TOKEN":        dsl.String("abcde"),
+							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
 							"OPG-Bypass-Membrane": dsl.String("1"),
+							"Content-Type":        dsl.String("application/x-www-form-urlencoded"),
 						},
+						Body: "email=who",
 					}).
 					WillRespondWith(dsl.Response{
-						Status: http.StatusBadRequest,
+						Status: http.StatusInternalServerError,
 					})
 			},
+			cookies: []*http.Cookie{
+				{Name: "XSRF-TOKEN", Value: "abcde"},
+				{Name: "Other", Value: "other"},
+			},
+			email: "who",
 			expectedError: func(port int) error {
 				return StatusError{
-					Code:   http.StatusBadRequest,
+					Code:   http.StatusInternalServerError,
 					URL:    fmt.Sprintf("http://localhost:%d/auth/resend-confirmation", port),
 					Method: http.MethodPost,
 				}

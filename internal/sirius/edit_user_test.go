@@ -28,11 +28,21 @@ func TestEditUser(t *testing.T) {
 	testCases := []struct {
 		name          string
 		setup         func()
+		user          AuthUser
 		cookies       []*http.Cookie
 		expectedError func(int) error
 	}{
 		{
 			name: "OK",
+			user: AuthUser{
+				ID:           123,
+				Firstname:    "a",
+				Surname:      "b",
+				Organisation: "d",
+				Roles:        []string{"e", "f"},
+				Locked:       false,
+				Suspended:    true,
+			},
 			setup: func() {
 				pact.
 					AddInteraction().
@@ -68,6 +78,9 @@ func TestEditUser(t *testing.T) {
 
 		{
 			name: "Unauthorized",
+			user: AuthUser{
+				ID: 123,
+			},
 			setup: func() {
 				pact.
 					AddInteraction().
@@ -89,6 +102,10 @@ func TestEditUser(t *testing.T) {
 
 		{
 			name: "Validation Errors",
+			user: AuthUser{
+				ID:        123,
+				Firstname: "grehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjgergrehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjgergrehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjgergrehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjgergrehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjgergrehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjger",
+			},
 			setup: func() {
 				pact.
 					AddInteraction().
@@ -98,7 +115,17 @@ func TestEditUser(t *testing.T) {
 						Method: http.MethodPut,
 						Path:   dsl.String("/auth/user/123"),
 						Headers: dsl.MapMatcher{
+							"X-XSRF-TOKEN":        dsl.String("abcde"),
+							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
 							"OPG-Bypass-Membrane": dsl.String("1"),
+						},
+						Body: map[string]interface{}{
+							"id":        123,
+							"firstname": "grehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjgergrehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjgergrehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjgergrehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjgergrehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjgergrehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjger",
+							"surname":   "",
+							"roles":     []string{""},
+							"locked":    false,
+							"suspended": false,
 						},
 					}).
 					WillRespondWith(dsl.Response{
@@ -106,11 +133,19 @@ func TestEditUser(t *testing.T) {
 						Body:   dsl.Match(editUserErrorsResponse{}),
 					})
 			},
+			cookies: []*http.Cookie{
+				{Name: "XSRF-TOKEN", Value: "abcde"},
+				{Name: "Other", Value: "other"},
+			},
 			expectedError: func(port int) error { return ClientError("oops") },
 		},
 
 		{
 			name: "Errors",
+			user: AuthUser{
+				ID:        123,
+				Firstname: "grehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjgergrehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjgergrehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjgergrehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjgergrehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjgergrehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjger",
+			},
 			setup: func() {
 				pact.
 					AddInteraction().
@@ -120,12 +155,26 @@ func TestEditUser(t *testing.T) {
 						Method: http.MethodPut,
 						Path:   dsl.String("/auth/user/123"),
 						Headers: dsl.MapMatcher{
+							"X-XSRF-TOKEN":        dsl.String("abcde"),
+							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
 							"OPG-Bypass-Membrane": dsl.String("1"),
 						},
+						Body: dsl.Like(map[string]interface{}{
+							"id":        123,
+							"firstname": "grehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjgergrehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjgergrehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjgergrehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjgergrehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjgergrehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjger",
+							"surname":   "",
+							"roles":     []string{""},
+							"locked":    false,
+							"suspended": false,
+						}),
 					}).
 					WillRespondWith(dsl.Response{
 						Status: http.StatusBadRequest,
 					})
+			},
+			cookies: []*http.Cookie{
+				{Name: "XSRF-TOKEN", Value: "abcde"},
+				{Name: "Other", Value: "other"},
 			},
 			expectedError: func(port int) error {
 				return StatusError{
@@ -144,15 +193,7 @@ func TestEditUser(t *testing.T) {
 			assert.Nil(t, pact.Verify(func() error {
 				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
 
-				err := client.EditUser(context.Background(), tc.cookies, AuthUser{
-					ID:           123,
-					Firstname:    "a",
-					Surname:      "b",
-					Organisation: "d",
-					Roles:        []string{"e", "f"},
-					Locked:       false,
-					Suspended:    true,
-				})
+				err := client.EditUser(context.Background(), tc.cookies, tc.user)
 
 				assert.Equal(t, tc.expectedError(pact.Server.Port), err)
 				return nil
