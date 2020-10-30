@@ -8,7 +8,7 @@ describe("Teams", () => {
     it("allows me to add a new team", () => {
         cy.get("#f-name").clear().type("New team");
         cy.contains("label[for=f-service-conditional]", "Supervision").click();
-        cy.get("#f-supervision-type").select("Complaints");
+        cy.get("#f-supervision-type").select("Allocations");
         cy.get("#f-phone").clear().type("0123045067");
         cy.get("button[type=submit]").click();
 

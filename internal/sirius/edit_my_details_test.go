@@ -62,22 +62,6 @@ func TestEditMyDetails(t *testing.T) {
 					WillRespondWith(dsl.Response{
 						Status:  http.StatusOK,
 						Headers: dsl.MapMatcher{"Content-Type": dsl.String("application/json")},
-						Body: dsl.Like(map[string]interface{}{
-							"id":          dsl.Like(47),
-							"name":        dsl.Like("system"),
-							"phoneNumber": dsl.Like("03004560300"),
-							"teams": dsl.EachLike(map[string]interface{}{
-								"displayName": dsl.Like("Allocations - (Supervision)"),
-							}, 1),
-							"displayName": dsl.Like("system admin"),
-							"deleted":     dsl.Like(false),
-							"email":       dsl.Like("system.admin@opgtest.com"),
-							"firstname":   dsl.Like("system"),
-							"surname":     dsl.Like("admin"),
-							"roles":       dsl.EachLike("System Admin", 1),
-							"locked":      dsl.Like(false),
-							"suspended":   dsl.Like(false),
-						}),
 					})
 			},
 			cookies: []*http.Cookie{
@@ -88,7 +72,7 @@ func TestEditMyDetails(t *testing.T) {
 
 		{
 			name:        "BadRequest",
-			phoneNumber: "invalid phone number",
+			phoneNumber: "85845984598649858684596849859549684568465894689498468495689645468384938743893892317571934751439574638753683761084565480713465618457365784613876481376457651471645463178546357843615971435645387364139756147361456145161587165477143576698764574569834659465974657946574569856896745229786",
 			setup: func() {
 				pact.
 					AddInteraction().
@@ -103,7 +87,7 @@ func TestEditMyDetails(t *testing.T) {
 							"OPG-Bypass-Membrane": dsl.String("1"),
 						},
 						Body: map[string]string{
-							"phoneNumber": "invalid phone number",
+							"phoneNumber": "85845984598649858684596849859549684568465894689498468495689645468384938743893892317571934751439574638753683761084565480713465618457365784613876481376457651471645463178546357843615971435645387364139756147361456145161587165477143576698764574569834659465974657946574569856896745229786",
 						},
 					}).
 					WillRespondWith(dsl.Response{
