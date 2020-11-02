@@ -3,9 +3,7 @@ package sirius
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"net/http"
-	"strconv"
 )
 
 type RefDataTeamType struct {
@@ -18,32 +16,25 @@ func (c *Client) TeamTypes(ctx context.Context, cookies []*http.Cookie) ([]RefDa
 		Data []RefDataTeamType `json:"teamType"`
 	}
 
-	var types []RefDataTeamType
-
 	req, err := c.newRequest(ctx, http.MethodGet, "/api/v1/reference-data?filter=teamType", nil, cookies)
 	if err != nil {
-		return types, err
+		return v.Data, err
 	}
 
 	resp, err := c.http.Do(req)
 	if err != nil {
-		return types, err
+		return v.Data, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusUnauthorized {
-		return types, ErrUnauthorized
+		return v.Data, ErrUnauthorized
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return types, errors.New("returned non-2XX response: " + strconv.Itoa(resp.StatusCode))
+		return v.Data, newStatusError(resp)
 	}
 
 	err = json.NewDecoder(resp.Body).Decode(&v)
-
-	if err != nil {
-		return types, err
-	}
-
-	return v.Data, nil
+	return v.Data, err
 }

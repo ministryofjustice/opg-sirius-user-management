@@ -134,3 +134,17 @@ func TestChangePassword(t *testing.T) {
 		})
 	}
 }
+
+func TestChangePasswordStatusError(t *testing.T) {
+	s := teapotServer()
+	defer s.Close()
+
+	client, _ := NewClient(http.DefaultClient, s.URL)
+
+	err := client.ChangePassword(context.Background(), nil, "", "", "")
+	assert.Equal(t, StatusError{
+		Code:   http.StatusTeapot,
+		URL:    s.URL + "/auth/change-password",
+		Method: http.MethodPost,
+	}, err)
+}

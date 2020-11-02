@@ -150,3 +150,17 @@ func TestEditMyDetails(t *testing.T) {
 		})
 	}
 }
+
+func TestEditMyDetailsStatusError(t *testing.T) {
+	s := teapotServer()
+	defer s.Close()
+
+	client, _ := NewClient(http.DefaultClient, s.URL)
+
+	err := client.EditMyDetails(context.Background(), nil, 47, "")
+	assert.Equal(t, StatusError{
+		Code:   http.StatusTeapot,
+		URL:    s.URL + "/api/v1/users/47/updateTelephoneNumber",
+		Method: http.MethodPut,
+	}, err)
+}

@@ -124,3 +124,17 @@ func TestMyDetails(t *testing.T) {
 		})
 	}
 }
+
+func TestMyDetailsStatusError(t *testing.T) {
+	s := teapotServer()
+	defer s.Close()
+
+	client, _ := NewClient(http.DefaultClient, s.URL)
+
+	_, err := client.MyDetails(context.Background(), nil)
+	assert.Equal(t, StatusError{
+		Code:   http.StatusTeapot,
+		URL:    s.URL + "/api/v1/users/current",
+		Method: http.MethodGet,
+	}, err)
+}

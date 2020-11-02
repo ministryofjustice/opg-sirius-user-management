@@ -30,7 +30,7 @@ func TestAddTeam(t *testing.T) {
 		phone         string
 		email         string
 		expectedID    int
-		expectedError func(int) error
+		expectedError error
 	}{
 		{
 			scenario: "Created",
@@ -63,12 +63,11 @@ func TestAddTeam(t *testing.T) {
 				{Name: "XSRF-TOKEN", Value: "abcde"},
 				{Name: "Other", Value: "other"},
 			},
-			email:         "john.doe@example.com",
-			name:          "testteam",
-			phone:         "0300456090",
-			teamType:      "",
-			expectedID:    123,
-			expectedError: func(port int) error { return nil },
+			email:      "john.doe@example.com",
+			name:       "testteam",
+			phone:      "0300456090",
+			teamType:   "",
+			expectedID: 123,
 		},
 
 		{
@@ -102,12 +101,11 @@ func TestAddTeam(t *testing.T) {
 				{Name: "XSRF-TOKEN", Value: "abcde"},
 				{Name: "Other", Value: "other"},
 			},
-			email:         "john.doe@example.com",
-			name:          "supervisiontestteam",
-			phone:         "0300456090",
-			teamType:      "INVESTIGATIONS",
-			expectedID:    123,
-			expectedError: func(port int) error { return nil },
+			email:      "john.doe@example.com",
+			name:       "supervisiontestteam",
+			phone:      "0300456090",
+			teamType:   "INVESTIGATIONS",
+			expectedID: 123,
 		},
 
 		{
@@ -128,7 +126,7 @@ func TestAddTeam(t *testing.T) {
 						Status: http.StatusUnauthorized,
 					})
 			},
-			expectedError: func(_ int) error { return ErrUnauthorized },
+			expectedError: ErrUnauthorized,
 		},
 
 		{
@@ -170,52 +168,12 @@ func TestAddTeam(t *testing.T) {
 			name:     "testteam",
 			phone:    "0300456090",
 			teamType: "",
-			expectedError: func(_ int) error {
-				return ValidationError{
-					Errors: ValidationErrors{
-						"email": {
-							"emailAddressLengthExceeded": "The input is more than 255 characters long",
-						},
+			expectedError: ValidationError{
+				Errors: ValidationErrors{
+					"email": {
+						"emailAddressLengthExceeded": "The input is more than 255 characters long",
 					},
-				}
-			},
-		},
-
-		{
-			scenario: "BadRequest",
-			setup: func() {
-				pact.
-					AddInteraction().
-					Given("An admin user").
-					UponReceiving("A request to add a new team with bad request").
-					WithRequest(dsl.Request{
-						Method: http.MethodPost,
-						Path:   dsl.String("/api/team"),
-						Headers: dsl.MapMatcher{
-							"X-XSRF-TOKEN":        dsl.String("abcde"),
-							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
-							"OPG-Bypass-Membrane": dsl.String("1"),
-							"Content-Type":        dsl.String("application/x-www-form-urlencoded"),
-						},
-						Body: "email=a&name=b&phone=c&teamType=&type=",
-					}).
-					WillRespondWith(dsl.Response{
-						Status: http.StatusBadRequest,
-					})
-			},
-			cookies: []*http.Cookie{
-				{Name: "XSRF-TOKEN", Value: "abcde"},
-				{Name: "Other", Value: "other"},
-			},
-			email: "a",
-			name:  "b",
-			phone: "c",
-			expectedError: func(port int) error {
-				return StatusError{
-					Code:   http.StatusBadRequest,
-					URL:    fmt.Sprintf("http://localhost:%d/api/team", port),
-					Method: http.MethodPost,
-				}
+				},
 			},
 		},
 	}
@@ -228,10 +186,24 @@ func TestAddTeam(t *testing.T) {
 				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
 
 				id, err := client.AddTeam(context.Background(), tc.cookies, tc.name, tc.teamType, tc.phone, tc.email)
-				assert.Equal(t, tc.expectedError(pact.Server.Port), err)
+				assert.Equal(t, tc.expectedError, err)
 				assert.Equal(t, tc.expectedID, id)
 				return nil
 			}))
 		})
 	}
+}
+
+func TestAddTeamStatusError(t *testing.T) {
+	s := teapotServer()
+	defer s.Close()
+
+	client, _ := NewClient(http.DefaultClient, s.URL)
+
+	_, err := client.AddTeam(context.Background(), nil, "", "", "", "")
+	assert.Equal(t, StatusError{
+		Code:   http.StatusTeapot,
+		URL:    s.URL + "/api/team",
+		Method: http.MethodPost,
+	}, err)
 }

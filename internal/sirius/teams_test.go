@@ -206,3 +206,17 @@ func TestTeamsIgnoredPact(t *testing.T) {
 		})
 	}
 }
+
+func TestTeamsStatusError(t *testing.T) {
+	s := teapotServer()
+	defer s.Close()
+
+	client, _ := NewClient(http.DefaultClient, s.URL)
+
+	_, err := client.Teams(context.Background(), nil)
+	assert.Equal(t, StatusError{
+		Code:   http.StatusTeapot,
+		URL:    s.URL + "/api/v1/teams",
+		Method: http.MethodGet,
+	}, err)
+}

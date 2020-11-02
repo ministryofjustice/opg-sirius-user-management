@@ -205,3 +205,17 @@ func TestEditTeam(t *testing.T) {
 		})
 	}
 }
+
+func TestEditTeamStatusError(t *testing.T) {
+	s := teapotServer()
+	defer s.Close()
+
+	client, _ := NewClient(http.DefaultClient, s.URL)
+
+	err := client.EditTeam(context.Background(), nil, Team{ID: 65})
+	assert.Equal(t, StatusError{
+		Code:   http.StatusTeapot,
+		URL:    s.URL + "/api/team/65",
+		Method: http.MethodPut,
+	}, err)
+}

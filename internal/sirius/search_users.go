@@ -3,10 +3,8 @@ package sirius
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"net/http"
 	"sort"
-	"strconv"
 	"strings"
 )
 
@@ -69,7 +67,7 @@ func (c *Client) SearchUsers(ctx context.Context, cookies []*http.Cookie, search
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, errors.New("returned non-2XX response: " + strconv.Itoa(resp.StatusCode))
+		return nil, newStatusError(resp)
 	}
 
 	err = json.NewDecoder(resp.Body).Decode(&apiUserList)

@@ -27,7 +27,7 @@ func TestTeam(t *testing.T) {
 		setup            func()
 		cookies          []*http.Cookie
 		expectedResponse Team
-		expectedError    func(int) error
+		expectedError    error
 	}{
 		{
 			name: "OK",
@@ -83,7 +83,6 @@ func TestTeam(t *testing.T) {
 				},
 				Type: "ALLOCATIONS",
 			},
-			expectedError: func(port int) error { return nil },
 		},
 		{
 			name: "OKWithLpaTeams",
@@ -132,7 +131,6 @@ func TestTeam(t *testing.T) {
 				},
 				Type: "",
 			},
-			expectedError: func(port int) error { return nil },
 		},
 		{
 			name: "Unauthorized",
@@ -154,41 +152,7 @@ func TestTeam(t *testing.T) {
 					})
 			},
 			expectedResponse: Team{},
-			expectedError:    func(port int) error { return ErrUnauthorized },
-		},
-		{
-			name: "DoesNotExist",
-			id:   3589359,
-			setup: func() {
-				pact.
-					AddInteraction().
-					Given("User exists").
-					UponReceiving("A request for a team which doesn't exist").
-					WithRequest(dsl.Request{
-						Method: http.MethodGet,
-						Path:   dsl.String("/api/team/3589359"),
-						Headers: dsl.MapMatcher{
-							"X-XSRF-TOKEN":        dsl.String("abcde"),
-							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
-							"OPG-Bypass-Membrane": dsl.String("1"),
-						},
-					}).
-					WillRespondWith(dsl.Response{
-						Status: http.StatusNotFound,
-					})
-			},
-			cookies: []*http.Cookie{
-				{Name: "XSRF-TOKEN", Value: "abcde"},
-				{Name: "Other", Value: "other"},
-			},
-			expectedResponse: Team{},
-			expectedError: func(port int) error {
-				return StatusError{
-					Code:   http.StatusNotFound,
-					URL:    fmt.Sprintf("http://localhost:%d/api/team/3589359", port),
-					Method: http.MethodGet,
-				}
-			},
+			expectedError:    ErrUnauthorized,
 		},
 	}
 
@@ -201,9 +165,23 @@ func TestTeam(t *testing.T) {
 
 				team, err := client.Team(context.Background(), tc.cookies, tc.id)
 				assert.Equal(t, tc.expectedResponse, team)
-				assert.Equal(t, tc.expectedError(pact.Server.Port), err)
+				assert.Equal(t, tc.expectedError, err)
 				return nil
 			}))
 		})
 	}
+}
+
+func TestTeamStatusError(t *testing.T) {
+	s := teapotServer()
+	defer s.Close()
+
+	client, _ := NewClient(http.DefaultClient, s.URL)
+
+	_, err := client.Team(context.Background(), nil, 123)
+	assert.Equal(t, StatusError{
+		Code:   http.StatusTeapot,
+		URL:    s.URL + "/api/team/123",
+		Method: http.MethodGet,
+	}, err)
 }

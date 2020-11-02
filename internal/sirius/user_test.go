@@ -115,3 +115,17 @@ func TestUser(t *testing.T) {
 		})
 	}
 }
+
+func TestUserStatusError(t *testing.T) {
+	s := teapotServer()
+	defer s.Close()
+
+	client, _ := NewClient(http.DefaultClient, s.URL)
+
+	_, err := client.User(context.Background(), nil, 123)
+	assert.Equal(t, StatusError{
+		Code:   http.StatusTeapot,
+		URL:    s.URL + "/auth/user/123",
+		Method: http.MethodGet,
+	}, err)
+}
