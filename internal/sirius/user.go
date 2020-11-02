@@ -51,7 +51,9 @@ func (c *Client) User(ctx context.Context, cookies []*http.Cookie, id int) (Auth
 	}
 
 	var v authUserResponse
-	err = json.NewDecoder(resp.Body).Decode(&v)
+	if err := json.NewDecoder(resp.Body).Decode(&v); err != nil {
+		return AuthUser{}, err
+	}
 
 	user := AuthUser{
 		ID:        v.ID,

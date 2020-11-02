@@ -27,8 +27,6 @@ type myPermissions struct {
 }
 
 func (c *Client) HasPermission(ctx context.Context, cookies []*http.Cookie, group string, method string) (bool, error) {
-	var v myPermissions
-
 	req, err := c.newRequest(ctx, http.MethodGet, "/api/permission", nil, cookies)
 	if err != nil {
 		return false, err
@@ -48,9 +46,8 @@ func (c *Client) HasPermission(ctx context.Context, cookies []*http.Cookie, grou
 		return false, newStatusError(resp)
 	}
 
-	err = json.NewDecoder(resp.Body).Decode(&v)
-
-	if err != nil {
+	var v myPermissions
+	if err := json.NewDecoder(resp.Body).Decode(&v); err != nil {
 		return false, err
 	}
 

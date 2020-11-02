@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -50,18 +49,13 @@ func (c *Client) EditTeam(ctx context.Context, cookies []*http.Cookie, team Team
 			} `json:"data"`
 		}
 
-		err = json.NewDecoder(resp.Body).Decode(&v)
-		if err == nil {
+		if err := json.NewDecoder(resp.Body).Decode(&v); err == nil {
 			return &ValidationError{
 				Errors: v.Data.Errors,
 			}
 		}
 
-		if err == io.EOF {
-			return newStatusError(resp)
-		}
-
-		return err
+		return newStatusError(resp)
 	}
 
 	return nil

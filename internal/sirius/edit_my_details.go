@@ -3,7 +3,6 @@ package sirius
 import (
 	"context"
 	"encoding/json"
-	"io"
 	"net/http"
 	"strconv"
 	"strings"
@@ -11,7 +10,6 @@ import (
 
 func (c *Client) EditMyDetails(ctx context.Context, cookies []*http.Cookie, id int, phoneNumber string) error {
 	var v struct {
-		Status           int              `json:"status"`
 		Detail           string           `json:"detail"`
 		ValidationErrors ValidationErrors `json:"validation_errors"`
 	}
@@ -42,19 +40,14 @@ func (c *Client) EditMyDetails(ctx context.Context, cookies []*http.Cookie, id i
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		err = json.NewDecoder(resp.Body).Decode(&v)
-		if err == nil {
+		if err := json.NewDecoder(resp.Body).Decode(&v); err == nil {
 			return &ValidationError{
 				Message: v.Detail,
 				Errors:  v.ValidationErrors,
 			}
 		}
 
-		if err == io.EOF {
-			return newStatusError(resp)
-		}
-
-		return err
+		return newStatusError(resp)
 	}
 
 	return nil
