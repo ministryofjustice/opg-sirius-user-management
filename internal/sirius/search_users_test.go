@@ -144,3 +144,11 @@ func TestSearchUsersTooShort(t *testing.T) {
 	assert.Nil(t, users)
 	assert.Equal(t, ClientError("Search term must be at least three characters"), err)
 }
+
+func TestUserStatus(t *testing.T) {
+	assert.Equal(t, "string", UserStatus("string").String())
+
+	assert.Equal(t, "", UserStatus("string").TagColour())
+	assert.Equal(t, "govuk-tag--grey", UserStatus("Suspended").TagColour())
+	assert.Equal(t, "govuk-tag--orange", UserStatus("Locked").TagColour())
+}

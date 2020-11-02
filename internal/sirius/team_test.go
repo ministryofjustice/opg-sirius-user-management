@@ -2,6 +2,7 @@ package sirius
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"testing"
@@ -170,6 +171,16 @@ func TestTeam(t *testing.T) {
 			}))
 		})
 	}
+}
+
+func TestTeamBadJSONResponse(t *testing.T) {
+	s := invalidJSONServer()
+	defer s.Close()
+
+	client, _ := NewClient(http.DefaultClient, s.URL)
+
+	_, err := client.Team(context.Background(), nil, 123)
+	assert.IsType(t, &json.UnmarshalTypeError{}, err)
 }
 
 func TestTeamStatusError(t *testing.T) {

@@ -32,7 +32,7 @@ type Template interface {
 	ExecuteTemplate(io.Writer, string, interface{}) error
 }
 
-func New(logger Logger, client Client, templates map[string]*template.Template, prefix, siriusURL, siriusPublicURL string, webDir string) http.Handler {
+func New(logger Logger, client Client, templates map[string]*template.Template, prefix, siriusURL, siriusPublicURL, webDir string) http.Handler {
 	wrap := errorHandler(logger, templates["error.gotmpl"], prefix, siriusPublicURL)
 	systemAdminOnly := allowRoles(client, "System Admin")
 
