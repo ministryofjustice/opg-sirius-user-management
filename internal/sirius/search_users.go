@@ -3,10 +3,8 @@ package sirius
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"net/http"
 	"sort"
-	"strconv"
 	"strings"
 )
 
@@ -51,8 +49,6 @@ func (c *Client) SearchUsers(ctx context.Context, cookies []*http.Cookie, search
 		return nil, ClientError("Search term must be at least three characters")
 	}
 
-	var apiUserList apiUserList
-
 	req, err := c.newRequest(ctx, http.MethodGet, "/api/search/users?query="+search, nil, cookies)
 	if err != nil {
 		return nil, err
@@ -69,17 +65,15 @@ func (c *Client) SearchUsers(ctx context.Context, cookies []*http.Cookie, search
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, errors.New("returned non-2XX response: " + strconv.Itoa(resp.StatusCode))
+		return nil, newStatusError(resp)
 	}
 
-	err = json.NewDecoder(resp.Body).Decode(&apiUserList)
-
-	if err != nil {
+	var v apiUserList
+	if err := json.NewDecoder(resp.Body).Decode(&v); err != nil {
 		return nil, err
 	}
 
-	apiUsers := apiUserList.Data
-	var users []User
+	apiUsers := v.Data
 
 	sort.SliceStable(apiUsers, func(i, j int) bool {
 		if strings.EqualFold(apiUsers[i].Surname, apiUsers[j].Surname) {
@@ -89,6 +83,7 @@ func (c *Client) SearchUsers(ctx context.Context, cookies []*http.Cookie, search
 		return strings.ToLower(apiUsers[i].Surname) < strings.ToLower(apiUsers[j].Surname)
 	})
 
+	var users []User
 	for _, u := range apiUsers {
 		user := User{
 			ID:          u.ID,

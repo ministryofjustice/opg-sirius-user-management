@@ -36,6 +36,10 @@ func (m *mockTemplate) ExecuteTemplate(w io.Writer, name string, vars interface{
 	return nil
 }
 
+func TestNew(t *testing.T) {
+	assert.Implements(t, (*http.Handler)(nil), New(nil, nil, nil, "", "", "", ""))
+}
+
 func TestErrorHandler(t *testing.T) {
 	assert := assert.New(t)
 

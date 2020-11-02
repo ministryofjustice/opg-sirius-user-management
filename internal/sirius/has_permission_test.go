@@ -113,6 +113,20 @@ func TestPermissions(t *testing.T) {
 	}
 }
 
+func TestHasPermissionStatusError(t *testing.T) {
+	s := teapotServer()
+	defer s.Close()
+
+	client, _ := NewClient(http.DefaultClient, s.URL)
+
+	_, err := client.HasPermission(context.Background(), nil, "", "")
+	assert.Equal(t, StatusError{
+		Code:   http.StatusTeapot,
+		URL:    s.URL + "/api/permission",
+		Method: http.MethodGet,
+	}, err)
+}
+
 func TestPermissionSetChecksPermission(t *testing.T) {
 	permissions := permissionSet{
 		"user": {

@@ -26,7 +26,7 @@ func TestResendConfirmation(t *testing.T) {
 		setup         func()
 		cookies       []*http.Cookie
 		email         string
-		expectedError func(int) error
+		expectedError error
 	}{
 		{
 			name: "Created",
@@ -54,8 +54,7 @@ func TestResendConfirmation(t *testing.T) {
 				{Name: "XSRF-TOKEN", Value: "abcde"},
 				{Name: "Other", Value: "other"},
 			},
-			email:         "system.admin@opgtest.com",
-			expectedError: func(port int) error { return nil },
+			email: "system.admin@opgtest.com",
 		},
 
 		{
@@ -76,43 +75,7 @@ func TestResendConfirmation(t *testing.T) {
 						Status: http.StatusUnauthorized,
 					})
 			},
-			expectedError: func(port int) error { return ErrUnauthorized },
-		},
-
-		{
-			name: "Errors",
-			setup: func() {
-				pact.
-					AddInteraction().
-					Given("An admin user").
-					UponReceiving("A request to resend a confirmation email errors").
-					WithRequest(dsl.Request{
-						Method: http.MethodPost,
-						Path:   dsl.String("/auth/resend-confirmation"),
-						Headers: dsl.MapMatcher{
-							"X-XSRF-TOKEN":        dsl.String("abcde"),
-							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
-							"OPG-Bypass-Membrane": dsl.String("1"),
-							"Content-Type":        dsl.String("application/x-www-form-urlencoded"),
-						},
-						Body: "email=who",
-					}).
-					WillRespondWith(dsl.Response{
-						Status: http.StatusInternalServerError,
-					})
-			},
-			cookies: []*http.Cookie{
-				{Name: "XSRF-TOKEN", Value: "abcde"},
-				{Name: "Other", Value: "other"},
-			},
-			email: "who",
-			expectedError: func(port int) error {
-				return StatusError{
-					Code:   http.StatusInternalServerError,
-					URL:    fmt.Sprintf("http://localhost:%d/auth/resend-confirmation", port),
-					Method: http.MethodPost,
-				}
-			},
+			expectedError: ErrUnauthorized,
 		},
 	}
 
@@ -124,9 +87,23 @@ func TestResendConfirmation(t *testing.T) {
 				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
 
 				err := client.ResendConfirmation(context.Background(), tc.cookies, tc.email)
-				assert.Equal(t, tc.expectedError(pact.Server.Port), err)
+				assert.Equal(t, tc.expectedError, err)
 				return nil
 			}))
 		})
 	}
+}
+
+func TestResendConfirmationStatusError(t *testing.T) {
+	s := teapotServer()
+	defer s.Close()
+
+	client, _ := NewClient(http.DefaultClient, s.URL)
+
+	err := client.ResendConfirmation(context.Background(), nil, "")
+	assert.Equal(t, StatusError{
+		Code:   http.StatusTeapot,
+		URL:    s.URL + "/auth/resend-confirmation",
+		Method: http.MethodPost,
+	}, err)
 }

@@ -30,7 +30,7 @@ func TestEditUser(t *testing.T) {
 		setup         func()
 		user          AuthUser
 		cookies       []*http.Cookie
-		expectedError func(int) error
+		expectedError error
 	}{
 		{
 			name: "OK",
@@ -73,7 +73,6 @@ func TestEditUser(t *testing.T) {
 				{Name: "XSRF-TOKEN", Value: "abcde"},
 				{Name: "Other", Value: "other"},
 			},
-			expectedError: func(port int) error { return nil },
 		},
 
 		{
@@ -97,7 +96,7 @@ func TestEditUser(t *testing.T) {
 						Status: http.StatusUnauthorized,
 					})
 			},
-			expectedError: func(port int) error { return ErrUnauthorized },
+			expectedError: ErrUnauthorized,
 		},
 
 		{
@@ -137,52 +136,7 @@ func TestEditUser(t *testing.T) {
 				{Name: "XSRF-TOKEN", Value: "abcde"},
 				{Name: "Other", Value: "other"},
 			},
-			expectedError: func(port int) error { return ClientError("oops") },
-		},
-
-		{
-			name: "Errors",
-			user: AuthUser{
-				ID:        123,
-				Firstname: "grehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjgergrehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjgergrehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjgergrehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjgergrehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjgergrehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjger",
-			},
-			setup: func() {
-				pact.
-					AddInteraction().
-					Given("A user").
-					UponReceiving("A request to edit the user errors").
-					WithRequest(dsl.Request{
-						Method: http.MethodPut,
-						Path:   dsl.String("/auth/user/123"),
-						Headers: dsl.MapMatcher{
-							"X-XSRF-TOKEN":        dsl.String("abcde"),
-							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
-							"OPG-Bypass-Membrane": dsl.String("1"),
-						},
-						Body: dsl.Like(map[string]interface{}{
-							"id":        123,
-							"firstname": "grehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjgergrehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjgergrehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjgergrehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjgergrehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjgergrehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjger",
-							"surname":   "",
-							"roles":     []string{""},
-							"locked":    false,
-							"suspended": false,
-						}),
-					}).
-					WillRespondWith(dsl.Response{
-						Status: http.StatusBadRequest,
-					})
-			},
-			cookies: []*http.Cookie{
-				{Name: "XSRF-TOKEN", Value: "abcde"},
-				{Name: "Other", Value: "other"},
-			},
-			expectedError: func(port int) error {
-				return StatusError{
-					Code:   http.StatusBadRequest,
-					URL:    fmt.Sprintf("http://localhost:%d/auth/user/123", port),
-					Method: http.MethodPut,
-				}
-			},
+			expectedError: ClientError("oops"),
 		},
 	}
 
@@ -195,9 +149,23 @@ func TestEditUser(t *testing.T) {
 
 				err := client.EditUser(context.Background(), tc.cookies, tc.user)
 
-				assert.Equal(t, tc.expectedError(pact.Server.Port), err)
+				assert.Equal(t, tc.expectedError, err)
 				return nil
 			}))
 		})
 	}
+}
+
+func TestEditUserStatusError(t *testing.T) {
+	s := teapotServer()
+	defer s.Close()
+
+	client, _ := NewClient(http.DefaultClient, s.URL)
+
+	err := client.EditUser(context.Background(), nil, AuthUser{ID: 123})
+	assert.Equal(t, StatusError{
+		Code:   http.StatusTeapot,
+		URL:    s.URL + "/auth/user/123",
+		Method: http.MethodPut,
+	}, err)
 }

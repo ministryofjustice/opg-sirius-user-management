@@ -32,7 +32,7 @@ func (c *Client) Team(ctx context.Context, cookies []*http.Cookie, id int) (Team
 	}
 
 	var v apiTeamResponse
-	if err = json.NewDecoder(resp.Body).Decode(&v); err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(&v); err != nil {
 		return Team{}, err
 	}
 

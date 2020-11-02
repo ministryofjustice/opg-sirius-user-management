@@ -110,3 +110,17 @@ func TestTeamTypes(t *testing.T) {
 		})
 	}
 }
+
+func TestTeamTypesStatusError(t *testing.T) {
+	s := teapotServer()
+	defer s.Close()
+
+	client, _ := NewClient(http.DefaultClient, s.URL)
+
+	_, err := client.TeamTypes(context.Background(), nil)
+	assert.Equal(t, StatusError{
+		Code:   http.StatusTeapot,
+		URL:    s.URL + "/api/v1/reference-data?filter=teamType",
+		Method: http.MethodGet,
+	}, err)
+}

@@ -2,6 +2,7 @@ package sirius
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"testing"
@@ -114,4 +115,28 @@ func TestUser(t *testing.T) {
 			}))
 		})
 	}
+}
+
+func TestUserBadJSONResponse(t *testing.T) {
+	s := invalidJSONServer()
+	defer s.Close()
+
+	client, _ := NewClient(http.DefaultClient, s.URL)
+
+	_, err := client.User(context.Background(), nil, 123)
+	assert.IsType(t, &json.UnmarshalTypeError{}, err)
+}
+
+func TestUserStatusError(t *testing.T) {
+	s := teapotServer()
+	defer s.Close()
+
+	client, _ := NewClient(http.DefaultClient, s.URL)
+
+	_, err := client.User(context.Background(), nil, 123)
+	assert.Equal(t, StatusError{
+		Code:   http.StatusTeapot,
+		URL:    s.URL + "/auth/user/123",
+		Method: http.MethodGet,
+	}, err)
 }

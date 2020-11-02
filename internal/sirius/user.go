@@ -3,10 +3,8 @@ package sirius
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
-	"strconv"
 )
 
 type AuthUser struct {
@@ -49,11 +47,13 @@ func (c *Client) User(ctx context.Context, cookies []*http.Cookie, id int) (Auth
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return AuthUser{}, errors.New("returned non-2XX response: " + strconv.Itoa(resp.StatusCode))
+		return AuthUser{}, newStatusError(resp)
 	}
 
 	var v authUserResponse
-	err = json.NewDecoder(resp.Body).Decode(&v)
+	if err := json.NewDecoder(resp.Body).Decode(&v); err != nil {
+		return AuthUser{}, err
+	}
 
 	user := AuthUser{
 		ID:        v.ID,

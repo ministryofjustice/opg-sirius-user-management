@@ -3,7 +3,6 @@ package sirius
 import (
 	"context"
 	"encoding/json"
-	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -45,16 +44,11 @@ func (c *Client) AddTeam(ctx context.Context, cookies []*http.Cookie, name, team
 			} `json:"data"`
 		}
 
-		err = json.NewDecoder(resp.Body).Decode(&v)
-		if err == nil {
+		if err := json.NewDecoder(resp.Body).Decode(&v); err == nil {
 			return 0, ValidationError{Errors: v.Data.ErrorMessages}
 		}
 
-		if err == io.EOF {
-			return 0, newStatusError(resp)
-		}
-
-		return 0, err
+		return 0, newStatusError(resp)
 	}
 
 	var v apiTeamResponse

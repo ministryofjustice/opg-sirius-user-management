@@ -123,10 +123,32 @@ func TestSearchUsers(t *testing.T) {
 	}
 }
 
+func TestSearchUsersStatusError(t *testing.T) {
+	s := teapotServer()
+	defer s.Close()
+
+	client, _ := NewClient(http.DefaultClient, s.URL)
+
+	_, err := client.SearchUsers(context.Background(), nil, "abc")
+	assert.Equal(t, StatusError{
+		Code:   http.StatusTeapot,
+		URL:    s.URL + "/api/search/users?query=abc",
+		Method: http.MethodGet,
+	}, err)
+}
+
 func TestSearchUsersTooShort(t *testing.T) {
 	client, _ := NewClient(http.DefaultClient, "")
 
 	users, err := client.SearchUsers(context.Background(), nil, "ad")
 	assert.Nil(t, users)
 	assert.Equal(t, ClientError("Search term must be at least three characters"), err)
+}
+
+func TestUserStatus(t *testing.T) {
+	assert.Equal(t, "string", UserStatus("string").String())
+
+	assert.Equal(t, "", UserStatus("string").TagColour())
+	assert.Equal(t, "govuk-tag--grey", UserStatus("Suspended").TagColour())
+	assert.Equal(t, "govuk-tag--orange", UserStatus("Locked").TagColour())
 }

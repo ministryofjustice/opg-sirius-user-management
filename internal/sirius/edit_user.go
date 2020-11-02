@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 )
 
@@ -55,16 +54,11 @@ func (c *Client) EditUser(ctx context.Context, cookies []*http.Cookie, user Auth
 			Message string `json:"message"`
 		}
 
-		err = json.NewDecoder(resp.Body).Decode(&v)
-		if err == nil {
+		if err := json.NewDecoder(resp.Body).Decode(&v); err == nil {
 			return ClientError(v.Message)
 		}
 
-		if err == io.EOF {
-			return newStatusError(resp)
-		}
-
-		return err
+		return newStatusError(resp)
 	}
 
 	return nil
