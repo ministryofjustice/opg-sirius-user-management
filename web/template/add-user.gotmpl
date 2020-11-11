@@ -55,13 +55,13 @@
               <div class="govuk-radios__item">
                 <input class="govuk-radios__input" id="f-organisation" name="organisation" type="radio" value="COP User">
                 <label class="govuk-label govuk-radios__label" for="f-organisation">
-                  COP User
+                  COP
                 </label>
               </div>
               <div class="govuk-radios__item">
                 <input class="govuk-radios__input" id="f-organisation-2" name="organisation" type="radio" value="OPG User" checked>
                 <label class="govuk-label govuk-radios__label" for="f-organisation-2">
-                  OPG User
+                  OPG 
                 </label>
               </div>
             </div>
@@ -71,6 +71,10 @@
         <div class="govuk-form-group {{ if .Errors.roles }}govuk-form-group--error{{ end }}">
           <fieldset class="govuk-fieldset">
             <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">Roles</legend>
+            <div id="f-roles-14-item-hint" class="govuk-hint govuk-checkboxes__hint">
+              Select one or more roles
+            </div>
+            
             {{ range .Errors.roles }}
               <span class="govuk-error-message">
                 <span class="govuk-visually-hidden">Error:</span> {{ . }}
