@@ -2,6 +2,8 @@
 
 User management frontend for Sirius: Managed by opg-org-infra &amp; Terraform
 
+Run on localhost:8888 `docker-compose -f docker/docker-compose.yml up -d`
+
 ## Testing
 
 To run the Go tests use `go test ./...`, this will create a `./pacts` directory
