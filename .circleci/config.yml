@@ -6,12 +6,12 @@ workflows:
     jobs:
       - test
       - lint
-      - acceptance-test:
-          requires: [test, lint]
+      # - acceptance-test:
+      #     requires: [test, lint]
       - cypress:
           requires: [test, lint]
       - push:
-          requires: [acceptance-test, cypress]
+          requires: [cypress]
 
 orbs:
   codecov: codecov/codecov@1.1.1

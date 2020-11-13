@@ -55,13 +55,13 @@
               <div class="govuk-radios__item">
                 <input class="govuk-radios__input" id="f-organisation" name="organisation" type="radio" value="COP User">
                 <label class="govuk-label govuk-radios__label" for="f-organisation">
-                  COP User
+                  COP
                 </label>
               </div>
               <div class="govuk-radios__item">
                 <input class="govuk-radios__input" id="f-organisation-2" name="organisation" type="radio" value="OPG User" checked>
                 <label class="govuk-label govuk-radios__label" for="f-organisation-2">
-                  OPG User
+                  OPG 
                 </label>
               </div>
             </div>
@@ -71,6 +71,10 @@
         <div class="govuk-form-group {{ if .Errors.roles }}govuk-form-group--error{{ end }}">
           <fieldset class="govuk-fieldset">
             <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">Roles</legend>
+           <div id="f-roles-item-hint" class="govuk-hint">
+            Select one or more roles
+           </div>
+            
             {{ range .Errors.roles }}
               <span class="govuk-error-message">
                 <span class="govuk-visually-hidden">Error:</span> {{ . }}
@@ -79,86 +83,86 @@
 
             <div class="govuk-checkboxes govuk-checkboxes--small">
               <div class="govuk-checkboxes__item">
-                <input class="govuk-checkboxes__input" id="f-roles" name="roles" type="checkbox" value="Case Manager">
-                <label class="govuk-label govuk-checkboxes__label" for="f-roles">Case Manager</label>
+                <input class="govuk-checkboxes__input" id="f-roles-2" name="roles" type="checkbox" value="Case Manager">
+                <label class="govuk-label govuk-checkboxes__label" for="f-roles-2">Case Manager</label>
               </div>
 
               <div class="govuk-checkboxes__item">
-                <input class="govuk-checkboxes__input" id="f-roles-2" name="roles" type="checkbox" value="Contact Centre User">
-                <label class="govuk-label govuk-checkboxes__label" for="f-roles-2">Contact Centre User</label>
+                <input class="govuk-checkboxes__input" id="f-roles-3" name="roles" type="checkbox" value="Contact Centre User">
+                <label class="govuk-label govuk-checkboxes__label" for="f-roles-3">Contact Centre User</label>
               </div>
 
               <div class="govuk-checkboxes__item">
-                <input class="govuk-checkboxes__input" id="f-roles-3" name="roles" type="checkbox" value="Corporate Finance">
-                <label class="govuk-label govuk-checkboxes__label" for="f-roles-3">Corporate Finance</label>
+                <input class="govuk-checkboxes__input" id="f-roles-4" name="roles" type="checkbox" value="Corporate Finance">
+                <label class="govuk-label govuk-checkboxes__label" for="f-roles-4">Corporate Finance</label>
               </div>
 
               <div class="govuk-checkboxes__item">
-                <input class="govuk-checkboxes__input" id="f-roles-4" name="roles" type="checkbox" value="DDC">
-                <label class="govuk-label govuk-checkboxes__label" for="f-roles-4">DDC</label>
+                <input class="govuk-checkboxes__input" id="f-roles-5" name="roles" type="checkbox" value="DDC">
+                <label class="govuk-label govuk-checkboxes__label" for="f-roles-5">DDC</label>
               </div>
 
               <div class="govuk-checkboxes__item">
-                <input class="govuk-checkboxes__input" id="f-roles-5" name="roles" type="checkbox" value="Finance Manager">
-                <label class="govuk-label govuk-checkboxes__label" for="f-roles-5">Finance Manager</label>
+                <input class="govuk-checkboxes__input" id="f-roles-6" name="roles" type="checkbox" value="Finance Manager">
+                <label class="govuk-label govuk-checkboxes__label" for="f-roles-6">Finance Manager</label>
               </div>
 
               <div class="govuk-checkboxes__item">
-                <input class="govuk-checkboxes__input" id="f-roles-6" name="roles" type="checkbox" value="Finance Reporting">
-                <label class="govuk-label govuk-checkboxes__label" for="f-roles-6">Finance Reporting</label>
+                <input class="govuk-checkboxes__input" id="f-roles-7" name="roles" type="checkbox" value="Finance Reporting">
+                <label class="govuk-label govuk-checkboxes__label" for="f-roles-7">Finance Reporting</label>
               </div>
 
               <div class="govuk-checkboxes__item">
-                <input class="govuk-checkboxes__input" id="f-roles-7" name="roles" type="checkbox" value="Finance User">
-                <label class="govuk-label govuk-checkboxes__label" for="f-roles-7">Finance User</label>
+                <input class="govuk-checkboxes__input" id="f-roles-8" name="roles" type="checkbox" value="Finance User">
+                <label class="govuk-label govuk-checkboxes__label" for="f-roles-8">Finance User</label>
               </div>
 
               <div class="govuk-checkboxes__item">
-                <input class="govuk-checkboxes__input" id="f-roles-8" name="roles" type="checkbox" value="Investigations User">
-                <label class="govuk-label govuk-checkboxes__label" for="f-roles-8">Investigations User</label>
+                <input class="govuk-checkboxes__input" id="f-roles-9" name="roles" type="checkbox" value="Investigations User">
+                <label class="govuk-label govuk-checkboxes__label" for="f-roles-9">Investigations User</label>
               </div>
 
               <div class="govuk-checkboxes__item">
-                <input class="govuk-checkboxes__input" id="f-roles-9" name="roles" type="checkbox" value="Manager">
-                <label class="govuk-label govuk-checkboxes__label" for="f-roles-9">Manager</label>
+                <input class="govuk-checkboxes__input" id="f-roles-10" name="roles" type="checkbox" value="Manager">
+                <label class="govuk-label govuk-checkboxes__label" for="f-roles-10">Manager</label>
               </div>
 
               <div class="govuk-checkboxes__item">
-                <input class="govuk-checkboxes__input" id="f-roles-10" name="roles" type="checkbox" value="POA User">
-                <label class="govuk-label govuk-checkboxes__label" for="f-roles-10">POA User</label>
+                <input class="govuk-checkboxes__input" id="f-roles-11" name="roles" type="checkbox" value="POA User">
+                <label class="govuk-label govuk-checkboxes__label" for="f-roles-11">POA User</label>
               </div>
 
               <div class="govuk-checkboxes__item">
-                <input class="govuk-checkboxes__input" id="f-roles-11" name="roles" type="checkbox" value="Panel Deputy User">
-                <label class="govuk-label govuk-checkboxes__label" for="f-roles-11">Panel Deputy User</label>
+                <input class="govuk-checkboxes__input" id="f-roles-12" name="roles" type="checkbox" value="Panel Deputy User">
+                <label class="govuk-label govuk-checkboxes__label" for="f-roles-12">Panel Deputy User</label>
               </div>
 
               <div class="govuk-checkboxes__item">
-                <input class="govuk-checkboxes__input" id="f-roles-12" name="roles" type="checkbox" value="Public API">
-                <label class="govuk-label govuk-checkboxes__label" for="f-roles-12">Public API</label>
+                <input class="govuk-checkboxes__input" id="f-roles-13" name="roles" type="checkbox" value="Public API">
+                <label class="govuk-label govuk-checkboxes__label" for="f-roles-13">Public API</label>
               </div>
 
               <div class="govuk-checkboxes__item">
-                <input class="govuk-checkboxes__input" id="f-roles-13" name="roles" type="checkbox" value="Reporting User">
-                <label class="govuk-label govuk-checkboxes__label" for="f-roles-13">Reporting User</label>
+                <input class="govuk-checkboxes__input" id="f-roles-14" name="roles" type="checkbox" value="Reporting User">
+                <label class="govuk-label govuk-checkboxes__label" for="f-roles-14">Reporting User</label>
               </div>
 
               <div class="govuk-checkboxes__item">
-                <input class="govuk-checkboxes__input" id="f-roles-14" name="roles" type="checkbox" value="System Admin" aria-describedby="f-roles-14-item-hint">
-                <label class="f-govuk-label govuk-checkboxes__label" for="f-roles-14">System Admin</label>
+                <input class="govuk-checkboxes__input" id="f-roles-15" name="roles" type="checkbox" value="System Admin" aria-describedby="f-roles-14-item-hint">
+                <label class="f-govuk-label govuk-checkboxes__label" for="f-roles-15">System Admin</label>
                 <div id="f-roles-14-item-hint" class="govuk-hint govuk-checkboxes__hint">
                   System Admins can add and edit other users
                 </div>
               </div>
 
               <div class="govuk-checkboxes__item">
-                <input class="govuk-checkboxes__input" id="f-roles-15" name="roles" type="checkbox" value="Unit Manager">
-                <label class="govuk-label govuk-checkboxes__label" for="f-roles-15">Unit Manager</label>
+                <input class="govuk-checkboxes__input" id="f-roles-16" name="roles" type="checkbox" value="Unit Manager">
+                <label class="govuk-label govuk-checkboxes__label" for="f-roles-16">Unit Manager</label>
               </div>
 
               <div class="govuk-checkboxes__item">
-                <input class="govuk-checkboxes__input" id="f-roles-16" name="roles" type="checkbox" value="Visits Team User">
-                <label class="govuk-label govuk-checkboxes__label" for="f-roles-16">Visits Team User</label>
+                <input class="govuk-checkboxes__input" id="f-roles-17" name="roles" type="checkbox" value="Visits Team User">
+                <label class="govuk-label govuk-checkboxes__label" for="f-roles-17">Visits Team User</label>
               </div>
             </div>
           </fieldset>
