@@ -71,9 +71,9 @@
         <div class="govuk-form-group {{ if .Errors.roles }}govuk-form-group--error{{ end }}">
           <fieldset class="govuk-fieldset">
             <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">Roles</legend>
-            <div id="f-roles-item-hint" class="govuk-hint govuk-checkboxes__hint">
-              Select one or more roles
-            </div>
+           <div id="f-roles-item-hint" class="govuk-hint">
+            Select one or more roles
+           </div>
             
             {{ range .Errors.roles }}
               <span class="govuk-error-message">
