@@ -152,6 +152,10 @@ jobs:
           name: Build
           command: |
             docker build --tag sirius-user-management:latest -f docker/sirius-user-management/Dockerfile .
+      - run:
+          name: Scan
+          command: |
+            docker run --rm  -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy sirius-user-management:latest
       - ecr/login
       - run:
           name: Push container
