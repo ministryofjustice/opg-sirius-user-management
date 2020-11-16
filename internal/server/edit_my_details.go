@@ -1,21 +1,21 @@
 package server
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
 )
 
 type EditMyDetailsClient interface {
-	MyDetails(context.Context, []*http.Cookie) (sirius.MyDetails, error)
-	EditMyDetails(context.Context, []*http.Cookie, int, string) error
-	HasPermission(context.Context, []*http.Cookie, string, string) (bool, error)
+	MyDetails(sirius.Context) (sirius.MyDetails, error)
+	EditMyDetails(sirius.Context, int, string) error
+	HasPermission(sirius.Context, string, string) (bool, error)
 }
 
 type editMyDetailsVars struct {
 	Path        string
 	SiriusURL   string
+	XSRFToken   string
 	Success     bool
 	Errors      sirius.ValidationErrors
 	PhoneNumber string
@@ -27,7 +27,9 @@ func editMyDetails(client EditMyDetailsClient, tmpl Template, siriusURL string) 
 			return StatusError(http.StatusMethodNotAllowed)
 		}
 
-		if ok, err := client.HasPermission(r.Context(), r.Cookies(), "user", "patch"); !ok {
+		ctx := getContext(r)
+
+		if ok, err := client.HasPermission(ctx, "user", "patch"); !ok {
 			if err != nil {
 				return err
 			}
@@ -35,7 +37,7 @@ func editMyDetails(client EditMyDetailsClient, tmpl Template, siriusURL string) 
 			return StatusError(http.StatusForbidden)
 		}
 
-		myDetails, err := client.MyDetails(r.Context(), r.Cookies())
+		myDetails, err := client.MyDetails(ctx)
 		if err != nil {
 			return err
 		}
@@ -43,12 +45,13 @@ func editMyDetails(client EditMyDetailsClient, tmpl Template, siriusURL string) 
 		vars := editMyDetailsVars{
 			Path:        r.URL.Path,
 			SiriusURL:   siriusURL,
+			XSRFToken:   ctx.XSRFToken,
 			PhoneNumber: myDetails.PhoneNumber,
 		}
 
 		if r.Method == http.MethodPost {
 			vars.PhoneNumber = r.FormValue("phonenumber")
-			err := client.EditMyDetails(r.Context(), r.Cookies(), myDetails.ID, vars.PhoneNumber)
+			err := client.EditMyDetails(ctx, myDetails.ID, vars.PhoneNumber)
 
 			if e, ok := err.(*sirius.ValidationError); ok {
 				vars.Errors = e.Errors

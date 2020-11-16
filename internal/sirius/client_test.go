@@ -25,6 +25,14 @@ func invalidJSONServer() *httptest.Server {
 	)
 }
 
+func getContext(cookies []*http.Cookie) Context {
+	return Context{
+		Context:   context.Background(),
+		Cookies:   cookies,
+		XSRFToken: "abcde",
+	}
+}
+
 func TestClientError(t *testing.T) {
 	assert.Equal(t, "message", ClientError("message").Error())
 }
@@ -46,13 +54,4 @@ func TestStatusError(t *testing.T) {
 	assert.Equal(t, "POST /some/url returned 418", err.Error())
 	assert.Equal(t, "unexpected response from Sirius", err.Title())
 	assert.Equal(t, err, err.Data())
-}
-
-func TestNewRequestBadXsrfToken(t *testing.T) {
-	client, _ := NewClient(http.DefaultClient, "")
-
-	_, err := client.newRequest(context.Background(), http.MethodGet, "/path", nil, []*http.Cookie{
-		{Name: "XSRF-TOKEN", Value: "%"},
-	})
-	assert.Equal(t, ErrUnauthorized, err)
 }

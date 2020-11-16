@@ -1,7 +1,6 @@
 package sirius
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 	"sort"
@@ -44,12 +43,12 @@ type User struct {
 	Status      UserStatus
 }
 
-func (c *Client) SearchUsers(ctx context.Context, cookies []*http.Cookie, search string) ([]User, error) {
+func (c *Client) SearchUsers(ctx Context, search string) ([]User, error) {
 	if len(search) < 3 {
 		return nil, ClientError("Search term must be at least three characters")
 	}
 
-	req, err := c.newRequest(ctx, http.MethodGet, "/api/search/users?query="+search, nil, cookies)
+	req, err := c.newRequest(ctx, http.MethodGet, "/api/search/users?query="+search, nil)
 	if err != nil {
 		return nil, err
 	}

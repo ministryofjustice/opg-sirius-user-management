@@ -1,7 +1,6 @@
 package server
 
 import (
-	"context"
 	"net/http"
 	"strconv"
 	"strings"
@@ -10,13 +9,14 @@ import (
 )
 
 type EditUserClient interface {
-	User(context.Context, []*http.Cookie, int) (sirius.AuthUser, error)
-	EditUser(context.Context, []*http.Cookie, sirius.AuthUser) error
+	User(sirius.Context, int) (sirius.AuthUser, error)
+	EditUser(sirius.Context, sirius.AuthUser) error
 }
 
 type editUserVars struct {
 	Path      string
 	SiriusURL string
+	XSRFToken string
 	User      sirius.AuthUser
 	Success   bool
 	Errors    sirius.ValidationErrors
@@ -29,14 +29,17 @@ func editUser(client EditUserClient, tmpl Template, siriusURL string) Handler {
 			return StatusError(http.StatusNotFound)
 		}
 
+		ctx := getContext(r)
+
 		vars := editUserVars{
 			Path:      r.URL.Path,
 			SiriusURL: siriusURL,
+			XSRFToken: ctx.XSRFToken,
 		}
 
 		switch r.Method {
 		case http.MethodGet:
-			user, err := client.User(r.Context(), r.Cookies(), id)
+			user, err := client.User(ctx, id)
 			if err != nil {
 				return err
 			}
@@ -54,7 +57,7 @@ func editUser(client EditUserClient, tmpl Template, siriusURL string) Handler {
 				Suspended:    r.PostFormValue("suspended") == "Yes",
 				Locked:       r.PostFormValue("locked") == "Yes",
 			}
-			err := client.EditUser(r.Context(), r.Cookies(), vars.User)
+			err := client.EditUser(ctx, vars.User)
 
 			if _, ok := err.(sirius.ClientError); ok {
 				vars.Errors = sirius.ValidationErrors{

@@ -1,7 +1,6 @@
 package server
 
 import (
-	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -17,7 +16,7 @@ type mockAllowRolesClient struct {
 	err   error
 }
 
-func (m *mockAllowRolesClient) MyDetails(ctx context.Context, cookies []*http.Cookie) (sirius.MyDetails, error) {
+func (m *mockAllowRolesClient) MyDetails(ctx sirius.Context) (sirius.MyDetails, error) {
 	m.count += 1
 
 	return sirius.MyDetails{Roles: m.roles}, m.err
@@ -31,7 +30,6 @@ func TestAllowRoles(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
 	err := allowRoles(client, "System Admin")(func(w http.ResponseWriter, r *http.Request) error {
 		return StatusError(http.StatusTeapot)
@@ -48,7 +46,6 @@ func TestAllowRolesMultipleChoices(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
 	handler := allowRoles(client, "System Admin", "Manager")(func(w http.ResponseWriter, r *http.Request) error {
 		return StatusError(http.StatusTeapot)
@@ -83,7 +80,6 @@ func TestAllowRolesMissingRole(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
 	err := allowRoles(client, "System Admin")(func(w http.ResponseWriter, r *http.Request) error {
 		return StatusError(http.StatusTeapot)

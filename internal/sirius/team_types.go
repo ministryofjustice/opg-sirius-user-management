@@ -1,7 +1,6 @@
 package sirius
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 )
@@ -11,12 +10,12 @@ type RefDataTeamType struct {
 	Label  string `json:"label"`
 }
 
-func (c *Client) TeamTypes(ctx context.Context, cookies []*http.Cookie) ([]RefDataTeamType, error) {
+func (c *Client) TeamTypes(ctx Context) ([]RefDataTeamType, error) {
 	var v struct {
 		Data []RefDataTeamType `json:"teamType"`
 	}
 
-	req, err := c.newRequest(ctx, http.MethodGet, "/api/v1/reference-data?filter=teamType", nil, cookies)
+	req, err := c.newRequest(ctx, http.MethodGet, "/api/v1/reference-data?filter=teamType", nil)
 	if err != nil {
 		return v.Data, err
 	}

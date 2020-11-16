@@ -1,7 +1,6 @@
 package server
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -11,13 +10,14 @@ import (
 )
 
 type RemoveTeamMemberClient interface {
-	Team(context.Context, []*http.Cookie, int) (sirius.Team, error)
-	EditTeam(context.Context, []*http.Cookie, sirius.Team) error
+	Team(sirius.Context, int) (sirius.Team, error)
+	EditTeam(sirius.Context, sirius.Team) error
 }
 
 type removeTeamMemberVars struct {
 	Path      string
 	SiriusURL string
+	XSRFToken string
 	Team      sirius.Team
 	Selected  map[int]string
 	Errors    sirius.ValidationErrors
@@ -34,7 +34,13 @@ func removeTeamMember(client RemoveTeamMemberClient, tmpl Template, siriusURL st
 			return StatusError(http.StatusNotFound)
 		}
 
-		team, err := client.Team(r.Context(), r.Cookies(), id)
+		if err := r.ParseForm(); err != nil {
+			return StatusError(http.StatusBadRequest)
+		}
+
+		ctx := getContext(r)
+
+		team, err := client.Team(ctx, id)
 		if err != nil {
 			return err
 		}
@@ -42,13 +48,9 @@ func removeTeamMember(client RemoveTeamMemberClient, tmpl Template, siriusURL st
 		vars := removeTeamMemberVars{
 			Path:      r.URL.Path,
 			SiriusURL: siriusURL,
+			XSRFToken: ctx.XSRFToken,
 			Team:      team,
 			Selected:  make(map[int]string),
-		}
-
-		err = r.ParseForm()
-		if err != nil {
-			return StatusError(http.StatusBadRequest)
 		}
 
 		for _, id := range r.PostForm["selected[]"] {
@@ -74,7 +76,7 @@ func removeTeamMember(client RemoveTeamMemberClient, tmpl Template, siriusURL st
 
 			team.Members = members
 
-			err = client.EditTeam(r.Context(), r.Cookies(), team)
+			err = client.EditTeam(ctx, team)
 
 			if _, ok := err.(sirius.ClientError); ok {
 				vars.Errors = sirius.ValidationErrors{

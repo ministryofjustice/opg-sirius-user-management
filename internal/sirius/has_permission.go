@@ -1,7 +1,6 @@
 package sirius
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 	"strings"
@@ -26,8 +25,8 @@ type myPermissions struct {
 	Data permissionSet `json:"data"`
 }
 
-func (c *Client) HasPermission(ctx context.Context, cookies []*http.Cookie, group string, method string) (bool, error) {
-	req, err := c.newRequest(ctx, http.MethodGet, "/api/permission", nil, cookies)
+func (c *Client) HasPermission(ctx Context, group string, method string) (bool, error) {
+	req, err := c.newRequest(ctx, http.MethodGet, "/api/permission", nil)
 	if err != nil {
 		return false, err
 	}

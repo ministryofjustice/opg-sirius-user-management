@@ -1,7 +1,6 @@
 package sirius
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -153,7 +152,7 @@ func TestAddUser(t *testing.T) {
 			assert.Nil(t, pact.Verify(func() error {
 				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
 
-				err := client.AddUser(context.Background(), tc.cookies, tc.email, tc.firstName, tc.lastName, tc.organisation, tc.roles)
+				err := client.AddUser(getContext(tc.cookies), tc.email, tc.firstName, tc.lastName, tc.organisation, tc.roles)
 				assert.Equal(t, tc.expectedError, err)
 				return nil
 			}))
@@ -167,7 +166,7 @@ func TestAddUserStatusError(t *testing.T) {
 
 	client, _ := NewClient(http.DefaultClient, s.URL)
 
-	err := client.AddUser(context.Background(), nil, "", "", "", "", nil)
+	err := client.AddUser(getContext(nil), "", "", "", "", nil)
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
 		URL:    s.URL + "/auth/user",

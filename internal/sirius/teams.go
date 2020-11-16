@@ -1,7 +1,6 @@
 package sirius
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 )
@@ -38,8 +37,8 @@ type Team struct {
 	PhoneNumber string
 }
 
-func (c *Client) Teams(ctx context.Context, cookies []*http.Cookie) ([]Team, error) {
-	req, err := c.newRequest(ctx, http.MethodGet, "/api/v1/teams", nil, cookies)
+func (c *Client) Teams(ctx Context) ([]Team, error) {
+	req, err := c.newRequest(ctx, http.MethodGet, "/api/v1/teams", nil)
 	if err != nil {
 		return nil, err
 	}

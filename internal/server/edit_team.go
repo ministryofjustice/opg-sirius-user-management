@@ -1,7 +1,6 @@
 package server
 
 import (
-	"context"
 	"net/http"
 	"strconv"
 	"strings"
@@ -10,15 +9,16 @@ import (
 )
 
 type EditTeamClient interface {
-	Team(context.Context, []*http.Cookie, int) (sirius.Team, error)
-	EditTeam(context.Context, []*http.Cookie, sirius.Team) error
-	TeamTypes(context.Context, []*http.Cookie) ([]sirius.RefDataTeamType, error)
-	HasPermission(context.Context, []*http.Cookie, string, string) (bool, error)
+	Team(sirius.Context, int) (sirius.Team, error)
+	EditTeam(sirius.Context, sirius.Team) error
+	TeamTypes(sirius.Context) ([]sirius.RefDataTeamType, error)
+	HasPermission(sirius.Context, string, string) (bool, error)
 }
 
 type editTeamVars struct {
 	Path            string
 	SiriusURL       string
+	XSRFToken       string
 	Team            sirius.Team
 	TeamTypeOptions []sirius.RefDataTeamType
 	CanEditTeamType bool
@@ -33,17 +33,19 @@ func editTeam(client EditTeamClient, tmpl Template, siriusURL string) Handler {
 			return StatusError(http.StatusNotFound)
 		}
 
-		team, err := client.Team(r.Context(), r.Cookies(), id)
+		ctx := getContext(r)
+
+		team, err := client.Team(ctx, id)
 		if err != nil {
 			return err
 		}
 
-		canEditTeamType, err := client.HasPermission(r.Context(), r.Cookies(), "team", "post")
+		canEditTeamType, err := client.HasPermission(ctx, "team", "post")
 		if err != nil {
 			return err
 		}
 
-		teamTypes, err := client.TeamTypes(r.Context(), r.Cookies())
+		teamTypes, err := client.TeamTypes(ctx)
 		if err != nil {
 			return err
 		}
@@ -51,6 +53,7 @@ func editTeam(client EditTeamClient, tmpl Template, siriusURL string) Handler {
 		vars := editTeamVars{
 			Path:            r.URL.Path,
 			SiriusURL:       siriusURL,
+			XSRFToken:       ctx.XSRFToken,
 			Team:            team,
 			TeamTypeOptions: teamTypes,
 			CanEditTeamType: canEditTeamType,
@@ -75,7 +78,7 @@ func editTeam(client EditTeamClient, tmpl Template, siriusURL string) Handler {
 			}
 
 			// Attempt to save
-			err := client.EditTeam(r.Context(), r.Cookies(), vars.Team)
+			err := client.EditTeam(ctx, vars.Team)
 
 			if e, ok := err.(*sirius.ValidationError); ok {
 				vars.Errors = e.Errors

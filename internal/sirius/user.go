@@ -1,7 +1,6 @@
 package sirius
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -30,8 +29,8 @@ type authUserResponse struct {
 	Inactive  bool     `json:"inactive"`
 }
 
-func (c *Client) User(ctx context.Context, cookies []*http.Cookie, id int) (AuthUser, error) {
-	req, err := c.newRequest(ctx, http.MethodGet, fmt.Sprintf("/auth/user/%d", id), nil, cookies)
+func (c *Client) User(ctx Context, id int) (AuthUser, error) {
+	req, err := c.newRequest(ctx, http.MethodGet, fmt.Sprintf("/auth/user/%d", id), nil)
 	if err != nil {
 		return AuthUser{}, err
 	}

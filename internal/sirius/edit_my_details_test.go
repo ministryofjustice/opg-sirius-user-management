@@ -1,7 +1,6 @@
 package sirius
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -143,7 +142,7 @@ func TestEditMyDetails(t *testing.T) {
 			assert.Nil(t, pact.Verify(func() error {
 				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
 
-				err := client.EditMyDetails(context.Background(), tc.cookies, 47, tc.phoneNumber)
+				err := client.EditMyDetails(getContext(tc.cookies), 47, tc.phoneNumber)
 				assert.Equal(t, tc.expectedError, err)
 				return nil
 			}))
@@ -157,7 +156,7 @@ func TestEditMyDetailsStatusError(t *testing.T) {
 
 	client, _ := NewClient(http.DefaultClient, s.URL)
 
-	err := client.EditMyDetails(context.Background(), nil, 47, "")
+	err := client.EditMyDetails(getContext(nil), 47, "")
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
 		URL:    s.URL + "/api/v1/users/47/updateTelephoneNumber",

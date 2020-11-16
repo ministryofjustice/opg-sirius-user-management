@@ -1,7 +1,6 @@
 package server
 
 import (
-	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -12,15 +11,15 @@ import (
 )
 
 type mockListTeamsClient struct {
-	count       int
-	lastCookies []*http.Cookie
-	err         error
-	data        []sirius.Team
+	count   int
+	lastCtx sirius.Context
+	err     error
+	data    []sirius.Team
 }
 
-func (m *mockListTeamsClient) Teams(ctx context.Context, cookies []*http.Cookie) ([]sirius.Team, error) {
+func (m *mockListTeamsClient) Teams(ctx sirius.Context) ([]sirius.Team, error) {
 	m.count += 1
-	m.lastCookies = cookies
+	m.lastCtx = ctx
 
 	return m.data, m.err
 }
@@ -43,14 +42,13 @@ func TestListTeams(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
 	err := listTeams(client, template, "http://sirius")(w, r)
 	assert.Nil(err)
 
 	resp := w.Result()
 	assert.Equal(http.StatusOK, resp.StatusCode)
-	assert.Equal(r.Cookies(), client.lastCookies)
+	assert.Equal(getContext(r), client.lastCtx)
 
 	assert.Equal(1, client.count)
 
@@ -87,14 +85,13 @@ func TestListTeamsSearch(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path?search=milo", nil)
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
 	err := listTeams(client, template, "http://sirius")(w, r)
 	assert.Nil(err)
 
 	resp := w.Result()
 	assert.Equal(http.StatusOK, resp.StatusCode)
-	assert.Equal(r.Cookies(), client.lastCookies)
+	assert.Equal(getContext(r), client.lastCtx)
 
 	assert.Equal(1, client.count)
 

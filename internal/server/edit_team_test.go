@@ -1,7 +1,6 @@
 package server
 
 import (
-	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -14,63 +13,63 @@ import (
 
 type mockEditTeamClient struct {
 	team struct {
-		count       int
-		lastCookies []*http.Cookie
-		lastID      int
-		data        sirius.Team
-		err         error
+		count   int
+		lastCtx sirius.Context
+		lastID  int
+		data    sirius.Team
+		err     error
 	}
 
 	teamTypes struct {
-		count       int
-		lastCookies []*http.Cookie
-		data        []sirius.RefDataTeamType
-		err         error
+		count   int
+		lastCtx sirius.Context
+		data    []sirius.RefDataTeamType
+		err     error
 	}
 
 	hasPermission struct {
-		count       int
-		lastCookies []*http.Cookie
-		lastGroup   string
-		lastMethod  string
-		data        bool
-		err         error
+		count      int
+		lastCtx    sirius.Context
+		lastGroup  string
+		lastMethod string
+		data       bool
+		err        error
 	}
 
 	editTeam struct {
-		count       int
-		lastCookies []*http.Cookie
-		lastTeam    sirius.Team
-		err         error
+		count    int
+		lastCtx  sirius.Context
+		lastTeam sirius.Team
+		err      error
 	}
 }
 
-func (m *mockEditTeamClient) Team(ctx context.Context, cookies []*http.Cookie, id int) (sirius.Team, error) {
+func (m *mockEditTeamClient) Team(ctx sirius.Context, id int) (sirius.Team, error) {
 	m.team.count += 1
-	m.team.lastCookies = cookies
+	m.team.lastCtx = ctx
 	m.team.lastID = id
 
 	return m.team.data, m.team.err
 }
 
-func (m *mockEditTeamClient) TeamTypes(ctx context.Context, cookies []*http.Cookie) ([]sirius.RefDataTeamType, error) {
+func (m *mockEditTeamClient) TeamTypes(ctx sirius.Context) ([]sirius.RefDataTeamType, error) {
 	m.teamTypes.count += 1
-	m.teamTypes.lastCookies = cookies
+	m.teamTypes.lastCtx = ctx
 
 	return m.teamTypes.data, m.teamTypes.err
 }
 
-func (m *mockEditTeamClient) EditTeam(ctx context.Context, cookies []*http.Cookie, team sirius.Team) error {
+func (m *mockEditTeamClient) EditTeam(ctx sirius.Context, team sirius.Team) error {
 	m.editTeam.count += 1
-	m.editTeam.lastCookies = cookies
+	m.editTeam.lastCtx = ctx
 	m.editTeam.lastTeam = team
 
 	return m.editTeam.err
 }
 
-func (m *mockEditTeamClient) HasPermission(ctx context.Context, cookies []*http.Cookie, group string, method string) (bool, error) {
+func (m *mockEditTeamClient) HasPermission(ctx sirius.Context, group string, method string) (bool, error) {
 	m.hasPermission.count += 1
-	m.hasPermission.lastCookies = cookies
+	m.hasPermission.lastCtx = ctx
 	m.hasPermission.lastGroup = group
 	m.hasPermission.lastMethod = method
 

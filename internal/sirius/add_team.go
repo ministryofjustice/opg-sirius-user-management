@@ -1,14 +1,13 @@
 package sirius
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 	"net/url"
 	"strings"
 )
 
-func (c *Client) AddTeam(ctx context.Context, cookies []*http.Cookie, name, teamType, phone, email string) (int, error) {
+func (c *Client) AddTeam(ctx Context, name, teamType, phone, email string) (int, error) {
 	form := url.Values{
 		"name":     {name},
 		"phone":    {phone},
@@ -21,7 +20,7 @@ func (c *Client) AddTeam(ctx context.Context, cookies []*http.Cookie, name, team
 		form.Add("teamType[handle]", teamType)
 	}
 
-	req, err := c.newRequest(ctx, http.MethodPost, "/api/team", strings.NewReader(form.Encode()), cookies)
+	req, err := c.newRequest(ctx, http.MethodPost, "/api/team", strings.NewReader(form.Encode()))
 	if err != nil {
 		return 0, err
 	}

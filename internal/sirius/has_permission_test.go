@@ -1,7 +1,6 @@
 package sirius
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -104,7 +103,7 @@ func TestPermissions(t *testing.T) {
 			assert.Nil(t, pact.Verify(func() error {
 				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
 
-				hasPermission, err := client.HasPermission(context.Background(), tc.cookies, tc.permission.group, tc.permission.method)
+				hasPermission, err := client.HasPermission(getContext(tc.cookies), tc.permission.group, tc.permission.method)
 				assert.Equal(t, tc.expectedResponse, hasPermission)
 				assert.Equal(t, tc.expectedError, err)
 				return nil
@@ -119,7 +118,7 @@ func TestHasPermissionStatusError(t *testing.T) {
 
 	client, _ := NewClient(http.DefaultClient, s.URL)
 
-	_, err := client.HasPermission(context.Background(), nil, "", "")
+	_, err := client.HasPermission(getContext(nil), "", "")
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
 		URL:    s.URL + "/api/permission",

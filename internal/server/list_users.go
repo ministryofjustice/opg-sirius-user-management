@@ -1,14 +1,13 @@
 package server
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
 )
 
 type ListUsersClient interface {
-	SearchUsers(context.Context, []*http.Cookie, string) ([]sirius.User, error)
+	SearchUsers(sirius.Context, string) ([]sirius.User, error)
 }
 
 type listUsersVars struct {
@@ -35,7 +34,7 @@ func listUsers(client ListUsersClient, tmpl Template, siriusURL string) Handler 
 		}
 
 		if search != "" {
-			users, err := client.SearchUsers(r.Context(), r.Cookies(), search)
+			users, err := client.SearchUsers(getContext(r), search)
 
 			if _, ok := err.(sirius.ClientError); ok {
 				vars.Errors = sirius.ValidationErrors{

@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"io"
 	"net/http"
+	"net/url"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
 )
@@ -179,5 +180,23 @@ func errorHandler(logger Logger, tmplError Template, prefix, siriusURL string) f
 				}
 			}
 		})
+	}
+}
+
+func getContext(r *http.Request) sirius.Context {
+	token := ""
+
+	if r.Method == http.MethodGet {
+		if cookie, err := r.Cookie("XSRF-TOKEN"); err == nil {
+			token, _ = url.QueryUnescape(cookie.Value)
+		}
+	} else {
+		token = r.FormValue("xsrfToken")
+	}
+
+	return sirius.Context{
+		Context:   r.Context(),
+		Cookies:   r.Cookies(),
+		XSRFToken: token,
 	}
 }

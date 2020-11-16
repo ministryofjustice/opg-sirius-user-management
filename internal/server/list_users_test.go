@@ -1,7 +1,6 @@
 package server
 
 import (
-	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -12,16 +11,16 @@ import (
 )
 
 type mockListUsersClient struct {
-	count       int
-	lastCookies []*http.Cookie
-	lastSearch  string
-	err         error
-	data        []sirius.User
+	count      int
+	lastCtx    sirius.Context
+	lastSearch string
+	err        error
+	data       []sirius.User
 }
 
-func (m *mockListUsersClient) SearchUsers(ctx context.Context, cookies []*http.Cookie, search string) ([]sirius.User, error) {
+func (m *mockListUsersClient) SearchUsers(ctx sirius.Context, search string) ([]sirius.User, error) {
 	m.count += 1
-	m.lastCookies = cookies
+	m.lastCtx = ctx
 	m.lastSearch = search
 
 	return m.data, m.err
@@ -45,7 +44,6 @@ func TestListUsers(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path?search=milo", nil)
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
 	handler := listUsers(client, template, "http://sirius")
 	err := handler(w, r)
@@ -54,7 +52,7 @@ func TestListUsers(t *testing.T) {
 
 	resp := w.Result()
 	assert.Equal(http.StatusOK, resp.StatusCode)
-	assert.Equal(r.Cookies(), client.lastCookies)
+	assert.Equal(getContext(r), client.lastCtx)
 
 	assert.Equal(1, client.count)
 	assert.Equal("milo", client.lastSearch)
@@ -95,7 +93,6 @@ func TestListUsersRequiresSearch(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
 	handler := listUsers(client, template, "http://sirius")
 	err := handler(w, r)
@@ -128,7 +125,6 @@ func TestListUsersClientError(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path?search=m", nil)
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
 	handler := listUsers(client, template, "http://sirius")
 	err := handler(w, r)

@@ -18,6 +18,8 @@
       <h1 class="govuk-heading-xl">Add new user</h1>
 
       <form class="form" action="{{ prefix "/add-user" }}" method="post">
+        <input type="hidden" name="xsrfToken" value="{{ .XSRFToken }}" />
+        
         <div class="govuk-form-group {{ if .Errors.email }}govuk-form-group--error{{ end }}">
           <label class="govuk-label" for="f-email">Email address</label>
           {{ range .Errors.email }}

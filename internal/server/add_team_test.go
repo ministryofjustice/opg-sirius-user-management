@@ -1,7 +1,6 @@
 package server
 
 import (
-	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -15,7 +14,7 @@ import (
 type mockAddTeamClient struct {
 	addTeam struct {
 		count        int
-		lastCookies  []*http.Cookie
+		lastCtx      sirius.Context
 		lastName     string
 		lastTeamType string
 		lastPhone    string
@@ -24,16 +23,16 @@ type mockAddTeamClient struct {
 		err          error
 	}
 	teamTypes struct {
-		count       int
-		lastCookies []*http.Cookie
-		data        []sirius.RefDataTeamType
-		err         error
+		count   int
+		lastCtx sirius.Context
+		data    []sirius.RefDataTeamType
+		err     error
 	}
 }
 
-func (m *mockAddTeamClient) AddTeam(ctx context.Context, cookies []*http.Cookie, name, teamType, phone, email string) (int, error) {
+func (m *mockAddTeamClient) AddTeam(ctx sirius.Context, name, teamType, phone, email string) (int, error) {
 	m.addTeam.count += 1
-	m.addTeam.lastCookies = cookies
+	m.addTeam.lastCtx = ctx
 	m.addTeam.lastName = name
 	m.addTeam.lastTeamType = teamType
 	m.addTeam.lastPhone = phone
@@ -42,9 +41,9 @@ func (m *mockAddTeamClient) AddTeam(ctx context.Context, cookies []*http.Cookie,
 	return m.addTeam.data, m.addTeam.err
 }
 
-func (m *mockAddTeamClient) TeamTypes(ctx context.Context, cookies []*http.Cookie) ([]sirius.RefDataTeamType, error) {
+func (m *mockAddTeamClient) TeamTypes(ctx sirius.Context) ([]sirius.RefDataTeamType, error) {
 	m.teamTypes.count += 1
-	m.teamTypes.lastCookies = cookies
+	m.teamTypes.lastCtx = ctx
 
 	return m.teamTypes.data, m.teamTypes.err
 }
@@ -60,7 +59,6 @@ func TestGetAddTeam(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
 	err := addTeam(client, template, "http://sirius")(w, r)
 	assert.Nil(err)
@@ -68,7 +66,7 @@ func TestGetAddTeam(t *testing.T) {
 	assert.Equal(0, client.addTeam.count)
 
 	assert.Equal(1, client.teamTypes.count)
-	assert.Equal(r.Cookies(), client.teamTypes.lastCookies)
+	assert.Equal(getContext(r), client.teamTypes.lastCtx)
 
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
@@ -90,7 +88,6 @@ func TestGetAddTeamTeamTypesError(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
 	err := addTeam(client, template, "http://sirius")(w, r)
 	assert.Equal(expectedError, err)
@@ -113,13 +110,12 @@ func TestPostAddTeam(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", strings.NewReader("name=a&service=b&supervision-type=c&phone=d&email=e"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
 	err := addTeam(client, template, "http://sirius")(w, r)
 	assert.Equal(RedirectError("/teams/123"), err)
 
 	assert.Equal(1, client.addTeam.count)
-	assert.Equal(r.Cookies(), client.addTeam.lastCookies)
+	assert.Equal(getContext(r), client.addTeam.lastCtx)
 	assert.Equal("a", client.addTeam.lastName)
 	assert.Equal("c", client.addTeam.lastTeamType)
 	assert.Equal("d", client.addTeam.lastPhone)
@@ -142,13 +138,12 @@ func TestPostAddTeamLpa(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", strings.NewReader("name=a&service=lpa&supervision-type=c&phone=d&email=e"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
 	err := addTeam(client, template, "http://sirius")(w, r)
 	assert.Equal(RedirectError("/teams/123"), err)
 
 	assert.Equal(1, client.addTeam.count)
-	assert.Equal(r.Cookies(), client.addTeam.lastCookies)
+	assert.Equal(getContext(r), client.addTeam.lastCtx)
 	assert.Equal("a", client.addTeam.lastName)
 	assert.Equal("", client.addTeam.lastTeamType)
 	assert.Equal("d", client.addTeam.lastPhone)
@@ -175,7 +170,6 @@ func TestPostAddTeamValidationError(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", strings.NewReader("name=a&service=b&supervision-type=c&phone=d&email=e"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
 	err := addTeam(client, template, "http://sirius")(w, r)
 	assert.Nil(err)
@@ -215,7 +209,6 @@ func TestPostAddTeamError(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", strings.NewReader("name=a&service=b&supervision-type=c&phone=d&email=e"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
 	err := addTeam(client, template, "http://sirius")(w, r)
 	assert.Equal(expectedError, err)

@@ -1,7 +1,6 @@
 package server
 
 import (
-	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -14,16 +13,16 @@ import (
 
 type mockChangePasswordClient struct {
 	count                  int
-	lastCookies            []*http.Cookie
+	lastCtx                sirius.Context
 	lastExistingPassword   string
 	lastNewPassword        string
 	lastNewPasswordConfirm string
 	err                    error
 }
 
-func (m *mockChangePasswordClient) ChangePassword(ctx context.Context, cookies []*http.Cookie, existingPassword, newPassword, newPasswordConfirm string) error {
+func (m *mockChangePasswordClient) ChangePassword(ctx sirius.Context, existingPassword, newPassword, newPasswordConfirm string) error {
 	m.count += 1
-	m.lastCookies = cookies
+	m.lastCtx = ctx
 	m.lastExistingPassword = existingPassword
 	m.lastNewPassword = newPassword
 	m.lastNewPasswordConfirm = newPasswordConfirm
@@ -38,7 +37,6 @@ func TestGetChangePassword(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
 	handler := changePassword(nil, template, "http://sirius")
 	err := handler(w, r)
@@ -62,14 +60,13 @@ func TestPostChangePassword(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", strings.NewReader("currentpassword=a&password1=b&password2=c"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
 	handler := changePassword(client, template, "http://sirius")
 	err := handler(w, r)
 
 	assert.Nil(err)
 
-	assert.Equal(r.Cookies(), client.lastCookies)
+	assert.Equal(getContext(r), client.lastCtx)
 	assert.Equal("a", client.lastExistingPassword)
 	assert.Equal("b", client.lastNewPassword)
 	assert.Equal("c", client.lastNewPasswordConfirm)

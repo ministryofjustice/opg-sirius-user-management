@@ -1,7 +1,6 @@
 package sirius
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -101,7 +100,7 @@ func TestTeamTypes(t *testing.T) {
 			assert.Nil(t, pact.Verify(func() error {
 				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
 
-				types, err := client.TeamTypes(context.Background(), tc.cookies)
+				types, err := client.TeamTypes(getContext(tc.cookies))
 
 				assert.Equal(t, tc.expectedResponse, types)
 				assert.Equal(t, tc.expectedError, err)
@@ -117,7 +116,7 @@ func TestTeamTypesStatusError(t *testing.T) {
 
 	client, _ := NewClient(http.DefaultClient, s.URL)
 
-	_, err := client.TeamTypes(context.Background(), nil)
+	_, err := client.TeamTypes(getContext(nil))
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
 		URL:    s.URL + "/api/v1/reference-data?filter=teamType",

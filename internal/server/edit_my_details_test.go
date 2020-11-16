@@ -1,7 +1,6 @@
 package server
 
 import (
-	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -15,7 +14,7 @@ import (
 type mockEditMyDetailsClient struct {
 	count         int
 	saveCount     int
-	lastCookies   []*http.Cookie
+	lastCtx       sirius.Context
 	lastRequest   string
 	err           error
 	errSave       error
@@ -34,17 +33,17 @@ type mockEditMyDetailsClient struct {
 	}
 }
 
-func (m *mockEditMyDetailsClient) MyDetails(ctx context.Context, cookies []*http.Cookie) (sirius.MyDetails, error) {
+func (m *mockEditMyDetailsClient) MyDetails(ctx sirius.Context) (sirius.MyDetails, error) {
 	m.count += 1
-	m.lastCookies = cookies
+	m.lastCtx = ctx
 	m.lastRequest = "MyDetails"
 
 	return m.data, m.err
 }
 
-func (m *mockEditMyDetailsClient) EditMyDetails(ctx context.Context, cookies []*http.Cookie, id int, phoneNumber string) error {
+func (m *mockEditMyDetailsClient) EditMyDetails(ctx sirius.Context, id int, phoneNumber string) error {
 	m.saveCount += 1
-	m.lastCookies = cookies
+	m.lastCtx = ctx
 	m.lastRequest = "EditMyDetails"
 	m.lastArguments.ID = id
 	m.lastArguments.PhoneNumber = phoneNumber
@@ -52,9 +51,9 @@ func (m *mockEditMyDetailsClient) EditMyDetails(ctx context.Context, cookies []*
 	return m.errSave
 }
 
-func (m *mockEditMyDetailsClient) HasPermission(ctx context.Context, cookies []*http.Cookie, group string, method string) (bool, error) {
+func (m *mockEditMyDetailsClient) HasPermission(ctx sirius.Context, group string, method string) (bool, error) {
 	m.permissionsCount += 1
-	m.lastCookies = cookies
+	m.lastCtx = ctx
 	m.lastPermission.Group = group
 	m.lastPermission.Method = method
 
@@ -80,7 +79,6 @@ func TestGetEditMyDetails(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
 	handler := editMyDetails(client, template, "http://sirius")
 	err := handler(w, r)
@@ -89,7 +87,7 @@ func TestGetEditMyDetails(t *testing.T) {
 
 	resp := w.Result()
 	assert.Equal(http.StatusOK, resp.StatusCode)
-	assert.Equal(r.Cookies(), client.lastCookies)
+	assert.Equal(getContext(r), client.lastCtx)
 
 	assert.Equal("user", client.lastPermission.Group)
 	assert.Equal("patch", client.lastPermission.Method)
@@ -168,7 +166,6 @@ func TestPostEditMyDetails(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", strings.NewReader("phonenumber=0189202"))
 	r.Header.Add("Content-type", "application/x-www-form-urlencoded")
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
 	handler := editMyDetails(client, template, "http://sirius")
 	err := handler(w, r)
@@ -178,7 +175,7 @@ func TestPostEditMyDetails(t *testing.T) {
 	assert.Equal(1, client.count)
 	assert.Equal(1, client.saveCount)
 
-	assert.Equal(r.Cookies(), client.lastCookies)
+	assert.Equal(getContext(r), client.lastCtx)
 	assert.Equal("EditMyDetails", client.lastRequest)
 	assert.Equal(31, client.lastArguments.ID)
 	assert.Equal("0189202", client.lastArguments.PhoneNumber)
@@ -251,7 +248,6 @@ func TestPostEditMyDetailsInvalidRequest(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", strings.NewReader("phonenumber=invalid+phone+number"))
 	r.Header.Add("Content-type", "application/x-www-form-urlencoded")
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
 	handler := editMyDetails(client, template, "http://sirius")
 	err := handler(w, r)
@@ -264,7 +260,7 @@ func TestPostEditMyDetailsInvalidRequest(t *testing.T) {
 	assert.Equal(1, client.count)
 	assert.Equal(1, client.saveCount)
 
-	assert.Equal(r.Cookies(), client.lastCookies)
+	assert.Equal(getContext(r), client.lastCtx)
 	assert.Equal("EditMyDetails", client.lastRequest)
 
 	assert.Equal(1, template.count)
