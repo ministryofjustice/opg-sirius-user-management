@@ -19,6 +19,7 @@ type Client interface {
 	AddUserClient
 	AllowRolesClient
 	ChangePasswordClient
+	DeleteUserClient
 	EditMyDetailsClient
 	EditTeamClient
 	EditUserClient
@@ -97,6 +98,11 @@ func New(logger Logger, client Client, templates map[string]*template.Template, 
 		wrap(
 			systemAdminOnly(
 				editUser(client, templates["edit-user.gotmpl"]))))
+
+	mux.Handle("/delete-user/",
+		wrap(
+			systemAdminOnly(
+				deleteUser(client, templates["delete-user.gotmpl"], siriusURL))))
 
 	mux.Handle("/resend-confirmation",
 		wrap(
