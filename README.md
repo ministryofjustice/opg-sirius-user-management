@@ -2,13 +2,22 @@
 
 User management frontend for Sirius: Managed by opg-org-infra &amp; Terraform
 
-Run on localhost:8888 `docker-compose -f docker/docker-compose.yml up -d`
+To run locally at http://localhost:8888/ against a Sirius running on
+http://localhost:8080/ use:
+
+```
+docker-compose -f docker/docker-compose.yml up -d --build
+```
 
 ## Testing
 
-To run the Go tests use `go test ./...`, this will create a `./pacts` directory
-containing the pact definition for the service which is then used for mocking in
-further tests.
+The pact tests will require `pact` to be somewhere on your `$PATH`, follow the
+instructions on <https://github.com/pact-foundation/pact-ruby-standalone> to
+install.
+
+You can then run the Go tests with `go test ./...`. This will create a `./pacts`
+directory containing the pact definitions for the service which are then used
+for mocking in further tests. 
 
 To run the Cypress tests locally:
 
