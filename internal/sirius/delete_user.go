@@ -2,6 +2,7 @@ package sirius
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 )
@@ -23,6 +24,14 @@ func (c *Client) DeleteUser(ctx context.Context, cookies []*http.Cookie, userID 
 	}
 
 	if resp.StatusCode != http.StatusOK {
+		var v struct {
+			Message string `json:"message"`
+		}
+
+		if err := json.NewDecoder(resp.Body).Decode(&v); err == nil {
+			return ClientError(v.Message)
+		}
+
 		return newStatusError(resp)
 	}
 

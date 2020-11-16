@@ -18,6 +18,7 @@ type deleteUserVars struct {
 	Path      string
 	SiriusURL string
 	User      sirius.AuthUser
+	Errors    sirius.ValidationErrors
 }
 
 func deleteUser(client DeleteUserClient, tmpl Template, siriusURL string) Handler {
@@ -27,31 +28,39 @@ func deleteUser(client DeleteUserClient, tmpl Template, siriusURL string) Handle
 			return StatusError(http.StatusNotFound)
 		}
 
+		if r.Method != http.MethodGet && r.Method != http.MethodPost {
+			return StatusError(http.StatusMethodNotAllowed)
+		}
+
+		user, err := client.User(r.Context(), r.Cookies(), id)
+		if err != nil {
+			return err
+		}
+
 		vars := deleteUserVars{
 			Path:      r.URL.Path,
 			SiriusURL: siriusURL,
+			User:      user,
 		}
 
-		switch r.Method {
-		case http.MethodGet:
-			user, err := client.User(r.Context(), r.Cookies(), id)
-			if err != nil {
-				return err
-			}
-			vars.User = user
-
-			return tmpl.ExecuteTemplate(w, "page", vars)
-
-		case http.MethodPost:
+		if r.Method == http.MethodPost {
 			err := client.DeleteUser(r.Context(), r.Cookies(), id)
-			if err != nil {
+
+			if _, ok := err.(sirius.ClientError); ok {
+				vars.Errors = sirius.ValidationErrors{
+					"": {
+						"": err.Error(),
+					},
+				}
+
+				w.WriteHeader(http.StatusBadRequest)
+			} else if err != nil {
 				return err
+			} else {
+				return RedirectError("/users")
 			}
-
-			return RedirectError("/users")
-
-		default:
-			return StatusError(http.StatusMethodNotAllowed)
 		}
+
+		return tmpl.ExecuteTemplate(w, "page", vars)
 	}
 }

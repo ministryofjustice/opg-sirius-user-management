@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/pact-foundation/pact-go/dsl"
@@ -92,6 +93,20 @@ func TestDeleteUser(t *testing.T) {
 			}))
 		})
 	}
+}
+
+func TestDeleteUserClientError(t *testing.T) {
+	s := httptest.NewServer(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			http.Error(w, `{"message":"oops"}`, http.StatusBadRequest)
+		}),
+	)
+	defer s.Close()
+
+	client, _ := NewClient(http.DefaultClient, s.URL)
+
+	err := client.DeleteUser(context.Background(), nil, 123)
+	assert.Equal(t, ClientError("oops"), err)
 }
 
 func TestDeleteUserStatusError(t *testing.T) {

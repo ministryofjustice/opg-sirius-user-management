@@ -136,11 +136,41 @@ func TestPostDeleteUser(t *testing.T) {
 	assert.Equal(r.Cookies(), client.deleteUser.lastCookies)
 	assert.Equal(123, client.deleteUser.lastUserID)
 
-	assert.Equal(0, client.user.count)
+	assert.Equal(1, client.user.count)
 	assert.Equal(0, template.count)
 }
 
-func TestPostDeleteUserError(t *testing.T) {
+func TestPostDeleteUserClientError(t *testing.T) {
+	assert := assert.New(t)
+
+	client := &mockDeleteUserClient{}
+	client.deleteUser.err = sirius.ClientError("problem")
+	template := &mockTemplate{}
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("POST", "/delete-user/123", nil)
+
+	err := deleteUser(client, template, "http://sirius")(w, r)
+	assert.Nil(err)
+
+	assert.Equal(1, client.deleteUser.count)
+	assert.Equal(1, client.user.count)
+
+	assert.Equal(1, template.count)
+	assert.Equal("page", template.lastName)
+	assert.Equal(deleteUserVars{
+		Path:      "/delete-user/123",
+		SiriusURL: "http://sirius",
+		User:      client.user.data,
+		Errors: sirius.ValidationErrors{
+			"": {
+				"": "problem",
+			},
+		},
+	}, template.lastVars)
+}
+
+func TestPostDeleteUserOtherError(t *testing.T) {
 	assert := assert.New(t)
 
 	expectedErr := errors.New("oops")
@@ -155,7 +185,7 @@ func TestPostDeleteUserError(t *testing.T) {
 	assert.Equal(expectedErr, err)
 
 	assert.Equal(1, client.deleteUser.count)
-	assert.Equal(0, client.user.count)
+	assert.Equal(1, client.user.count)
 	assert.Equal(0, template.count)
 }
 

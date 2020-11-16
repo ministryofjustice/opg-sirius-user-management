@@ -11,6 +11,8 @@
 {{ define "main" }}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
+      {{ template "error-summary" .Errors }}
+
       <h1 class="govuk-heading-xl">Delete account</h1>
 
       <p class="govuk-body">
