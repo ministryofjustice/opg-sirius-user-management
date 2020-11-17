@@ -4,7 +4,7 @@
   <a class="govuk-back-link" href="{{ prefix "/my-details" }}">Back</a>
 {{ end }}
 
-{{ define "title" }}Edit my details{{ end }}
+{{ define "title" }}Change your phone number{{ end }}
 
 {{ define "main" }}
   <div class="govuk-grid-row">
@@ -15,7 +15,7 @@
         {{ template "success-banner" "You have successfully edited your details." }}
       {{ end }}
 
-      <h1 class="govuk-heading-xl">Edit my details</h1>
+      <h1 class="govuk-heading-xl">Change your phone number</h1>
 
       <form class="form" method="post">
         <input type="hidden" name="xsrfToken" value="{{ .XSRFToken }}" />
