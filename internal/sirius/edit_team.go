@@ -1,7 +1,6 @@
 package sirius
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -10,7 +9,7 @@ import (
 	"strings"
 )
 
-func (c *Client) EditTeam(ctx context.Context, cookies []*http.Cookie, team Team) error {
+func (c *Client) EditTeam(ctx Context, team Team) error {
 	form := url.Values{
 		"name":             {team.DisplayName},
 		"email":            {team.Email},
@@ -26,7 +25,7 @@ func (c *Client) EditTeam(ctx context.Context, cookies []*http.Cookie, team Team
 
 	requestURL := fmt.Sprintf("/api/team/%d", team.ID)
 
-	req, err := c.newRequest(ctx, http.MethodPut, requestURL, body, cookies)
+	req, err := c.newRequest(ctx, http.MethodPut, requestURL, body)
 	if err != nil {
 		return err
 	}

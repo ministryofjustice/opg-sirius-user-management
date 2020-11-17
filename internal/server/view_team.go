@@ -1,7 +1,6 @@
 package server
 
 import (
-	"context"
 	"net/http"
 	"strconv"
 	"strings"
@@ -10,16 +9,16 @@ import (
 )
 
 type ViewTeamClient interface {
-	Team(context.Context, []*http.Cookie, int) (sirius.Team, error)
+	Team(sirius.Context, int) (sirius.Team, error)
 }
 
 type viewTeamVars struct {
 	Path      string
-	SiriusURL string
+	XSRFToken string
 	Team      sirius.Team
 }
 
-func viewTeam(client ViewTeamClient, tmpl Template, siriusURL string) Handler {
+func viewTeam(client ViewTeamClient, tmpl Template) Handler {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		if r.Method != http.MethodGet {
 			return StatusError(http.StatusMethodNotAllowed)
@@ -30,14 +29,16 @@ func viewTeam(client ViewTeamClient, tmpl Template, siriusURL string) Handler {
 			return StatusError(http.StatusNotFound)
 		}
 
-		team, err := client.Team(r.Context(), r.Cookies(), id)
+		ctx := getContext(r)
+
+		team, err := client.Team(ctx, id)
 		if err != nil {
 			return err
 		}
 
 		vars := viewTeamVars{
 			Path:      r.URL.Path,
-			SiriusURL: siriusURL,
+			XSRFToken: ctx.XSRFToken,
 			Team:      team,
 		}
 

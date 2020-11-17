@@ -53,6 +53,7 @@
               Already in team
             {{ else }}
               <form method="POST">
+                <input type="hidden" name="xsrfToken" value="{{ $.XSRFToken }}" />
                 <input type="hidden" name="id" value="{{ .ID }}" />
                 <input type="hidden" name="email" value="{{ .Email }}" />
                 <input type="hidden" name="search" value="{{ $.Search }}" />

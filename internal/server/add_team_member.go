@@ -1,7 +1,6 @@
 package server
 
 import (
-	"context"
 	"net/http"
 	"strconv"
 	"strings"
@@ -10,14 +9,14 @@ import (
 )
 
 type AddTeamMemberClient interface {
-	Team(context.Context, []*http.Cookie, int) (sirius.Team, error)
-	EditTeam(context.Context, []*http.Cookie, sirius.Team) error
-	SearchUsers(context.Context, []*http.Cookie, string) ([]sirius.User, error)
+	Team(sirius.Context, int) (sirius.Team, error)
+	EditTeam(sirius.Context, sirius.Team) error
+	SearchUsers(sirius.Context, string) ([]sirius.User, error)
 }
 
 type addTeamMemberVars struct {
 	Path      string
-	SiriusURL string
+	XSRFToken string
 	Search    string
 	Team      sirius.Team
 	Users     []sirius.User
@@ -26,7 +25,7 @@ type addTeamMemberVars struct {
 	Errors    sirius.ValidationErrors
 }
 
-func addTeamMember(client AddTeamMemberClient, tmpl Template, siriusURL string) Handler {
+func addTeamMember(client AddTeamMemberClient, tmpl Template) Handler {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		if r.Method != http.MethodGet && r.Method != http.MethodPost {
 			return StatusError(http.StatusMethodNotAllowed)
@@ -37,14 +36,16 @@ func addTeamMember(client AddTeamMemberClient, tmpl Template, siriusURL string) 
 			return StatusError(http.StatusNotFound)
 		}
 
-		team, err := client.Team(r.Context(), r.Cookies(), id)
+		ctx := getContext(r)
+
+		team, err := client.Team(ctx, id)
 		if err != nil {
 			return err
 		}
 
 		vars := addTeamMemberVars{
 			Path:      r.URL.Path,
-			SiriusURL: siriusURL,
+			XSRFToken: ctx.XSRFToken,
 			Team:      team,
 		}
 
@@ -56,7 +57,7 @@ func addTeamMember(client AddTeamMemberClient, tmpl Template, siriusURL string) 
 
 			team.Members = append(team.Members, sirius.TeamMember{ID: memberID})
 
-			err = client.EditTeam(r.Context(), r.Cookies(), team)
+			err = client.EditTeam(ctx, team)
 
 			if _, ok := err.(sirius.ClientError); ok {
 				vars.Errors = sirius.ValidationErrors{
@@ -78,7 +79,7 @@ func addTeamMember(client AddTeamMemberClient, tmpl Template, siriusURL string) 
 		vars.Search = r.FormValue("search")
 
 		if vars.Search != "" {
-			users, err := client.SearchUsers(r.Context(), r.Cookies(), vars.Search)
+			users, err := client.SearchUsers(ctx, vars.Search)
 
 			if _, ok := err.(sirius.ClientError); ok {
 				vars.Errors = sirius.ValidationErrors{

@@ -1,22 +1,22 @@
 package server
 
 import (
-	"context"
 	"net/http"
+
+	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
 )
 
 type ResendConfirmationClient interface {
-	ResendConfirmation(context.Context, []*http.Cookie, string) error
+	ResendConfirmation(sirius.Context, string) error
 }
 
 type resendConfirmationVars struct {
-	Path      string
-	SiriusURL string
-	ID        string
-	Email     string
+	Path  string
+	ID    string
+	Email string
 }
 
-func resendConfirmation(client ResendConfirmationClient, tmpl Template, siriusURL string) Handler {
+func resendConfirmation(client ResendConfirmationClient, tmpl Template) Handler {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		switch r.Method {
 		case http.MethodGet:
@@ -24,13 +24,12 @@ func resendConfirmation(client ResendConfirmationClient, tmpl Template, siriusUR
 
 		case http.MethodPost:
 			vars := resendConfirmationVars{
-				Path:      r.URL.Path,
-				SiriusURL: siriusURL,
-				ID:        r.PostFormValue("id"),
-				Email:     r.PostFormValue("email"),
+				Path:  r.URL.Path,
+				ID:    r.PostFormValue("id"),
+				Email: r.PostFormValue("email"),
 			}
 
-			err := client.ResendConfirmation(r.Context(), r.Cookies(), vars.Email)
+			err := client.ResendConfirmation(getContext(r), vars.Email)
 			if err != nil {
 				return err
 			}

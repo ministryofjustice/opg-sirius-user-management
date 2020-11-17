@@ -2,7 +2,6 @@ package sirius
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -17,7 +16,7 @@ type editUserRequest struct {
 	Suspended bool     `json:"suspended"`
 }
 
-func (c *Client) EditUser(ctx context.Context, cookies []*http.Cookie, user AuthUser) error {
+func (c *Client) EditUser(ctx Context, user AuthUser) error {
 	var body bytes.Buffer
 	err := json.NewEncoder(&body).Encode(editUserRequest{
 		ID:        user.ID,
@@ -33,7 +32,7 @@ func (c *Client) EditUser(ctx context.Context, cookies []*http.Cookie, user Auth
 
 	requestURL := fmt.Sprintf("/auth/user/%d", user.ID)
 
-	req, err := c.newRequest(ctx, http.MethodPut, requestURL, &body, cookies)
+	req, err := c.newRequest(ctx, http.MethodPut, requestURL, &body)
 	if err != nil {
 		return err
 	}

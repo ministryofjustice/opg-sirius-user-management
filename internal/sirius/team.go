@@ -1,7 +1,6 @@
 package sirius
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -11,8 +10,8 @@ type apiTeamResponse struct {
 	Data apiTeam `json:"data"`
 }
 
-func (c *Client) Team(ctx context.Context, cookies []*http.Cookie, id int) (Team, error) {
-	req, err := c.newRequest(ctx, http.MethodGet, "/api/team/"+strconv.Itoa(id), nil, cookies)
+func (c *Client) Team(ctx Context, id int) (Team, error) {
+	req, err := c.newRequest(ctx, http.MethodGet, "/api/team/"+strconv.Itoa(id), nil)
 	if err != nil {
 		return Team{}, err
 	}

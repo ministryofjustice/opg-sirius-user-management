@@ -1,7 +1,6 @@
 package server
 
 import (
-	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -14,7 +13,7 @@ import (
 
 type mockAddUserClient struct {
 	count            int
-	lastCookies      []*http.Cookie
+	lastCtx          sirius.Context
 	lastEmail        string
 	lastFirstname    string
 	lastSurname      string
@@ -23,9 +22,9 @@ type mockAddUserClient struct {
 	err              error
 }
 
-func (m *mockAddUserClient) AddUser(ctx context.Context, cookies []*http.Cookie, email, firstname, surname, organisation string, roles []string) error {
+func (m *mockAddUserClient) AddUser(ctx sirius.Context, email, firstname, surname, organisation string, roles []string) error {
 	m.count += 1
-	m.lastCookies = cookies
+	m.lastCtx = ctx
 	m.lastEmail = email
 	m.lastFirstname = firstname
 	m.lastSurname = surname
@@ -43,9 +42,8 @@ func TestGetAddUser(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	err := addUser(client, template, "http://sirius")(w, r)
+	err := addUser(client, template)(w, r)
 	assert.Nil(err)
 
 	assert.Equal(0, client.count)
@@ -53,8 +51,7 @@ func TestGetAddUser(t *testing.T) {
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
 	assert.Equal(addUserVars{
-		Path:      "/path",
-		SiriusURL: "http://sirius",
+		Path: "/path",
 	}, template.lastVars)
 }
 
@@ -67,13 +64,12 @@ func TestPostAddUser(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", strings.NewReader("email=a&firstname=b&surname=c&organisation=d&roles=e&roles=f"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	err := addUser(client, template, "http://sirius")(w, r)
+	err := addUser(client, template)(w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.count)
-	assert.Equal(r.Cookies(), client.lastCookies)
+	assert.Equal(getContext(r), client.lastCtx)
 	assert.Equal("a", client.lastEmail)
 	assert.Equal("b", client.lastFirstname)
 	assert.Equal("c", client.lastSurname)
@@ -83,9 +79,8 @@ func TestPostAddUser(t *testing.T) {
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
 	assert.Equal(addUserVars{
-		Path:      "/path",
-		SiriusURL: "http://sirius",
-		Success:   true,
+		Path:    "/path",
+		Success: true,
 	}, template.lastVars)
 }
 
@@ -106,7 +101,7 @@ func TestPostAddUserValidationError(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", nil)
 
-	err := addUser(client, template, "http://sirius")(w, r)
+	err := addUser(client, template)(w, r)
 	assert.Nil(err)
 
 	resp := w.Result()
@@ -117,9 +112,8 @@ func TestPostAddUserValidationError(t *testing.T) {
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
 	assert.Equal(addUserVars{
-		Path:      "/path",
-		SiriusURL: "http://sirius",
-		Errors:    errors,
+		Path:   "/path",
+		Errors: errors,
 	}, template.lastVars)
 }
 
@@ -134,7 +128,7 @@ func TestPostAddUserOtherError(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", nil)
 
-	err := addUser(client, template, "http://sirius")(w, r)
+	err := addUser(client, template)(w, r)
 	assert.Equal(expectedErr, err)
 
 	assert.Equal(1, client.count)

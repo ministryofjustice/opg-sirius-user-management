@@ -1,7 +1,6 @@
 package sirius
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -57,7 +56,7 @@ func TestTeams(t *testing.T) {
 			assert.Nil(t, pact.Verify(func() error {
 				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
 
-				users, err := client.Teams(context.Background(), tc.cookies)
+				users, err := client.Teams(getContext(tc.cookies))
 				assert.Equal(t, tc.expectedResponse, users)
 				assert.Equal(t, tc.expectedError, err)
 				return nil
@@ -198,7 +197,7 @@ func TestTeamsIgnoredPact(t *testing.T) {
 			assert.Nil(t, pact.Verify(func() error {
 				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
 
-				users, err := client.Teams(context.Background(), tc.cookies)
+				users, err := client.Teams(getContext(tc.cookies))
 				assert.Equal(t, tc.expectedResponse, users)
 				assert.Equal(t, tc.expectedError, err)
 				return nil
@@ -213,7 +212,7 @@ func TestTeamsStatusError(t *testing.T) {
 
 	client, _ := NewClient(http.DefaultClient, s.URL)
 
-	_, err := client.Teams(context.Background(), nil)
+	_, err := client.Teams(getContext(nil))
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
 		URL:    s.URL + "/api/v1/teams",

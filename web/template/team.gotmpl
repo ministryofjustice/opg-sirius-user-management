@@ -29,6 +29,8 @@
 
   {{ if .Team.Members }}
     <form action="{{ prefix (printf "/teams/remove-member/%d" .Team.ID) }}" method="POST">
+      <input type="hidden" name="xsrfToken" value="{{ .XSRFToken }}" />
+      
       <button type="submit" class="govuk-button govuk-button--secondary">
         Remove selected from team
       </button>

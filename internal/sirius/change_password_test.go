@@ -1,7 +1,6 @@
 package sirius
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -127,7 +126,7 @@ func TestChangePassword(t *testing.T) {
 			assert.Nil(t, pact.Verify(func() error {
 				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
 
-				err := client.ChangePassword(context.Background(), tc.cookies, tc.existingPassword, tc.password, tc.confirmPassword)
+				err := client.ChangePassword(getContext(tc.cookies), tc.existingPassword, tc.password, tc.confirmPassword)
 				assert.Equal(t, tc.expectedError, err)
 				return nil
 			}))
@@ -141,7 +140,7 @@ func TestChangePasswordStatusError(t *testing.T) {
 
 	client, _ := NewClient(http.DefaultClient, s.URL)
 
-	err := client.ChangePassword(context.Background(), nil, "", "", "")
+	err := client.ChangePassword(getContext(nil), "", "", "")
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
 		URL:    s.URL + "/auth/change-password",

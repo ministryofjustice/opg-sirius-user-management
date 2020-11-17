@@ -1,7 +1,6 @@
 package sirius
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -86,7 +85,7 @@ func TestResendConfirmation(t *testing.T) {
 			assert.Nil(t, pact.Verify(func() error {
 				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
 
-				err := client.ResendConfirmation(context.Background(), tc.cookies, tc.email)
+				err := client.ResendConfirmation(getContext(tc.cookies), tc.email)
 				assert.Equal(t, tc.expectedError, err)
 				return nil
 			}))
@@ -100,7 +99,7 @@ func TestResendConfirmationStatusError(t *testing.T) {
 
 	client, _ := NewClient(http.DefaultClient, s.URL)
 
-	err := client.ResendConfirmation(context.Background(), nil, "")
+	err := client.ResendConfirmation(getContext(nil), "")
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
 		URL:    s.URL + "/auth/resend-confirmation",

@@ -1,7 +1,6 @@
 package server
 
 import (
-	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -14,46 +13,46 @@ import (
 
 type mockAddTeamMemberClient struct {
 	team struct {
-		count       int
-		lastCookies []*http.Cookie
-		lastID      int
-		data        sirius.Team
-		err         error
+		count   int
+		lastCtx sirius.Context
+		lastID  int
+		data    sirius.Team
+		err     error
 	}
 	editTeam struct {
-		count       int
-		lastCookies []*http.Cookie
-		lastTeam    sirius.Team
-		err         error
+		count    int
+		lastCtx  sirius.Context
+		lastTeam sirius.Team
+		err      error
 	}
 	searchUsers struct {
-		count       int
-		lastCookies []*http.Cookie
-		lastSearch  string
-		data        []sirius.User
-		err         error
+		count      int
+		lastCtx    sirius.Context
+		lastSearch string
+		data       []sirius.User
+		err        error
 	}
 }
 
-func (c *mockAddTeamMemberClient) Team(ctx context.Context, cookies []*http.Cookie, id int) (sirius.Team, error) {
+func (c *mockAddTeamMemberClient) Team(ctx sirius.Context, id int) (sirius.Team, error) {
 	c.team.count += 1
-	c.team.lastCookies = cookies
+	c.team.lastCtx = ctx
 	c.team.lastID = id
 
 	return c.team.data, c.team.err
 }
 
-func (c *mockAddTeamMemberClient) EditTeam(ctx context.Context, cookies []*http.Cookie, team sirius.Team) error {
+func (c *mockAddTeamMemberClient) EditTeam(ctx sirius.Context, team sirius.Team) error {
 	c.editTeam.count += 1
-	c.editTeam.lastCookies = cookies
+	c.editTeam.lastCtx = ctx
 	c.editTeam.lastTeam = team
 
 	return c.editTeam.err
 }
 
-func (c *mockAddTeamMemberClient) SearchUsers(ctx context.Context, cookies []*http.Cookie, search string) ([]sirius.User, error) {
+func (c *mockAddTeamMemberClient) SearchUsers(ctx sirius.Context, search string) ([]sirius.User, error) {
 	c.searchUsers.count += 1
-	c.searchUsers.lastCookies = cookies
+	c.searchUsers.lastCtx = ctx
 	c.searchUsers.lastSearch = search
 
 	return c.searchUsers.data, c.searchUsers.err
@@ -67,13 +66,12 @@ func TestGetAddTeamMember(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/teams/add-member/123", nil)
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	err := addTeamMember(client, template, "http://sirius")(w, r)
+	err := addTeamMember(client, template)(w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.team.count)
-	assert.Equal(r.Cookies(), client.team.lastCookies)
+	assert.Equal(getContext(r), client.team.lastCtx)
 	assert.Equal(123, client.team.lastID)
 
 	assert.Equal(0, client.editTeam.count)
@@ -82,8 +80,7 @@ func TestGetAddTeamMember(t *testing.T) {
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
 	assert.Equal(addTeamMemberVars{
-		Path:      "/teams/add-member/123",
-		SiriusURL: "http://sirius",
+		Path: "/teams/add-member/123",
 	}, template.lastVars)
 }
 
@@ -103,30 +100,28 @@ func TestGetAddTeamMemberSearch(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/teams/add-member/123?search=admin", nil)
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	err := addTeamMember(client, template, "http://sirius")(w, r)
+	err := addTeamMember(client, template)(w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.team.count)
-	assert.Equal(r.Cookies(), client.team.lastCookies)
+	assert.Equal(getContext(r), client.team.lastCtx)
 	assert.Equal(123, client.team.lastID)
 
 	assert.Equal(0, client.editTeam.count)
 
 	assert.Equal(1, client.searchUsers.count)
-	assert.Equal(r.Cookies(), client.searchUsers.lastCookies)
+	assert.Equal(getContext(r), client.searchUsers.lastCtx)
 	assert.Equal("admin", client.searchUsers.lastSearch)
 
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
 	assert.Equal(addTeamMemberVars{
-		Path:      "/teams/add-member/123",
-		SiriusURL: "http://sirius",
-		Search:    "admin",
-		Team:      client.team.data,
-		Users:     client.searchUsers.data,
-		Members:   map[int]bool{5: true},
+		Path:    "/teams/add-member/123",
+		Search:  "admin",
+		Team:    client.team.data,
+		Users:   client.searchUsers.data,
+		Members: map[int]bool{5: true},
 	}, template.lastVars)
 }
 
@@ -141,9 +136,8 @@ func TestGetAddTeamMemberTeamError(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/teams/add-member/123", nil)
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	err := addTeamMember(client, template, "http://sirius")(w, r)
+	err := addTeamMember(client, template)(w, r)
 	assert.Equal(expectedError, err)
 
 	assert.Equal(1, client.team.count)
@@ -166,9 +160,8 @@ func TestGetAddTeamMemberSearchClientError(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/teams/add-member/123?search=admin", nil)
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	err := addTeamMember(client, template, "http://sirius")(w, r)
+	err := addTeamMember(client, template)(w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.team.count)
@@ -178,11 +171,10 @@ func TestGetAddTeamMemberSearchClientError(t *testing.T) {
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
 	assert.Equal(addTeamMemberVars{
-		Path:      "/teams/add-member/123",
-		SiriusURL: "http://sirius",
-		Search:    "admin",
-		Team:      client.team.data,
-		Users:     nil,
+		Path:   "/teams/add-member/123",
+		Search: "admin",
+		Team:   client.team.data,
+		Users:  nil,
 		Errors: sirius.ValidationErrors{
 			"search": {
 				"": "problem",
@@ -207,9 +199,8 @@ func TestGetAddTeamMemberSearchError(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/teams/add-member/123?search=admin", nil)
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	err := addTeamMember(client, template, "http://sirius")(w, r)
+	err := addTeamMember(client, template)(w, r)
 	assert.Equal(expectedError, err)
 
 	assert.Equal(1, client.team.count)
@@ -228,7 +219,7 @@ func TestGetAddTeamMemberBadPath(t *testing.T) {
 			assert := assert.New(t)
 
 			r, _ := http.NewRequest("GET", path, nil)
-			err := editTeam(nil, nil, "http://sirius")(nil, r)
+			err := editTeam(nil, nil)(nil, r)
 
 			assert.Equal(StatusError(http.StatusNotFound), err)
 		})
@@ -249,13 +240,12 @@ func TestPostAddTeamMember(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/teams/add-member/123", strings.NewReader("id=5&search=admin&email=system.admin@opgtest.com"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	err := addTeamMember(client, template, "http://sirius")(w, r)
+	err := addTeamMember(client, template)(w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.team.count)
-	assert.Equal(r.Cookies(), client.team.lastCookies)
+	assert.Equal(getContext(r), client.team.lastCtx)
 	assert.Equal(123, client.team.lastID)
 
 	newTeam := sirius.Team{
@@ -266,23 +256,22 @@ func TestPostAddTeamMember(t *testing.T) {
 	}
 
 	assert.Equal(1, client.editTeam.count)
-	assert.Equal(r.Cookies(), client.editTeam.lastCookies)
+	assert.Equal(getContext(r), client.editTeam.lastCtx)
 	assert.Equal(newTeam, client.editTeam.lastTeam)
 
 	assert.Equal(1, client.searchUsers.count)
-	assert.Equal(r.Cookies(), client.searchUsers.lastCookies)
+	assert.Equal(getContext(r), client.searchUsers.lastCtx)
 	assert.Equal("admin", client.searchUsers.lastSearch)
 
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
 	assert.Equal(addTeamMemberVars{
-		Path:      "/teams/add-member/123",
-		SiriusURL: "http://sirius",
-		Search:    "admin",
-		Team:      client.team.data,
-		Users:     client.searchUsers.data,
-		Members:   map[int]bool{4: true, 5: true},
-		Success:   "system.admin@opgtest.com",
+		Path:    "/teams/add-member/123",
+		Search:  "admin",
+		Team:    client.team.data,
+		Users:   client.searchUsers.data,
+		Members: map[int]bool{4: true, 5: true},
+		Success: "system.admin@opgtest.com",
 	}, template.lastVars)
 }
 
@@ -301,9 +290,8 @@ func TestPostAddTeamMemberClientError(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/teams/add-member/123", strings.NewReader("id=5&search=admin&email=system.admin@opgtest.com"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	err := addTeamMember(client, template, "http://sirius")(w, r)
+	err := addTeamMember(client, template)(w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.team.count)
@@ -313,12 +301,11 @@ func TestPostAddTeamMemberClientError(t *testing.T) {
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
 	assert.Equal(addTeamMemberVars{
-		Path:      "/teams/add-member/123",
-		SiriusURL: "http://sirius",
-		Search:    "admin",
-		Team:      client.team.data,
-		Users:     client.searchUsers.data,
-		Members:   map[int]bool{4: true, 5: true},
+		Path:    "/teams/add-member/123",
+		Search:  "admin",
+		Team:    client.team.data,
+		Users:   client.searchUsers.data,
+		Members: map[int]bool{4: true, 5: true},
 		Errors: sirius.ValidationErrors{
 			"search": {
 				"": "problem",
@@ -350,9 +337,8 @@ func TestPostAddTeamMemberValidationError(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/teams/add-member/123", strings.NewReader("id=5&search=admin&email=system.admin@opgtest.com"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	err := addTeamMember(client, template, "http://sirius")(w, r)
+	err := addTeamMember(client, template)(w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.team.count)
@@ -362,13 +348,12 @@ func TestPostAddTeamMemberValidationError(t *testing.T) {
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
 	assert.Equal(addTeamMemberVars{
-		Path:      "/teams/add-member/123",
-		SiriusURL: "http://sirius",
-		Search:    "admin",
-		Team:      client.team.data,
-		Users:     client.searchUsers.data,
-		Members:   map[int]bool{4: true, 5: true},
-		Errors:    validationErrors,
+		Path:    "/teams/add-member/123",
+		Search:  "admin",
+		Team:    client.team.data,
+		Users:   client.searchUsers.data,
+		Members: map[int]bool{4: true, 5: true},
+		Errors:  validationErrors,
 	}, template.lastVars)
 }
 
@@ -389,9 +374,8 @@ func TestPostAddTeamMemberOtherError(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/teams/add-member/123", strings.NewReader("id=5&search=admin&email=system.admin@opgtest.com"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	err := addTeamMember(client, template, "http://sirius")(w, r)
+	err := addTeamMember(client, template)(w, r)
 	assert.Equal(expectedError, err)
 
 	assert.Equal(1, client.team.count)
@@ -406,6 +390,6 @@ func TestPutAddTeamMemberTeam(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("PUT", "/teams/add-member/123", nil)
 
-	err := addTeamMember(nil, nil, "http://sirius")(w, r)
+	err := addTeamMember(nil, nil)(w, r)
 	assert.Equal(StatusError(http.StatusMethodNotAllowed), err)
 }

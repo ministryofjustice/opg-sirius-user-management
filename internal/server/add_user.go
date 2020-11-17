@@ -1,28 +1,29 @@
 package server
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
 )
 
 type AddUserClient interface {
-	AddUser(ctx context.Context, cookies []*http.Cookie, email, firstname, surname, organisation string, roles []string) error
+	AddUser(ctx sirius.Context, email, firstname, surname, organisation string, roles []string) error
 }
 
 type addUserVars struct {
 	Path      string
-	SiriusURL string
+	XSRFToken string
 	Success   bool
 	Errors    sirius.ValidationErrors
 }
 
-func addUser(client AddUserClient, tmpl Template, siriusURL string) Handler {
+func addUser(client AddUserClient, tmpl Template) Handler {
 	return func(w http.ResponseWriter, r *http.Request) error {
+		ctx := getContext(r)
+
 		vars := addUserVars{
 			Path:      r.URL.Path,
-			SiriusURL: siriusURL,
+			XSRFToken: ctx.XSRFToken,
 		}
 
 		switch r.Method {
@@ -38,7 +39,7 @@ func addUser(client AddUserClient, tmpl Template, siriusURL string) Handler {
 				roles        = r.PostForm["roles"]
 			)
 
-			err := client.AddUser(r.Context(), r.Cookies(), email, firstname, surname, organisation, roles)
+			err := client.AddUser(ctx, email, firstname, surname, organisation, roles)
 
 			if verr, ok := err.(sirius.ValidationError); ok {
 				vars.Errors = verr.Errors

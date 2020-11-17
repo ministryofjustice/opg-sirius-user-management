@@ -1,7 +1,6 @@
 package sirius
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 )
@@ -25,10 +24,10 @@ type MyDetailsTeam struct {
 	DisplayName string `json:"displayName"`
 }
 
-func (c *Client) MyDetails(ctx context.Context, cookies []*http.Cookie) (MyDetails, error) {
+func (c *Client) MyDetails(ctx Context) (MyDetails, error) {
 	var v MyDetails
 
-	req, err := c.newRequest(ctx, http.MethodGet, "/api/v1/users/current", nil, cookies)
+	req, err := c.newRequest(ctx, http.MethodGet, "/api/v1/users/current", nil)
 	if err != nil {
 		return v, err
 	}

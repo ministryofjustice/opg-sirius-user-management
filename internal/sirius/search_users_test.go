@@ -1,7 +1,6 @@
 package sirius
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -114,7 +113,7 @@ func TestSearchUsers(t *testing.T) {
 			assert.Nil(t, pact.Verify(func() error {
 				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
 
-				users, err := client.SearchUsers(context.Background(), tc.cookies, "admin")
+				users, err := client.SearchUsers(getContext(tc.cookies), "admin")
 				assert.Equal(t, tc.expectedResponse, users)
 				assert.Equal(t, tc.expectedError, err)
 				return nil
@@ -129,7 +128,7 @@ func TestSearchUsersStatusError(t *testing.T) {
 
 	client, _ := NewClient(http.DefaultClient, s.URL)
 
-	_, err := client.SearchUsers(context.Background(), nil, "abc")
+	_, err := client.SearchUsers(getContext(nil), "abc")
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
 		URL:    s.URL + "/api/search/users?query=abc",
@@ -140,7 +139,7 @@ func TestSearchUsersStatusError(t *testing.T) {
 func TestSearchUsersTooShort(t *testing.T) {
 	client, _ := NewClient(http.DefaultClient, "")
 
-	users, err := client.SearchUsers(context.Background(), nil, "ad")
+	users, err := client.SearchUsers(getContext(nil), "ad")
 	assert.Nil(t, users)
 	assert.Equal(t, ClientError("Search term must be at least three characters"), err)
 }

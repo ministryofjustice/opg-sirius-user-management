@@ -1,7 +1,6 @@
 package server
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -12,15 +11,15 @@ import (
 
 type mockViewTeamClient struct {
 	count         int
-	lastCookies   []*http.Cookie
+	lastCtx       sirius.Context
 	err           error
 	data          sirius.Team
 	lastRequestID int
 }
 
-func (m *mockViewTeamClient) Team(ctx context.Context, cookies []*http.Cookie, id int) (sirius.Team, error) {
+func (m *mockViewTeamClient) Team(ctx sirius.Context, id int) (sirius.Team, error) {
 	m.count += 1
-	m.lastCookies = cookies
+	m.lastCtx = ctx
 	m.lastRequestID = id
 
 	return m.data, m.err
@@ -47,23 +46,21 @@ func TestViewTeam(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/teams/16", nil)
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	err := viewTeam(client, template, "http://sirius")(w, r)
+	err := viewTeam(client, template)(w, r)
 	assert.Nil(err)
 
 	resp := w.Result()
 	assert.Equal(http.StatusOK, resp.StatusCode)
-	assert.Equal(r.Cookies(), client.lastCookies)
+	assert.Equal(getContext(r), client.lastCtx)
 
 	assert.Equal(1, client.count)
 
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
 	assert.Equal(viewTeamVars{
-		Path:      "/teams/16",
-		SiriusURL: "http://sirius",
-		Team:      data,
+		Path: "/teams/16",
+		Team: data,
 	}, template.lastVars)
 }
 
@@ -77,9 +74,8 @@ func TestViewTeamNotFound(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/teams/25", nil)
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	err := viewTeam(client, template, "http://sirius")(w, r)
+	err := viewTeam(client, template)(w, r)
 
 	assert.Equal(StatusError(http.StatusNotFound), err)
 }
@@ -92,9 +88,8 @@ func TestViewTeamBadPath(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/teams/jeoi", nil)
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	err := viewTeam(client, template, "http://sirius")(w, r)
+	err := viewTeam(client, template)(w, r)
 
 	assert.Equal(StatusError(http.StatusNotFound), err)
 }
@@ -105,6 +100,6 @@ func TestPostViewTeam(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "", nil)
 
-	err := viewTeam(nil, nil, "http://sirius")(w, r)
+	err := viewTeam(nil, nil)(w, r)
 	assert.Equal(StatusError(http.StatusMethodNotAllowed), err)
 }

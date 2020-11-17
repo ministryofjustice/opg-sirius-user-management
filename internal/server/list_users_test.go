@@ -1,7 +1,6 @@
 package server
 
 import (
-	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -12,16 +11,16 @@ import (
 )
 
 type mockListUsersClient struct {
-	count       int
-	lastCookies []*http.Cookie
-	lastSearch  string
-	err         error
-	data        []sirius.User
+	count      int
+	lastCtx    sirius.Context
+	lastSearch string
+	err        error
+	data       []sirius.User
 }
 
-func (m *mockListUsersClient) SearchUsers(ctx context.Context, cookies []*http.Cookie, search string) ([]sirius.User, error) {
+func (m *mockListUsersClient) SearchUsers(ctx sirius.Context, search string) ([]sirius.User, error) {
 	m.count += 1
-	m.lastCookies = cookies
+	m.lastCtx = ctx
 	m.lastSearch = search
 
 	return m.data, m.err
@@ -45,16 +44,15 @@ func TestListUsers(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path?search=milo", nil)
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	handler := listUsers(client, template, "http://sirius")
+	handler := listUsers(client, template)
 	err := handler(w, r)
 
 	assert.Nil(err)
 
 	resp := w.Result()
 	assert.Equal(http.StatusOK, resp.StatusCode)
-	assert.Equal(r.Cookies(), client.lastCookies)
+	assert.Equal(getContext(r), client.lastCtx)
 
 	assert.Equal(1, client.count)
 	assert.Equal("milo", client.lastSearch)
@@ -62,9 +60,7 @@ func TestListUsers(t *testing.T) {
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
 	assert.Equal(listUsersVars{
-		Path:      "/path",
-		SiriusURL: "http://sirius",
-
+		Path:   "/path",
 		Search: "milo",
 		Users: []sirius.User{
 			{
@@ -95,9 +91,8 @@ func TestListUsersRequiresSearch(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	handler := listUsers(client, template, "http://sirius")
+	handler := listUsers(client, template)
 	err := handler(w, r)
 
 	assert.Nil(err)
@@ -110,9 +105,7 @@ func TestListUsersRequiresSearch(t *testing.T) {
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
 	assert.Equal(listUsersVars{
-		Path:      "/path",
-		SiriusURL: "http://sirius",
-
+		Path:   "/path",
 		Search: "",
 		Users:  nil,
 	}, template.lastVars)
@@ -128,9 +121,8 @@ func TestListUsersClientError(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path?search=m", nil)
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	handler := listUsers(client, template, "http://sirius")
+	handler := listUsers(client, template)
 	err := handler(w, r)
 
 	assert.Nil(err)
@@ -143,9 +135,7 @@ func TestListUsersClientError(t *testing.T) {
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
 	assert.Equal(listUsersVars{
-		Path:      "/path",
-		SiriusURL: "http://sirius",
-
+		Path:   "/path",
 		Search: "m",
 		Users:  nil,
 		Errors: sirius.ValidationErrors{
@@ -166,7 +156,7 @@ func TestListUsersSiriusErrors(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/?search=long", nil)
 
-	handler := listUsers(client, template, "http://sirius")
+	handler := listUsers(client, template)
 	err := handler(w, r)
 
 	assert.Equal(expectedErr, err)
@@ -180,7 +170,7 @@ func TestPostListUsers(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "", nil)
 
-	handler := listUsers(nil, template, "http://sirius")
+	handler := listUsers(nil, template)
 	err := handler(w, r)
 
 	assert.Equal(StatusError(http.StatusMethodNotAllowed), err)

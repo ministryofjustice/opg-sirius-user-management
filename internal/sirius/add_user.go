@@ -2,7 +2,6 @@ package sirius
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"net/http"
 )
@@ -14,7 +13,7 @@ type addUserRequest struct {
 	Roles     []string `json:"roles"`
 }
 
-func (c *Client) AddUser(ctx context.Context, cookies []*http.Cookie, email, firstName, lastName, organisation string, roles []string) error {
+func (c *Client) AddUser(ctx Context, email, firstName, lastName, organisation string, roles []string) error {
 	var body bytes.Buffer
 	err := json.NewEncoder(&body).Encode(addUserRequest{
 		Firstname: firstName,
@@ -26,7 +25,7 @@ func (c *Client) AddUser(ctx context.Context, cookies []*http.Cookie, email, fir
 		return err
 	}
 
-	req, err := c.newRequest(ctx, http.MethodPost, "/auth/user", &body, cookies)
+	req, err := c.newRequest(ctx, http.MethodPost, "/auth/user", &body)
 	if err != nil {
 		return err
 	}

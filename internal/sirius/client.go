@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
 )
 
 const ErrUnauthorized ClientError = "unauthorized"
@@ -53,6 +52,12 @@ func (e StatusError) Data() interface{} {
 	return e
 }
 
+type Context struct {
+	Context   context.Context
+	Cookies   []*http.Cookie
+	XSRFToken string
+}
+
 func NewClient(httpClient *http.Client, baseURL string) (*Client, error) {
 	return &Client{
 		http:    httpClient,
@@ -65,27 +70,18 @@ type Client struct {
 	baseURL string
 }
 
-func (c *Client) newRequest(ctx context.Context, method, path string, body io.Reader, cookies []*http.Cookie) (*http.Request, error) {
-	req, err := http.NewRequestWithContext(ctx, method, c.baseURL+path, body)
+func (c *Client) newRequest(ctx Context, method, path string, body io.Reader) (*http.Request, error) {
+	req, err := http.NewRequestWithContext(ctx.Context, method, c.baseURL+path, body)
 	if err != nil {
 		return nil, err
 	}
-	var xsrfToken string
-	for _, c := range cookies {
+
+	for _, c := range ctx.Cookies {
 		req.AddCookie(c)
-		if c.Name == "XSRF-TOKEN" {
-			xsrfToken = c.Value
-		}
-	}
-
-	headerToken, err := url.QueryUnescape(xsrfToken)
-
-	if err != nil {
-		return nil, ErrUnauthorized
 	}
 
 	req.Header.Add("OPG-Bypass-Membrane", "1")
-	req.Header.Add("X-XSRF-TOKEN", headerToken)
+	req.Header.Add("X-XSRF-TOKEN", ctx.XSRFToken)
 
 	return req, err
 }

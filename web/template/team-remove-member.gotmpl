@@ -31,6 +31,8 @@
       {{ end }}
 
       <form class="form" action="" method="post">
+        <input type="hidden" name="xsrfToken" value="{{ .XSRFToken }}" />
+        
         {{ range $id, $name := .Selected }}
           <input type="hidden" name="selected[]" value="{{ $id }}" />
         {{ end }}

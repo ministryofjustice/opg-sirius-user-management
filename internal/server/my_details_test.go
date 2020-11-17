@@ -1,7 +1,6 @@
 package server
 
 import (
-	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -14,7 +13,7 @@ import (
 type mockMyDetailsClient struct {
 	count            int
 	permissionsCount int
-	lastCookies      []*http.Cookie
+	lastCtx          sirius.Context
 	err              error
 	permissionsErr   error
 	data             sirius.MyDetails
@@ -25,16 +24,16 @@ type mockMyDetailsClient struct {
 	}
 }
 
-func (m *mockMyDetailsClient) MyDetails(ctx context.Context, cookies []*http.Cookie) (sirius.MyDetails, error) {
+func (m *mockMyDetailsClient) MyDetails(ctx sirius.Context) (sirius.MyDetails, error) {
 	m.count += 1
-	m.lastCookies = cookies
+	m.lastCtx = ctx
 
 	return m.data, m.err
 }
 
-func (m *mockMyDetailsClient) HasPermission(ctx context.Context, cookies []*http.Cookie, group string, method string) (bool, error) {
+func (m *mockMyDetailsClient) HasPermission(ctx sirius.Context, group string, method string) (bool, error) {
 	m.permissionsCount += 1
-	m.lastCookies = cookies
+	m.lastCtx = ctx
 	m.lastPermission.Group = group
 	m.lastPermission.Method = method
 
@@ -60,16 +59,15 @@ func TestGetMyDetails(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	handler := myDetails(client, template, "http://sirius")
+	handler := myDetails(client, template)
 	err := handler(w, r)
 
 	assert.Nil(err)
 
 	resp := w.Result()
 	assert.Equal(http.StatusOK, resp.StatusCode)
-	assert.Equal(r.Cookies(), client.lastCookies)
+	assert.Equal(getContext(r), client.lastCtx)
 
 	assert.Equal(1, client.count)
 	assert.Equal(1, client.permissionsCount)
@@ -78,7 +76,6 @@ func TestGetMyDetails(t *testing.T) {
 	assert.Equal("page", template.lastName)
 	assert.Equal(myDetailsVars{
 		Path:               "/path",
-		SiriusURL:          "http://sirius",
 		ID:                 123,
 		Firstname:          "John",
 		Surname:            "Doe",
@@ -110,16 +107,15 @@ func TestGetMyDetailsUsesPermission(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	handler := myDetails(client, template, "http://sirius")
+	handler := myDetails(client, template)
 	err := handler(w, r)
 
 	assert.Nil(err)
 
 	resp := w.Result()
 	assert.Equal(http.StatusOK, resp.StatusCode)
-	assert.Equal(r.Cookies(), client.lastCookies)
+	assert.Equal(getContext(r), client.lastCtx)
 	assert.Equal("user", client.lastPermission.Group)
 	assert.Equal("patch", client.lastPermission.Method)
 
@@ -130,7 +126,6 @@ func TestGetMyDetailsUsesPermission(t *testing.T) {
 	assert.Equal("page", template.lastName)
 	assert.Equal(myDetailsVars{
 		Path:               "/path",
-		SiriusURL:          "http://sirius",
 		ID:                 123,
 		Firstname:          "John",
 		Surname:            "Doe",
@@ -152,7 +147,7 @@ func TestGetMyDetailsUnauthenticated(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "", nil)
 
-	handler := myDetails(client, template, "http://sirius")
+	handler := myDetails(client, template)
 	err := handler(w, r)
 
 	assert.Equal(sirius.ErrUnauthorized, err)
@@ -169,7 +164,7 @@ func TestGetMyDetailsSiriusErrors(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "", nil)
 
-	handler := myDetails(client, template, "http://sirius")
+	handler := myDetails(client, template)
 	err := handler(w, r)
 
 	assert.Equal("err", err.Error())
@@ -184,7 +179,7 @@ func TestPostMyDetails(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "", nil)
 
-	handler := myDetails(nil, template, "http://sirius")
+	handler := myDetails(nil, template)
 	err := handler(w, r)
 
 	assert.Equal(StatusError(http.StatusMethodNotAllowed), err)

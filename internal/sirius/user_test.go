@@ -1,7 +1,6 @@
 package sirius
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -108,7 +107,7 @@ func TestUser(t *testing.T) {
 			assert.Nil(t, pact.Verify(func() error {
 				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
 
-				users, err := client.User(context.Background(), tc.cookies, 123)
+				users, err := client.User(getContext(tc.cookies), 123)
 				assert.Equal(t, tc.expectedResponse, users)
 				assert.Equal(t, tc.expectedError, err)
 				return nil
@@ -123,7 +122,7 @@ func TestUserBadJSONResponse(t *testing.T) {
 
 	client, _ := NewClient(http.DefaultClient, s.URL)
 
-	_, err := client.User(context.Background(), nil, 123)
+	_, err := client.User(getContext(nil), 123)
 	assert.IsType(t, &json.UnmarshalTypeError{}, err)
 }
 
@@ -133,7 +132,7 @@ func TestUserStatusError(t *testing.T) {
 
 	client, _ := NewClient(http.DefaultClient, s.URL)
 
-	_, err := client.User(context.Background(), nil, 123)
+	_, err := client.User(getContext(nil), 123)
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
 		URL:    s.URL + "/auth/user/123",

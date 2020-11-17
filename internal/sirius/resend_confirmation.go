@@ -1,18 +1,17 @@
 package sirius
 
 import (
-	"context"
 	"net/http"
 	"net/url"
 	"strings"
 )
 
-func (c *Client) ResendConfirmation(ctx context.Context, cookies []*http.Cookie, email string) error {
+func (c *Client) ResendConfirmation(ctx Context, email string) error {
 	form := url.Values{
 		"email": {email},
 	}
 
-	req, err := c.newRequest(ctx, http.MethodPost, "/auth/resend-confirmation", strings.NewReader(form.Encode()), cookies)
+	req, err := c.newRequest(ctx, http.MethodPost, "/auth/resend-confirmation", strings.NewReader(form.Encode()))
 	if err != nil {
 		return err
 	}

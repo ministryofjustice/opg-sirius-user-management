@@ -1,7 +1,6 @@
 package server
 
 import (
-	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -15,31 +14,31 @@ import (
 
 type mockRemoveTeamMemberClient struct {
 	team struct {
-		count       int
-		lastCookies []*http.Cookie
-		lastID      int
-		data        sirius.Team
-		err         error
+		count   int
+		lastCtx sirius.Context
+		lastID  int
+		data    sirius.Team
+		err     error
 	}
 	editTeam struct {
-		count       int
-		lastCookies []*http.Cookie
-		lastTeam    sirius.Team
-		err         error
+		count    int
+		lastCtx  sirius.Context
+		lastTeam sirius.Team
+		err      error
 	}
 }
 
-func (c *mockRemoveTeamMemberClient) Team(ctx context.Context, cookies []*http.Cookie, id int) (sirius.Team, error) {
+func (c *mockRemoveTeamMemberClient) Team(ctx sirius.Context, id int) (sirius.Team, error) {
 	c.team.count += 1
-	c.team.lastCookies = cookies
+	c.team.lastCtx = ctx
 	c.team.lastID = id
 
 	return c.team.data, c.team.err
 }
 
-func (c *mockRemoveTeamMemberClient) EditTeam(ctx context.Context, cookies []*http.Cookie, team sirius.Team) error {
+func (c *mockRemoveTeamMemberClient) EditTeam(ctx sirius.Context, team sirius.Team) error {
 	c.editTeam.count += 1
-	c.editTeam.lastCookies = cookies
+	c.editTeam.lastCtx = ctx
 	c.editTeam.lastTeam = team
 
 	return c.editTeam.err
@@ -70,13 +69,12 @@ func TestPostRemoveTeamMember(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/teams/remove-member/123", strings.NewReader("selected[]=12&selected[]=45"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	err := removeTeamMember(client, template, "http://sirius")(w, r)
+	err := removeTeamMember(client, template)(w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.team.count)
-	assert.Equal(r.Cookies(), client.team.lastCookies)
+	assert.Equal(getContext(r), client.team.lastCtx)
 	assert.Equal(123, client.team.lastID)
 
 	assert.Equal(0, client.editTeam.count)
@@ -84,9 +82,8 @@ func TestPostRemoveTeamMember(t *testing.T) {
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
 	assert.Equal(removeTeamMemberVars{
-		Path:      "/teams/remove-member/123",
-		SiriusURL: "http://sirius",
-		Team:      client.team.data,
+		Path: "/teams/remove-member/123",
+		Team: client.team.data,
 		Selected: map[int]string{
 			12: "User 12",
 			45: "User 45",
@@ -106,7 +103,7 @@ func TestPostRemoveTeamMemberBadPath(t *testing.T) {
 
 			r, _ := http.NewRequest("POST", path, strings.NewReader("selected[]=12&selected[]=45"))
 			r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-			err := editTeam(nil, nil, "http://sirius")(nil, r)
+			err := editTeam(nil, nil)(nil, r)
 
 			assert.Equal(StatusError(http.StatusNotFound), err)
 		})
@@ -125,9 +122,8 @@ func TestPostRemoveTeamMemberTeamError(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/teams/remove-member/123", strings.NewReader("selected[]=12&selected[]=45"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	err := removeTeamMember(client, template, "http://sirius")(w, r)
+	err := removeTeamMember(client, template)(w, r)
 	assert.Equal(expectedError, err)
 
 	assert.Equal(1, client.team.count)
@@ -148,12 +144,10 @@ func TestPostRemoveTeamMemberBadData(t *testing.T) {
 			w := httptest.NewRecorder()
 			r, _ := http.NewRequest("POST", "/teams/remove-member/123", strings.NewReader(data))
 			r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-			r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-			err := removeTeamMember(client, template, "http://sirius")(w, r)
+			err := removeTeamMember(client, template)(w, r)
 			assert.Equal(StatusError(http.StatusBadRequest), err)
 
-			assert.Equal(1, client.team.count)
 			assert.Equal(0, client.editTeam.count)
 		})
 	}
@@ -169,15 +163,13 @@ func TestPostRemoveTeamMemberIgnoresBadIds(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/teams/remove-member/123", strings.NewReader("selected[]=19&selected[]=45"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	err := removeTeamMember(client, template, "http://sirius")(w, r)
+	err := removeTeamMember(client, template)(w, r)
 	assert.Nil(err)
 
 	assert.Equal(removeTeamMemberVars{
-		Path:      "/teams/remove-member/123",
-		SiriusURL: "http://sirius",
-		Team:      client.team.data,
+		Path: "/teams/remove-member/123",
+		Team: client.team.data,
 		Selected: map[int]string{
 			45: "User 45",
 		},
@@ -194,9 +186,8 @@ func TestConfirmPostRemoveTeamMember(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/teams/remove-member/123", strings.NewReader("selected[]=12&selected[]=45&confirm=true"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	err := removeTeamMember(client, template, "http://sirius")(w, r)
+	err := removeTeamMember(client, template)(w, r)
 	assert.Equal(RedirectError("/teams/123"), err)
 
 	assert.Equal(1, client.team.count)
@@ -221,18 +212,16 @@ func TestConfirmPostRemoveTeamMemberClientError(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/teams/remove-member/123", strings.NewReader("selected[]=12&selected[]=45&confirm=true"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	err := removeTeamMember(client, template, "http://sirius")(w, r)
+	err := removeTeamMember(client, template)(w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.team.count)
 	assert.Equal(1, client.editTeam.count)
 
 	assert.Equal(removeTeamMemberVars{
-		Path:      "/teams/remove-member/123",
-		SiriusURL: "http://sirius",
-		Team:      client.team.data,
+		Path: "/teams/remove-member/123",
+		Team: client.team.data,
 		Selected: map[int]string{
 			12: "User 12",
 			45: "User 45",
@@ -258,9 +247,8 @@ func TestConfirmPostRemoveTeamMemberOtherError(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/teams/remove-member/123", strings.NewReader("selected[]=12&selected[]=45&confirm=true"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	r.AddCookie(&http.Cookie{Name: "test", Value: "val"})
 
-	err := removeTeamMember(client, template, "http://sirius")(w, r)
+	err := removeTeamMember(client, template)(w, r)
 	assert.Equal(expectedError, err)
 
 	assert.Equal(1, client.team.count)
@@ -273,6 +261,6 @@ func TestGetRemoveTeamMemberTeam(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/teams/remove-member/123", nil)
 
-	err := removeTeamMember(nil, nil, "http://sirius")(w, r)
+	err := removeTeamMember(nil, nil)(w, r)
 	assert.Equal(StatusError(http.StatusMethodNotAllowed), err)
 }

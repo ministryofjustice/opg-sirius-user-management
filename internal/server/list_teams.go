@@ -1,7 +1,6 @@
 package server
 
 import (
-	"context"
 	"net/http"
 	"strings"
 
@@ -9,23 +8,25 @@ import (
 )
 
 type ListTeamsClient interface {
-	Teams(context.Context, []*http.Cookie) ([]sirius.Team, error)
+	Teams(sirius.Context) ([]sirius.Team, error)
 }
 
 type listTeamsVars struct {
 	Path      string
-	SiriusURL string
+	XSRFToken string
 	Search    string
 	Teams     []sirius.Team
 }
 
-func listTeams(client ListTeamsClient, tmpl Template, siriusURL string) Handler {
+func listTeams(client ListTeamsClient, tmpl Template) Handler {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		if r.Method != http.MethodGet {
 			return StatusError(http.StatusMethodNotAllowed)
 		}
 
-		teams, err := client.Teams(r.Context(), r.Cookies())
+		ctx := getContext(r)
+
+		teams, err := client.Teams(ctx)
 		if err != nil {
 			return err
 		}
@@ -46,7 +47,7 @@ func listTeams(client ListTeamsClient, tmpl Template, siriusURL string) Handler 
 
 		vars := listTeamsVars{
 			Path:      r.URL.Path,
-			SiriusURL: siriusURL,
+			XSRFToken: ctx.XSRFToken,
 			Search:    search,
 			Teams:     teams,
 		}

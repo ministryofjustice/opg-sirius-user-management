@@ -1,14 +1,13 @@
 package sirius
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 	"net/url"
 	"strings"
 )
 
-func (c *Client) ChangePassword(ctx context.Context, cookies []*http.Cookie, oldPassword, newPassword, newPasswordConfirm string) error {
+func (c *Client) ChangePassword(ctx Context, oldPassword, newPassword, newPasswordConfirm string) error {
 	form := url.Values{
 		"existingPassword": {oldPassword},
 		"password":         {newPassword},
@@ -16,7 +15,7 @@ func (c *Client) ChangePassword(ctx context.Context, cookies []*http.Cookie, old
 	}
 	body := strings.NewReader(form.Encode())
 
-	req, err := c.newRequest(ctx, http.MethodPost, "/auth/change-password", body, cookies)
+	req, err := c.newRequest(ctx, http.MethodPost, "/auth/change-password", body)
 	if err != nil {
 		return err
 	}

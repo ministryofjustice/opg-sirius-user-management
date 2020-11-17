@@ -1,7 +1,6 @@
 package server
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 
@@ -9,13 +8,13 @@ import (
 )
 
 type AddTeamClient interface {
-	AddTeam(ctx context.Context, cookies []*http.Cookie, name, teamType, phone, email string) (int, error)
-	TeamTypes(context.Context, []*http.Cookie) ([]sirius.RefDataTeamType, error)
+	AddTeam(ctx sirius.Context, name, teamType, phone, email string) (int, error)
+	TeamTypes(sirius.Context) ([]sirius.RefDataTeamType, error)
 }
 
 type addTeamVars struct {
 	Path      string
-	SiriusURL string
+	XSRFToken string
 	TeamTypes []sirius.RefDataTeamType
 	Name      string
 	Service   string
@@ -26,18 +25,20 @@ type addTeamVars struct {
 	Errors    sirius.ValidationErrors
 }
 
-func addTeam(client AddTeamClient, tmpl Template, siriusURL string) Handler {
+func addTeam(client AddTeamClient, tmpl Template) Handler {
 	return func(w http.ResponseWriter, r *http.Request) error {
+		ctx := getContext(r)
+
 		switch r.Method {
 		case http.MethodGet:
-			teamTypes, err := client.TeamTypes(r.Context(), r.Cookies())
+			teamTypes, err := client.TeamTypes(ctx)
 			if err != nil {
 				return err
 			}
 
 			vars := addTeamVars{
 				Path:      r.URL.Path,
-				SiriusURL: siriusURL,
+				XSRFToken: ctx.XSRFToken,
 				TeamTypes: teamTypes,
 			}
 
@@ -56,17 +57,17 @@ func addTeam(client AddTeamClient, tmpl Template, siriusURL string) Handler {
 				teamType = ""
 			}
 
-			id, err := client.AddTeam(r.Context(), r.Cookies(), name, teamType, phone, email)
+			id, err := client.AddTeam(ctx, name, teamType, phone, email)
 
 			if verr, ok := err.(sirius.ValidationError); ok {
-				teamTypes, err := client.TeamTypes(r.Context(), r.Cookies())
+				teamTypes, err := client.TeamTypes(ctx)
 				if err != nil {
 					return err
 				}
 
 				vars := addTeamVars{
 					Path:      r.URL.Path,
-					SiriusURL: siriusURL,
+					XSRFToken: ctx.XSRFToken,
 					TeamTypes: teamTypes,
 					Name:      name,
 					Service:   service,

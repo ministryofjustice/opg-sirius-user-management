@@ -1,14 +1,13 @@
 package sirius
 
 import (
-	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
-	"strconv"
 	"strings"
 )
 
-func (c *Client) EditMyDetails(ctx context.Context, cookies []*http.Cookie, id int, phoneNumber string) error {
+func (c *Client) EditMyDetails(ctx Context, id int, phoneNumber string) error {
 	var v struct {
 		Detail           string           `json:"detail"`
 		ValidationErrors ValidationErrors `json:"validation_errors"`
@@ -16,13 +15,7 @@ func (c *Client) EditMyDetails(ctx context.Context, cookies []*http.Cookie, id i
 
 	var body = strings.NewReader("{\"phoneNumber\":\"" + phoneNumber + "\"}")
 
-	req, err := c.newRequest(
-		ctx,
-		http.MethodPut,
-		"/api/v1/users/"+strconv.Itoa(id)+"/updateTelephoneNumber",
-		body,
-		cookies,
-	)
+	req, err := c.newRequest(ctx, http.MethodPut, fmt.Sprintf("/api/v1/users/%d/updateTelephoneNumber", id), body)
 	if err != nil {
 		return err
 	}

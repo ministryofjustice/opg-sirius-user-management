@@ -1,52 +1,49 @@
 package server
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
 )
 
 type MyDetailsClient interface {
-	MyDetails(context.Context, []*http.Cookie) (sirius.MyDetails, error)
-	HasPermission(context.Context, []*http.Cookie, string, string) (bool, error)
+	MyDetails(sirius.Context) (sirius.MyDetails, error)
+	HasPermission(sirius.Context, string, string) (bool, error)
 }
 
 type myDetailsVars struct {
-	Path      string
-	SiriusURL string
-
-	ID           int
-	Firstname    string
-	Surname      string
-	Email        string
-	PhoneNumber  string
-	Organisation string
-	Roles        []string
-	Teams        []string
-
+	Path               string
+	ID                 int
+	Firstname          string
+	Surname            string
+	Email              string
+	PhoneNumber        string
+	Organisation       string
+	Roles              []string
+	Teams              []string
 	CanEditPhoneNumber bool
 }
 
-func myDetails(client MyDetailsClient, tmpl Template, siriusURL string) Handler {
+func myDetails(client MyDetailsClient, tmpl Template) Handler {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		if r.Method != http.MethodGet {
 			return StatusError(http.StatusMethodNotAllowed)
 		}
 
-		myDetails, err := client.MyDetails(r.Context(), r.Cookies())
+		ctx := getContext(r)
+
+		myDetails, err := client.MyDetails(ctx)
 		if err != nil {
 			return err
 		}
 
-		canEditPhoneNumber, err := client.HasPermission(r.Context(), r.Cookies(), "user", "patch")
+		canEditPhoneNumber, err := client.HasPermission(ctx, "user", "patch")
 		if err != nil {
 			return err
 		}
 
 		vars := myDetailsVars{
 			Path:               r.URL.Path,
-			SiriusURL:          siriusURL,
 			ID:                 myDetails.ID,
 			Firstname:          myDetails.Firstname,
 			Surname:            myDetails.Surname,

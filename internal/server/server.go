@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"io"
 	"net/http"
+	"net/url"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
 )
@@ -43,64 +44,64 @@ func New(logger Logger, client Client, templates map[string]*template.Template, 
 	mux.Handle("/users",
 		wrap(
 			systemAdminOnly(
-				listUsers(client, templates["users.gotmpl"], siriusURL))))
+				listUsers(client, templates["users.gotmpl"]))))
 
 	mux.Handle("/teams",
 		wrap(
 			allowRoles(client, "System Admin", "Manager")(
-				listTeams(client, templates["teams.gotmpl"], siriusURL))))
+				listTeams(client, templates["teams.gotmpl"]))))
 
 	mux.Handle("/teams/",
 		wrap(
 			allowRoles(client, "System Admin", "Manager")(
-				viewTeam(client, templates["team.gotmpl"], siriusURL))))
+				viewTeam(client, templates["team.gotmpl"]))))
 
 	mux.Handle("/teams/add/",
 		wrap(
 			systemAdminOnly(
-				addTeam(client, templates["team-add.gotmpl"], siriusURL))))
+				addTeam(client, templates["team-add.gotmpl"]))))
 
 	mux.Handle("/teams/edit/",
 		wrap(
 			allowRoles(client, "System Admin", "Manager")(
-				editTeam(client, templates["team-edit.gotmpl"], siriusURL))))
+				editTeam(client, templates["team-edit.gotmpl"]))))
 
 	mux.Handle("/teams/add-member/",
 		wrap(
 			allowRoles(client, "System Admin", "Manager")(
-				addTeamMember(client, templates["team-add-member.gotmpl"], siriusURL))))
+				addTeamMember(client, templates["team-add-member.gotmpl"]))))
 
 	mux.Handle("/teams/remove-member/",
 		wrap(
 			allowRoles(client, "System Admin", "Manager")(
-				removeTeamMember(client, templates["team-remove-member.gotmpl"], siriusURL))))
+				removeTeamMember(client, templates["team-remove-member.gotmpl"]))))
 
 	mux.Handle("/my-details",
 		wrap(
-			myDetails(client, templates["my-details.gotmpl"], siriusURL)))
+			myDetails(client, templates["my-details.gotmpl"])))
 
 	mux.Handle("/my-details/edit",
 		wrap(
-			editMyDetails(client, templates["edit-my-details.gotmpl"], siriusURL)))
+			editMyDetails(client, templates["edit-my-details.gotmpl"])))
 
 	mux.Handle("/change-password",
 		wrap(
-			changePassword(client, templates["change-password.gotmpl"], siriusURL)))
+			changePassword(client, templates["change-password.gotmpl"])))
 
 	mux.Handle("/add-user",
 		wrap(
 			systemAdminOnly(
-				addUser(client, templates["add-user.gotmpl"], siriusURL))))
+				addUser(client, templates["add-user.gotmpl"]))))
 
 	mux.Handle("/edit-user/",
 		wrap(
 			systemAdminOnly(
-				editUser(client, templates["edit-user.gotmpl"], siriusURL))))
+				editUser(client, templates["edit-user.gotmpl"]))))
 
 	mux.Handle("/resend-confirmation",
 		wrap(
 			systemAdminOnly(
-				resendConfirmation(client, templates["resend-confirmation.gotmpl"], siriusURL))))
+				resendConfirmation(client, templates["resend-confirmation.gotmpl"]))))
 
 	static := http.FileServer(http.Dir(webDir + "/static"))
 	mux.Handle("/assets/", static)
@@ -179,5 +180,23 @@ func errorHandler(logger Logger, tmplError Template, prefix, siriusURL string) f
 				}
 			}
 		})
+	}
+}
+
+func getContext(r *http.Request) sirius.Context {
+	token := ""
+
+	if r.Method == http.MethodGet {
+		if cookie, err := r.Cookie("XSRF-TOKEN"); err == nil {
+			token, _ = url.QueryUnescape(cookie.Value)
+		}
+	} else {
+		token = r.FormValue("xsrfToken")
+	}
+
+	return sirius.Context{
+		Context:   r.Context(),
+		Cookies:   r.Cookies(),
+		XSRFToken: token,
 	}
 }

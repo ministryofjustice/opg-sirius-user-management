@@ -1,28 +1,29 @@
 package server
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
 )
 
 type ChangePasswordClient interface {
-	ChangePassword(ctx context.Context, cookies []*http.Cookie, currentPassword, newPassword, newPasswordConfirm string) error
+	ChangePassword(ctx sirius.Context, currentPassword, newPassword, newPasswordConfirm string) error
 }
 
 type changePasswordVars struct {
 	Path      string
-	SiriusURL string
+	XSRFToken string
 	Success   bool
 	Errors    sirius.ValidationErrors
 }
 
-func changePassword(client ChangePasswordClient, tmpl Template, siriusURL string) Handler {
+func changePassword(client ChangePasswordClient, tmpl Template) Handler {
 	return func(w http.ResponseWriter, r *http.Request) error {
+		ctx := getContext(r)
+
 		vars := changePasswordVars{
 			Path:      r.URL.Path,
-			SiriusURL: siriusURL,
+			XSRFToken: ctx.XSRFToken,
 		}
 
 		switch r.Method {
@@ -36,7 +37,7 @@ func changePassword(client ChangePasswordClient, tmpl Template, siriusURL string
 				password2       = r.PostFormValue("password2")
 			)
 
-			err := client.ChangePassword(r.Context(), r.Cookies(), currentPassword, password1, password2)
+			err := client.ChangePassword(ctx, currentPassword, password1, password2)
 
 			if err == sirius.ErrUnauthorized {
 				return err
