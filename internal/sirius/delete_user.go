@@ -1,14 +1,13 @@
 package sirius
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 )
 
-func (c *Client) DeleteUser(ctx context.Context, cookies []*http.Cookie, userID int) error {
-	req, err := c.newRequest(ctx, http.MethodDelete, fmt.Sprintf("/auth/user/%d", userID), nil, cookies)
+func (c *Client) DeleteUser(ctx Context, userID int) error {
+	req, err := c.newRequest(ctx, http.MethodDelete, fmt.Sprintf("/auth/user/%d", userID), nil)
 	if err != nil {
 		return err
 	}

@@ -1,7 +1,6 @@
 package server
 
 import (
-	"context"
 	"net/http"
 	"strconv"
 	"strings"
@@ -10,18 +9,18 @@ import (
 )
 
 type DeleteUserClient interface {
-	User(context.Context, []*http.Cookie, int) (sirius.AuthUser, error)
-	DeleteUser(context.Context, []*http.Cookie, int) error
+	User(sirius.Context, int) (sirius.AuthUser, error)
+	DeleteUser(sirius.Context, int) error
 }
 
 type deleteUserVars struct {
 	Path      string
-	SiriusURL string
+	XSRFToken string
 	User      sirius.AuthUser
 	Errors    sirius.ValidationErrors
 }
 
-func deleteUser(client DeleteUserClient, tmpl Template, siriusURL string) Handler {
+func deleteUser(client DeleteUserClient, tmpl Template) Handler {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		id, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/delete-user/"))
 		if err != nil {
@@ -32,19 +31,21 @@ func deleteUser(client DeleteUserClient, tmpl Template, siriusURL string) Handle
 			return StatusError(http.StatusMethodNotAllowed)
 		}
 
-		user, err := client.User(r.Context(), r.Cookies(), id)
+		ctx := getContext(r)
+
+		user, err := client.User(ctx, id)
 		if err != nil {
 			return err
 		}
 
 		vars := deleteUserVars{
 			Path:      r.URL.Path,
-			SiriusURL: siriusURL,
+			XSRFToken: ctx.XSRFToken,
 			User:      user,
 		}
 
 		if r.Method == http.MethodPost {
-			err := client.DeleteUser(r.Context(), r.Cookies(), id)
+			err := client.DeleteUser(ctx, id)
 
 			if _, ok := err.(sirius.ClientError); ok {
 				vars.Errors = sirius.ValidationErrors{

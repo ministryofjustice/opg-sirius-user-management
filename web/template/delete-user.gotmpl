@@ -20,6 +20,7 @@
       </p>
 
       <form class="form" action="" method="post">
+        <input type="hidden" name="xsrfToken" value="{{ .XSRFToken }}" />
         <button type="submit" class="govuk-button govuk-button--warning govuk-!-margin-right-1">Delete account</button>
         <a href="{{ prefix (printf "/edit-user/%d" .User.ID) }}" class="govuk-button govuk-button--secondary">Cancel</a>
       </form>

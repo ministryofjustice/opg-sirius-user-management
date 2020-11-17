@@ -102,7 +102,7 @@ func New(logger Logger, client Client, templates map[string]*template.Template, 
 	mux.Handle("/delete-user/",
 		wrap(
 			systemAdminOnly(
-				deleteUser(client, templates["delete-user.gotmpl"], siriusURL))))
+				deleteUser(client, templates["delete-user.gotmpl"]))))
 
 	mux.Handle("/resend-confirmation",
 		wrap(

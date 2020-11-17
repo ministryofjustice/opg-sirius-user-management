@@ -1,7 +1,6 @@
 package sirius
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -86,7 +85,7 @@ func TestDeleteUser(t *testing.T) {
 			assert.Nil(t, pact.Verify(func() error {
 				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
 
-				err := client.DeleteUser(context.Background(), tc.cookies, tc.userID)
+				err := client.DeleteUser(getContext(tc.cookies), tc.userID)
 
 				assert.Equal(t, tc.expectedError, err)
 				return nil
@@ -105,7 +104,7 @@ func TestDeleteUserClientError(t *testing.T) {
 
 	client, _ := NewClient(http.DefaultClient, s.URL)
 
-	err := client.DeleteUser(context.Background(), nil, 123)
+	err := client.DeleteUser(getContext(nil), 123)
 	assert.Equal(t, ClientError("oops"), err)
 }
 
@@ -115,7 +114,7 @@ func TestDeleteUserStatusError(t *testing.T) {
 
 	client, _ := NewClient(http.DefaultClient, s.URL)
 
-	err := client.DeleteUser(context.Background(), nil, 123)
+	err := client.DeleteUser(getContext(nil), 123)
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
 		URL:    s.URL + "/auth/user/123",
