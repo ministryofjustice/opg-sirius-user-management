@@ -14,12 +14,11 @@ type ViewTeamClient interface {
 
 type viewTeamVars struct {
 	Path      string
-	SiriusURL string
 	XSRFToken string
 	Team      sirius.Team
 }
 
-func viewTeam(client ViewTeamClient, tmpl Template, siriusURL string) Handler {
+func viewTeam(client ViewTeamClient, tmpl Template) Handler {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		if r.Method != http.MethodGet {
 			return StatusError(http.StatusMethodNotAllowed)
@@ -39,7 +38,6 @@ func viewTeam(client ViewTeamClient, tmpl Template, siriusURL string) Handler {
 
 		vars := viewTeamVars{
 			Path:      r.URL.Path,
-			SiriusURL: siriusURL,
 			XSRFToken: ctx.XSRFToken,
 			Team:      team,
 		}

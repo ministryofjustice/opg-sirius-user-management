@@ -17,7 +17,6 @@ type EditTeamClient interface {
 
 type editTeamVars struct {
 	Path            string
-	SiriusURL       string
 	XSRFToken       string
 	Team            sirius.Team
 	TeamTypeOptions []sirius.RefDataTeamType
@@ -26,7 +25,7 @@ type editTeamVars struct {
 	Errors          sirius.ValidationErrors
 }
 
-func editTeam(client EditTeamClient, tmpl Template, siriusURL string) Handler {
+func editTeam(client EditTeamClient, tmpl Template) Handler {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		id, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/teams/edit/"))
 		if err != nil {
@@ -52,7 +51,6 @@ func editTeam(client EditTeamClient, tmpl Template, siriusURL string) Handler {
 
 		vars := editTeamVars{
 			Path:            r.URL.Path,
-			SiriusURL:       siriusURL,
 			XSRFToken:       ctx.XSRFToken,
 			Team:            team,
 			TeamTypeOptions: teamTypes,

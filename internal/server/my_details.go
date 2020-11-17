@@ -12,22 +12,19 @@ type MyDetailsClient interface {
 }
 
 type myDetailsVars struct {
-	Path      string
-	SiriusURL string
-
-	ID           int
-	Firstname    string
-	Surname      string
-	Email        string
-	PhoneNumber  string
-	Organisation string
-	Roles        []string
-	Teams        []string
-
+	Path               string
+	ID                 int
+	Firstname          string
+	Surname            string
+	Email              string
+	PhoneNumber        string
+	Organisation       string
+	Roles              []string
+	Teams              []string
 	CanEditPhoneNumber bool
 }
 
-func myDetails(client MyDetailsClient, tmpl Template, siriusURL string) Handler {
+func myDetails(client MyDetailsClient, tmpl Template) Handler {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		if r.Method != http.MethodGet {
 			return StatusError(http.StatusMethodNotAllowed)
@@ -47,7 +44,6 @@ func myDetails(client MyDetailsClient, tmpl Template, siriusURL string) Handler 
 
 		vars := myDetailsVars{
 			Path:               r.URL.Path,
-			SiriusURL:          siriusURL,
 			ID:                 myDetails.ID,
 			Firstname:          myDetails.Firstname,
 			Surname:            myDetails.Surname,

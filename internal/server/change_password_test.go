@@ -38,7 +38,7 @@ func TestGetChangePassword(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
 
-	handler := changePassword(nil, template, "http://sirius")
+	handler := changePassword(nil, template)
 	err := handler(w, r)
 
 	assert.Nil(err)
@@ -46,8 +46,7 @@ func TestGetChangePassword(t *testing.T) {
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
 	assert.Equal(changePasswordVars{
-		Path:      "/path",
-		SiriusURL: "http://sirius",
+		Path: "/path",
 	}, template.lastVars)
 }
 
@@ -61,7 +60,7 @@ func TestPostChangePassword(t *testing.T) {
 	r, _ := http.NewRequest("POST", "/path", strings.NewReader("currentpassword=a&password1=b&password2=c"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
-	handler := changePassword(client, template, "http://sirius")
+	handler := changePassword(client, template)
 	err := handler(w, r)
 
 	assert.Nil(err)
@@ -73,9 +72,8 @@ func TestPostChangePassword(t *testing.T) {
 
 	assert.Equal("page", template.lastName)
 	assert.Equal(changePasswordVars{
-		Path:      "/path",
-		SiriusURL: "http://sirius",
-		Success:   true,
+		Path:    "/path",
+		Success: true,
 	}, template.lastVars)
 }
 
@@ -88,7 +86,7 @@ func TestPostChangePasswordUnauthenticated(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", nil)
 
-	handler := changePassword(client, template, "http://sirius")
+	handler := changePassword(client, template)
 	err := handler(w, r)
 
 	assert.Equal(sirius.ErrUnauthorized, err)
@@ -105,7 +103,7 @@ func TestPostChangePasswordSiriusError(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", nil)
 
-	handler := changePassword(client, template, "http://sirius")
+	handler := changePassword(client, template)
 	err := handler(w, r)
 
 	assert.Nil(err)
@@ -116,8 +114,7 @@ func TestPostChangePasswordSiriusError(t *testing.T) {
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
 	assert.Equal(changePasswordVars{
-		Path:      "/path",
-		SiriusURL: "http://sirius",
+		Path: "/path",
 		Errors: sirius.ValidationErrors{
 			"currentpassword": {
 				"": "Something happened",
@@ -136,7 +133,7 @@ func TestPostChangePasswordOtherError(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", nil)
 
-	handler := changePassword(client, template, "http://sirius")
+	handler := changePassword(client, template)
 	err := handler(w, r)
 
 	assert.Equal(expectedErr, err)

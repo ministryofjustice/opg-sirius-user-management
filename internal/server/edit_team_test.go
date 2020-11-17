@@ -93,7 +93,7 @@ func TestGetEditTeam(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/teams/edit/123", nil)
 
-	err := editTeam(client, template, "http://sirius")(w, r)
+	err := editTeam(client, template)(w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.team.count)
@@ -111,7 +111,6 @@ func TestGetEditTeam(t *testing.T) {
 	assert.Equal("page", template.lastName)
 	assert.Equal(editTeamVars{
 		Path:            "/teams/edit/123",
-		SiriusURL:       "http://sirius",
 		Team:            client.team.data,
 		TeamTypeOptions: client.teamTypes.data,
 		CanEditTeamType: true,
@@ -135,12 +134,11 @@ func TestGetEditTeamWithoutTypeEditPermission(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/teams/edit/123", nil)
 
-	err := editTeam(client, template, "http://sirius")(w, r)
+	err := editTeam(client, template)(w, r)
 	assert.Nil(err)
 
 	assert.Equal(editTeamVars{
 		Path:            "/teams/edit/123",
-		SiriusURL:       "http://sirius",
 		Team:            client.team.data,
 		TeamTypeOptions: client.teamTypes.data,
 	}, template.lastVars)
@@ -161,7 +159,7 @@ func TestGetEditTeamBadPath(t *testing.T) {
 
 			r, _ := http.NewRequest("GET", path, nil)
 
-			err := editTeam(client, template, "http://sirius")(nil, r)
+			err := editTeam(client, template)(nil, r)
 
 			assert.Equal(StatusError(http.StatusNotFound), err)
 
@@ -191,7 +189,7 @@ func TestPostEditTeam(t *testing.T) {
 	r, _ := http.NewRequest("POST", "/teams/edit/123", strings.NewReader("name=New+name&service=supervision&supervision-type=FINANCE&email=new@opgtest.com&phone=9876"))
 	r.Header.Add("Content-type", "application/x-www-form-urlencoded")
 
-	err := editTeam(client, template, "http://sirius")(w, r)
+	err := editTeam(client, template)(w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.team.count)
@@ -203,8 +201,7 @@ func TestPostEditTeam(t *testing.T) {
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
 	assert.Equal(editTeamVars{
-		Path:      "/teams/edit/123",
-		SiriusURL: "http://sirius",
+		Path: "/teams/edit/123",
 		Team: sirius.Team{
 			ID:          123,
 			DisplayName: "New name",
@@ -236,7 +233,7 @@ func TestPostEditLpaTeam(t *testing.T) {
 	r, _ := http.NewRequest("POST", "/teams/edit/123", strings.NewReader("name=New+name&service=lpa&email=new@opgtest.com&phone=9876"))
 	r.Header.Add("Content-type", "application/x-www-form-urlencoded")
 
-	err := editTeam(client, template, "http://sirius")(w, r)
+	err := editTeam(client, template)(w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.team.count)
@@ -248,8 +245,7 @@ func TestPostEditLpaTeam(t *testing.T) {
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
 	assert.Equal(editTeamVars{
-		Path:      "/teams/edit/123",
-		SiriusURL: "http://sirius",
+		Path: "/teams/edit/123",
 		Team: sirius.Team{
 			ID:          123,
 			DisplayName: "New name",
@@ -282,15 +278,14 @@ func TestPostEditTeamWithoutPermission(t *testing.T) {
 	r, _ := http.NewRequest("POST", "/teams/edit/123", strings.NewReader("name=New+name&service=lpa&email=new@opgtest.com&phone=9876"))
 	r.Header.Add("Content-type", "application/x-www-form-urlencoded")
 
-	err := editTeam(client, template, "http://sirius")(w, r)
+	err := editTeam(client, template)(w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.editTeam.count)
 	assert.Equal("COMPLAINTS", client.editTeam.lastTeam.Type)
 
 	assert.Equal(editTeamVars{
-		Path:      "/teams/edit/123",
-		SiriusURL: "http://sirius",
+		Path: "/teams/edit/123",
 		Team: sirius.Team{
 			ID:          123,
 			DisplayName: "New name",
@@ -330,7 +325,7 @@ func TestPostEditTeamValidationError(t *testing.T) {
 	r, _ := http.NewRequest("POST", "/teams/edit/123", strings.NewReader("name=New+name&service=supervision&supervision-type=FINANCE&email=new@opgtest.com&phone=9876"))
 	r.Header.Add("Content-type", "application/x-www-form-urlencoded")
 
-	err := editTeam(client, template, "http://sirius")(w, r)
+	err := editTeam(client, template)(w, r)
 	assert.Nil(err)
 
 	assert.Equal(http.StatusBadRequest, w.Result().StatusCode)
@@ -338,8 +333,7 @@ func TestPostEditTeamValidationError(t *testing.T) {
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
 	assert.Equal(editTeamVars{
-		Path:      "/teams/edit/123",
-		SiriusURL: "http://sirius",
+		Path: "/teams/edit/123",
 		Team: sirius.Team{
 			ID:          123,
 			DisplayName: "New name",
@@ -367,7 +361,7 @@ func TestPostEditTeamOtherError(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/teams/edit/123", nil)
 
-	err := editTeam(client, template, "http://sirius")(w, r)
+	err := editTeam(client, template)(w, r)
 
 	assert.Equal(expectedErr, err)
 
@@ -384,7 +378,7 @@ func TestPostEditTeamRetrieveError(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/teams/edit/123", nil)
 
-	err := editTeam(client, template, "http://sirius")(w, r)
+	err := editTeam(client, template)(w, r)
 
 	assert.Equal(StatusError(http.StatusNotFound), err)
 
@@ -402,7 +396,7 @@ func TestPostEditTeamRefDataError(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/teams/edit/123", nil)
 
-	err := editTeam(client, template, "http://sirius")(w, r)
+	err := editTeam(client, template)(w, r)
 
 	assert.Equal(StatusError(http.StatusNotFound), err)
 
@@ -420,7 +414,7 @@ func TestPostEditTeamHasPermissionError(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/teams/edit/123", nil)
 
-	err := editTeam(client, template, "http://sirius")(w, r)
+	err := editTeam(client, template)(w, r)
 
 	assert.Equal(StatusError(http.StatusInternalServerError), err)
 
@@ -439,7 +433,7 @@ func TestBadMethodEditTeam(t *testing.T) {
 
 	r, _ := http.NewRequest("DELETE", "/teams/edit/123", nil)
 
-	err := editTeam(client, template, "http://sirius")(nil, r)
+	err := editTeam(client, template)(nil, r)
 
 	assert.Equal(StatusError(http.StatusMethodNotAllowed), err)
 

@@ -45,7 +45,7 @@ func TestListUsers(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path?search=milo", nil)
 
-	handler := listUsers(client, template, "http://sirius")
+	handler := listUsers(client, template)
 	err := handler(w, r)
 
 	assert.Nil(err)
@@ -60,9 +60,7 @@ func TestListUsers(t *testing.T) {
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
 	assert.Equal(listUsersVars{
-		Path:      "/path",
-		SiriusURL: "http://sirius",
-
+		Path:   "/path",
 		Search: "milo",
 		Users: []sirius.User{
 			{
@@ -94,7 +92,7 @@ func TestListUsersRequiresSearch(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
 
-	handler := listUsers(client, template, "http://sirius")
+	handler := listUsers(client, template)
 	err := handler(w, r)
 
 	assert.Nil(err)
@@ -107,9 +105,7 @@ func TestListUsersRequiresSearch(t *testing.T) {
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
 	assert.Equal(listUsersVars{
-		Path:      "/path",
-		SiriusURL: "http://sirius",
-
+		Path:   "/path",
 		Search: "",
 		Users:  nil,
 	}, template.lastVars)
@@ -126,7 +122,7 @@ func TestListUsersClientError(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path?search=m", nil)
 
-	handler := listUsers(client, template, "http://sirius")
+	handler := listUsers(client, template)
 	err := handler(w, r)
 
 	assert.Nil(err)
@@ -139,9 +135,7 @@ func TestListUsersClientError(t *testing.T) {
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
 	assert.Equal(listUsersVars{
-		Path:      "/path",
-		SiriusURL: "http://sirius",
-
+		Path:   "/path",
 		Search: "m",
 		Users:  nil,
 		Errors: sirius.ValidationErrors{
@@ -162,7 +156,7 @@ func TestListUsersSiriusErrors(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/?search=long", nil)
 
-	handler := listUsers(client, template, "http://sirius")
+	handler := listUsers(client, template)
 	err := handler(w, r)
 
 	assert.Equal(expectedErr, err)
@@ -176,7 +170,7 @@ func TestPostListUsers(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "", nil)
 
-	handler := listUsers(nil, template, "http://sirius")
+	handler := listUsers(nil, template)
 	err := handler(w, r)
 
 	assert.Equal(StatusError(http.StatusMethodNotAllowed), err)

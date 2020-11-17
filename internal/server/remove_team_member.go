@@ -16,14 +16,13 @@ type RemoveTeamMemberClient interface {
 
 type removeTeamMemberVars struct {
 	Path      string
-	SiriusURL string
 	XSRFToken string
 	Team      sirius.Team
 	Selected  map[int]string
 	Errors    sirius.ValidationErrors
 }
 
-func removeTeamMember(client RemoveTeamMemberClient, tmpl Template, siriusURL string) Handler {
+func removeTeamMember(client RemoveTeamMemberClient, tmpl Template) Handler {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		if r.Method != http.MethodPost {
 			return StatusError(http.StatusMethodNotAllowed)
@@ -47,7 +46,6 @@ func removeTeamMember(client RemoveTeamMemberClient, tmpl Template, siriusURL st
 
 		vars := removeTeamMemberVars{
 			Path:      r.URL.Path,
-			SiriusURL: siriusURL,
 			XSRFToken: ctx.XSRFToken,
 			Team:      team,
 			Selected:  make(map[int]string),

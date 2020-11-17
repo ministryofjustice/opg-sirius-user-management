@@ -12,19 +12,17 @@ type AddUserClient interface {
 
 type addUserVars struct {
 	Path      string
-	SiriusURL string
 	XSRFToken string
 	Success   bool
 	Errors    sirius.ValidationErrors
 }
 
-func addUser(client AddUserClient, tmpl Template, siriusURL string) Handler {
+func addUser(client AddUserClient, tmpl Template) Handler {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := getContext(r)
 
 		vars := addUserVars{
 			Path:      r.URL.Path,
-			SiriusURL: siriusURL,
 			XSRFToken: ctx.XSRFToken,
 		}
 

@@ -43,7 +43,7 @@ func TestListTeams(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
 
-	err := listTeams(client, template, "http://sirius")(w, r)
+	err := listTeams(client, template)(w, r)
 	assert.Nil(err)
 
 	resp := w.Result()
@@ -55,9 +55,8 @@ func TestListTeams(t *testing.T) {
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
 	assert.Equal(listTeamsVars{
-		Path:      "/path",
-		SiriusURL: "http://sirius",
-		Teams:     data,
+		Path:  "/path",
+		Teams: data,
 	}, template.lastVars)
 }
 
@@ -86,7 +85,7 @@ func TestListTeamsSearch(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path?search=milo", nil)
 
-	err := listTeams(client, template, "http://sirius")(w, r)
+	err := listTeams(client, template)(w, r)
 	assert.Nil(err)
 
 	resp := w.Result()
@@ -98,9 +97,8 @@ func TestListTeamsSearch(t *testing.T) {
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
 	assert.Equal(listTeamsVars{
-		Path:      "/path",
-		SiriusURL: "http://sirius",
-		Search:    "milo",
+		Path:   "/path",
+		Search: "milo",
 		Teams: []sirius.Team{
 			{
 				ID:          29,
@@ -122,7 +120,7 @@ func TestListTeamsError(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/?search=long", nil)
 
-	err := listTeams(client, template, "http://sirius")(w, r)
+	err := listTeams(client, template)(w, r)
 
 	assert.Equal(expectedErr, err)
 	assert.Equal(0, template.count)
@@ -134,6 +132,6 @@ func TestPostListTeams(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "", nil)
 
-	err := listTeams(nil, nil, "http://sirius")(w, r)
+	err := listTeams(nil, nil)(w, r)
 	assert.Equal(StatusError(http.StatusMethodNotAllowed), err)
 }

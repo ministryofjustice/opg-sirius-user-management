@@ -15,14 +15,13 @@ type EditUserClient interface {
 
 type editUserVars struct {
 	Path      string
-	SiriusURL string
 	XSRFToken string
 	User      sirius.AuthUser
 	Success   bool
 	Errors    sirius.ValidationErrors
 }
 
-func editUser(client EditUserClient, tmpl Template, siriusURL string) Handler {
+func editUser(client EditUserClient, tmpl Template) Handler {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		id, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/edit-user/"))
 		if err != nil {
@@ -33,7 +32,6 @@ func editUser(client EditUserClient, tmpl Template, siriusURL string) Handler {
 
 		vars := editUserVars{
 			Path:      r.URL.Path,
-			SiriusURL: siriusURL,
 			XSRFToken: ctx.XSRFToken,
 		}
 

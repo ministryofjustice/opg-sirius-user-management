@@ -12,19 +12,17 @@ type ChangePasswordClient interface {
 
 type changePasswordVars struct {
 	Path      string
-	SiriusURL string
 	XSRFToken string
 	Success   bool
 	Errors    sirius.ValidationErrors
 }
 
-func changePassword(client ChangePasswordClient, tmpl Template, siriusURL string) Handler {
+func changePassword(client ChangePasswordClient, tmpl Template) Handler {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := getContext(r)
 
 		vars := changePasswordVars{
 			Path:      r.URL.Path,
-			SiriusURL: siriusURL,
 			XSRFToken: ctx.XSRFToken,
 		}
 

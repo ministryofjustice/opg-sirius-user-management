@@ -47,7 +47,7 @@ func TestViewTeam(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/teams/16", nil)
 
-	err := viewTeam(client, template, "http://sirius")(w, r)
+	err := viewTeam(client, template)(w, r)
 	assert.Nil(err)
 
 	resp := w.Result()
@@ -59,9 +59,8 @@ func TestViewTeam(t *testing.T) {
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
 	assert.Equal(viewTeamVars{
-		Path:      "/teams/16",
-		SiriusURL: "http://sirius",
-		Team:      data,
+		Path: "/teams/16",
+		Team: data,
 	}, template.lastVars)
 }
 
@@ -76,7 +75,7 @@ func TestViewTeamNotFound(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/teams/25", nil)
 
-	err := viewTeam(client, template, "http://sirius")(w, r)
+	err := viewTeam(client, template)(w, r)
 
 	assert.Equal(StatusError(http.StatusNotFound), err)
 }
@@ -90,7 +89,7 @@ func TestViewTeamBadPath(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/teams/jeoi", nil)
 
-	err := viewTeam(client, template, "http://sirius")(w, r)
+	err := viewTeam(client, template)(w, r)
 
 	assert.Equal(StatusError(http.StatusNotFound), err)
 }
@@ -101,6 +100,6 @@ func TestPostViewTeam(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "", nil)
 
-	err := viewTeam(nil, nil, "http://sirius")(w, r)
+	err := viewTeam(nil, nil)(w, r)
 	assert.Equal(StatusError(http.StatusMethodNotAllowed), err)
 }

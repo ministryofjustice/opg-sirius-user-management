@@ -14,14 +14,13 @@ type EditMyDetailsClient interface {
 
 type editMyDetailsVars struct {
 	Path        string
-	SiriusURL   string
 	XSRFToken   string
 	Success     bool
 	Errors      sirius.ValidationErrors
 	PhoneNumber string
 }
 
-func editMyDetails(client EditMyDetailsClient, tmpl Template, siriusURL string) Handler {
+func editMyDetails(client EditMyDetailsClient, tmpl Template) Handler {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		if r.Method != http.MethodGet && r.Method != http.MethodPost {
 			return StatusError(http.StatusMethodNotAllowed)
@@ -44,7 +43,6 @@ func editMyDetails(client EditMyDetailsClient, tmpl Template, siriusURL string) 
 
 		vars := editMyDetailsVars{
 			Path:        r.URL.Path,
-			SiriusURL:   siriusURL,
 			XSRFToken:   ctx.XSRFToken,
 			PhoneNumber: myDetails.PhoneNumber,
 		}

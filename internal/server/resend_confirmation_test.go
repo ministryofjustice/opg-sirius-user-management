@@ -32,7 +32,7 @@ func TestGetResendConfirmation(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
 
-	err := resendConfirmation(nil, nil, "http://sirius")(w, r)
+	err := resendConfirmation(nil, nil)(w, r)
 	assert.Equal(RedirectError("/users"), err)
 }
 
@@ -46,7 +46,7 @@ func TestPostResendConfirmation(t *testing.T) {
 	r, _ := http.NewRequest("POST", "/path", strings.NewReader("email=a&id=b"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
-	err := resendConfirmation(client, template, "http://sirius")(w, r)
+	err := resendConfirmation(client, template)(w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.count)
@@ -56,10 +56,9 @@ func TestPostResendConfirmation(t *testing.T) {
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
 	assert.Equal(resendConfirmationVars{
-		Path:      "/path",
-		SiriusURL: "http://sirius",
-		ID:        "b",
-		Email:     "a",
+		Path:  "/path",
+		ID:    "b",
+		Email: "a",
 	}, template.lastVars)
 }
 
@@ -74,6 +73,6 @@ func TestPostResendConfirmationError(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", nil)
 
-	err := resendConfirmation(client, nil, "http://sirius")(w, r)
+	err := resendConfirmation(client, nil)(w, r)
 	assert.Equal(expectedErr, err)
 }

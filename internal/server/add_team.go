@@ -14,7 +14,6 @@ type AddTeamClient interface {
 
 type addTeamVars struct {
 	Path      string
-	SiriusURL string
 	XSRFToken string
 	TeamTypes []sirius.RefDataTeamType
 	Name      string
@@ -26,7 +25,7 @@ type addTeamVars struct {
 	Errors    sirius.ValidationErrors
 }
 
-func addTeam(client AddTeamClient, tmpl Template, siriusURL string) Handler {
+func addTeam(client AddTeamClient, tmpl Template) Handler {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := getContext(r)
 
@@ -39,7 +38,6 @@ func addTeam(client AddTeamClient, tmpl Template, siriusURL string) Handler {
 
 			vars := addTeamVars{
 				Path:      r.URL.Path,
-				SiriusURL: siriusURL,
 				XSRFToken: ctx.XSRFToken,
 				TeamTypes: teamTypes,
 			}
@@ -69,7 +67,6 @@ func addTeam(client AddTeamClient, tmpl Template, siriusURL string) Handler {
 
 				vars := addTeamVars{
 					Path:      r.URL.Path,
-					SiriusURL: siriusURL,
 					XSRFToken: ctx.XSRFToken,
 					TeamTypes: teamTypes,
 					Name:      name,

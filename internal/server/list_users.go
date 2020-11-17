@@ -11,15 +11,13 @@ type ListUsersClient interface {
 }
 
 type listUsersVars struct {
-	Path      string
-	SiriusURL string
-
+	Path   string
 	Users  []sirius.User
 	Search string
 	Errors sirius.ValidationErrors
 }
 
-func listUsers(client ListUsersClient, tmpl Template, siriusURL string) Handler {
+func listUsers(client ListUsersClient, tmpl Template) Handler {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		if r.Method != http.MethodGet {
 			return StatusError(http.StatusMethodNotAllowed)
@@ -28,9 +26,8 @@ func listUsers(client ListUsersClient, tmpl Template, siriusURL string) Handler 
 		search := r.FormValue("search")
 
 		vars := listUsersVars{
-			Path:      r.URL.Path,
-			SiriusURL: siriusURL,
-			Search:    search,
+			Path:   r.URL.Path,
+			Search: search,
 		}
 
 		if search != "" {

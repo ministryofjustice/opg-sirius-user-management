@@ -60,7 +60,7 @@ func TestGetMyDetails(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
 
-	handler := myDetails(client, template, "http://sirius")
+	handler := myDetails(client, template)
 	err := handler(w, r)
 
 	assert.Nil(err)
@@ -76,7 +76,6 @@ func TestGetMyDetails(t *testing.T) {
 	assert.Equal("page", template.lastName)
 	assert.Equal(myDetailsVars{
 		Path:               "/path",
-		SiriusURL:          "http://sirius",
 		ID:                 123,
 		Firstname:          "John",
 		Surname:            "Doe",
@@ -109,7 +108,7 @@ func TestGetMyDetailsUsesPermission(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
 
-	handler := myDetails(client, template, "http://sirius")
+	handler := myDetails(client, template)
 	err := handler(w, r)
 
 	assert.Nil(err)
@@ -127,7 +126,6 @@ func TestGetMyDetailsUsesPermission(t *testing.T) {
 	assert.Equal("page", template.lastName)
 	assert.Equal(myDetailsVars{
 		Path:               "/path",
-		SiriusURL:          "http://sirius",
 		ID:                 123,
 		Firstname:          "John",
 		Surname:            "Doe",
@@ -149,7 +147,7 @@ func TestGetMyDetailsUnauthenticated(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "", nil)
 
-	handler := myDetails(client, template, "http://sirius")
+	handler := myDetails(client, template)
 	err := handler(w, r)
 
 	assert.Equal(sirius.ErrUnauthorized, err)
@@ -166,7 +164,7 @@ func TestGetMyDetailsSiriusErrors(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "", nil)
 
-	handler := myDetails(client, template, "http://sirius")
+	handler := myDetails(client, template)
 	err := handler(w, r)
 
 	assert.Equal("err", err.Error())
@@ -181,7 +179,7 @@ func TestPostMyDetails(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "", nil)
 
-	handler := myDetails(nil, template, "http://sirius")
+	handler := myDetails(nil, template)
 	err := handler(w, r)
 
 	assert.Equal(StatusError(http.StatusMethodNotAllowed), err)

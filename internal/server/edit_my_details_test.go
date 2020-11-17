@@ -80,7 +80,7 @@ func TestGetEditMyDetails(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
 
-	handler := editMyDetails(client, template, "http://sirius")
+	handler := editMyDetails(client, template)
 	err := handler(w, r)
 
 	assert.Nil(err)
@@ -96,7 +96,6 @@ func TestGetEditMyDetails(t *testing.T) {
 	assert.Equal("page", template.lastName)
 	assert.Equal(editMyDetailsVars{
 		Path:        "/path",
-		SiriusURL:   "http://sirius",
 		PhoneNumber: "123",
 	}, template.lastVars)
 }
@@ -110,7 +109,7 @@ func TestGetEditMyDetailsUnauthenticated(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "", nil)
 
-	handler := editMyDetails(client, template, "http://sirius")
+	handler := editMyDetails(client, template)
 	err := handler(w, r)
 
 	assert.Equal(sirius.ErrUnauthorized, err)
@@ -127,7 +126,7 @@ func TestGetEditMyDetailsNotPermitted(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "", nil)
 
-	handler := editMyDetails(client, template, "http://sirius")
+	handler := editMyDetails(client, template)
 	err := handler(w, r)
 
 	assert.Equal(StatusError(http.StatusForbidden), err)
@@ -144,7 +143,7 @@ func TestGetEditMyDetailsSiriusErrors(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "", nil)
 
-	handler := editMyDetails(client, template, "http://sirius")
+	handler := editMyDetails(client, template)
 	err := handler(w, r)
 
 	assert.Equal("err", err.Error())
@@ -167,7 +166,7 @@ func TestPostEditMyDetails(t *testing.T) {
 	r, _ := http.NewRequest("POST", "/path", strings.NewReader("phonenumber=0189202"))
 	r.Header.Add("Content-type", "application/x-www-form-urlencoded")
 
-	handler := editMyDetails(client, template, "http://sirius")
+	handler := editMyDetails(client, template)
 	err := handler(w, r)
 
 	assert.Nil(err)
@@ -184,7 +183,6 @@ func TestPostEditMyDetails(t *testing.T) {
 	assert.Equal("page", template.lastName)
 	assert.Equal(editMyDetailsVars{
 		Path:        "/path",
-		SiriusURL:   "http://sirius",
 		Success:     true,
 		PhoneNumber: "0189202",
 	}, template.lastVars)
@@ -199,7 +197,7 @@ func TestPostEditMyDetailsUnauthenticated(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", strings.NewReader("phonenumber=0189202"))
 
-	handler := editMyDetails(client, template, "http://sirius")
+	handler := editMyDetails(client, template)
 	err := handler(w, r)
 
 	assert.Equal(sirius.ErrUnauthorized, err)
@@ -220,7 +218,7 @@ func TestPostEditMyDetailsSiriusErrors(t *testing.T) {
 	r, _ := http.NewRequest("POST", "/path", strings.NewReader("phonenumber=0189202"))
 	r.Header.Add("Content-type", "application/x-www-form-urlencoded")
 
-	handler := editMyDetails(client, template, "http://sirius")
+	handler := editMyDetails(client, template)
 	err := handler(w, r)
 
 	assert.Equal("err", err.Error())
@@ -249,7 +247,7 @@ func TestPostEditMyDetailsInvalidRequest(t *testing.T) {
 	r, _ := http.NewRequest("POST", "/path", strings.NewReader("phonenumber=invalid+phone+number"))
 	r.Header.Add("Content-type", "application/x-www-form-urlencoded")
 
-	handler := editMyDetails(client, template, "http://sirius")
+	handler := editMyDetails(client, template)
 	err := handler(w, r)
 
 	assert.Nil(err)
@@ -266,7 +264,6 @@ func TestPostEditMyDetailsInvalidRequest(t *testing.T) {
 	assert.Equal(1, template.count)
 	assert.Equal(editMyDetailsVars{
 		Path:        "/path",
-		SiriusURL:   "http://sirius",
 		PhoneNumber: "invalid phone number",
 		Errors: map[string]map[string]string{
 			"phoneNumber": {

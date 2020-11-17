@@ -16,7 +16,6 @@ type AddTeamMemberClient interface {
 
 type addTeamMemberVars struct {
 	Path      string
-	SiriusURL string
 	XSRFToken string
 	Search    string
 	Team      sirius.Team
@@ -26,7 +25,7 @@ type addTeamMemberVars struct {
 	Errors    sirius.ValidationErrors
 }
 
-func addTeamMember(client AddTeamMemberClient, tmpl Template, siriusURL string) Handler {
+func addTeamMember(client AddTeamMemberClient, tmpl Template) Handler {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		if r.Method != http.MethodGet && r.Method != http.MethodPost {
 			return StatusError(http.StatusMethodNotAllowed)
@@ -46,7 +45,6 @@ func addTeamMember(client AddTeamMemberClient, tmpl Template, siriusURL string) 
 
 		vars := addTeamMemberVars{
 			Path:      r.URL.Path,
-			SiriusURL: siriusURL,
 			XSRFToken: ctx.XSRFToken,
 			Team:      team,
 		}
