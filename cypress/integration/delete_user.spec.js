@@ -1,4 +1,4 @@
-describe("Delete user", () => {
+describe.skip("Delete user", () => {
     beforeEach(() => {
         cy.setCookie("Other", "other");
         cy.setCookie("XSRF-TOKEN", "abcde");

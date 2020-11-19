@@ -20,8 +20,12 @@ type deleteUserVars struct {
 	Errors    sirius.ValidationErrors
 }
 
-func deleteUser(client DeleteUserClient, tmpl Template) Handler {
+func deleteUser(client DeleteUserClient, tmpl Template, deleteUserEnabled bool) Handler {
 	return func(w http.ResponseWriter, r *http.Request) error {
+		if !deleteUserEnabled {
+			return StatusError(http.StatusForbidden)
+		}
+
 		id, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/delete-user/"))
 		if err != nil {
 			return StatusError(http.StatusNotFound)
