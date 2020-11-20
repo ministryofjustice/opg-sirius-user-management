@@ -54,7 +54,7 @@ func TestGetEditUser(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/edit-user/123", nil)
 
-	err := editUser(client, template)(w, r)
+	err := editUser(client, template, false)(w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.user.count)
@@ -66,6 +66,32 @@ func TestGetEditUser(t *testing.T) {
 	assert.Equal(editUserVars{
 		Path: "/edit-user/123",
 		User: client.user.data,
+	}, template.lastVars)
+}
+
+func TestGetEditUserDeleteEnabled(t *testing.T) {
+	assert := assert.New(t)
+
+	client := &mockEditUserClient{}
+	client.user.data = sirius.AuthUser{Firstname: "test"}
+	template := &mockTemplate{}
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("GET", "/edit-user/123", nil)
+
+	err := editUser(client, template, true)(w, r)
+	assert.Nil(err)
+
+	assert.Equal(1, client.user.count)
+	assert.Equal(123, client.user.lastID)
+	assert.Equal(0, client.editUser.count)
+
+	assert.Equal(1, template.count)
+	assert.Equal("page", template.lastName)
+	assert.Equal(editUserVars{
+		Path:              "/edit-user/123",
+		User:              client.user.data,
+		DeleteUserEnabled: true,
 	}, template.lastVars)
 }
 
@@ -84,7 +110,7 @@ func TestGetEditUserBadPath(t *testing.T) {
 			w := httptest.NewRecorder()
 			r, _ := http.NewRequest("GET", path, nil)
 
-			err := editUser(client, template)(w, r)
+			err := editUser(client, template, false)(w, r)
 			assert.Equal(StatusError(http.StatusNotFound), err)
 
 			assert.Equal(0, client.user.count)
@@ -105,7 +131,7 @@ func TestPostEditUser(t *testing.T) {
 	r, _ := http.NewRequest("POST", "/edit-user/123", strings.NewReader("email=a&firstname=b&surname=c&organisation=d&roles=e&roles=f&locked=Yes&suspended=No"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
-	err := editUser(client, template)(w, r)
+	err := editUser(client, template, false)(w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.editUser.count)
@@ -151,7 +177,7 @@ func TestPostEditUserClientError(t *testing.T) {
 	r, _ := http.NewRequest("POST", "/edit-user/123", strings.NewReader("email=a&firstname=b&surname=c&organisation=d&roles=e&roles=f&locked=Yes&suspended=No"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
-	err := editUser(client, template)(w, r)
+	err := editUser(client, template, false)(w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.editUser.count)
@@ -189,7 +215,7 @@ func TestPostEditUserOtherError(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/edit-user/123", nil)
 
-	err := editUser(client, template)(w, r)
+	err := editUser(client, template, false)(w, r)
 	assert.Equal(expectedErr, err)
 
 	assert.Equal(1, client.editUser.count)
