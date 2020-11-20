@@ -6,10 +6,10 @@ workflows:
     jobs:
       - test
       - lint
-      # - acceptance-test:
-      #     requires: [test, lint]
-      - cypress:
+      - acceptance-test:
           requires: [test, lint]
+      - cypress:
+          requires: [acceptance-test]
       - push:
           requires: [cypress]
 
