@@ -131,88 +131,22 @@
             {{ end }}
 
             <div class="govuk-checkboxes govuk-checkboxes--small">
-              <div class="govuk-checkboxes__item">
-                <input class="govuk-checkboxes__input" id="f-roles" name="roles" type="checkbox" value="Case Manager" {{ if contains .User.Roles "Case Manager" }}checked{{ end }}>
-                <label class="govuk-label govuk-checkboxes__label" for="f-roles">Case Manager</label>
-              </div>
-
-              <div class="govuk-checkboxes__item">
-                <input class="govuk-checkboxes__input" id="f-roles-2" name="roles" type="checkbox" value="Contact Centre User" {{ if contains .User.Roles "Contact Centre User" }}checked{{ end }}>
-                <label class="govuk-label govuk-checkboxes__label" for="f-roles-2">Contact Centre User</label>
-              </div>
-
-              <div class="govuk-checkboxes__item">
-                <input class="govuk-checkboxes__input" id="f-roles-3" name="roles" type="checkbox" value="Corporate Finance" {{ if contains .User.Roles "Corporate Finance" }}checked{{ end }}>
-                <label class="govuk-label govuk-checkboxes__label" for="f-roles-3">Corporate Finance</label>
-              </div>
-
-              <div class="govuk-checkboxes__item">
-                <input class="govuk-checkboxes__input" id="f-roles-4" name="roles" type="checkbox" value="DDC" {{ if contains .User.Roles "DDC" }}checked{{ end }}>
-                <label class="govuk-label govuk-checkboxes__label" for="f-roles-4">DDC</label>
-              </div>
-
-              <div class="govuk-checkboxes__item">
-                <input class="govuk-checkboxes__input" id="f-roles-5" name="roles" type="checkbox" value="Finance Manager" {{ if contains .User.Roles "Finance Manager" }}checked{{ end }}>
-                <label class="govuk-label govuk-checkboxes__label" for="f-roles-5">Finance Manager</label>
-              </div>
-
-              <div class="govuk-checkboxes__item">
-                <input class="govuk-checkboxes__input" id="f-roles-6" name="roles" type="checkbox" value="Finance Reporting" {{ if contains .User.Roles "Finance Reporting" }}checked{{ end }}>
-                <label class="govuk-label govuk-checkboxes__label" for="f-roles-6">Finance Reporting</label>
-              </div>
-
-              <div class="govuk-checkboxes__item">
-                <input class="govuk-checkboxes__input" id="f-roles-7" name="roles" type="checkbox" value="Finance User" {{ if contains .User.Roles "Finance User" }}checked{{ end }}>
-                <label class="govuk-label govuk-checkboxes__label" for="f-roles-7">Finance User</label>
-              </div>
-
-              <div class="govuk-checkboxes__item">
-                <input class="govuk-checkboxes__input" id="f-roles-8" name="roles" type="checkbox" value="Investigations User" {{ if contains .User.Roles "Investigations User" }}checked{{ end }}>
-                <label class="govuk-label govuk-checkboxes__label" for="f-roles-8">Investigations User</label>
-              </div>
-
-              <div class="govuk-checkboxes__item">
-                <input class="govuk-checkboxes__input" id="f-roles-9" name="roles" type="checkbox" value="Manager" {{ if contains .User.Roles "Manager" }}checked{{ end }}>
-                <label class="govuk-label govuk-checkboxes__label" for="f-roles-9">Manager</label>
-              </div>
-
-              <div class="govuk-checkboxes__item">
-                <input class="govuk-checkboxes__input" id="f-roles-10" name="roles" type="checkbox" value="POA User" {{ if contains .User.Roles "POA User" }}checked{{ end }}>
-                <label class="govuk-label govuk-checkboxes__label" for="f-roles-10">POA User</label>
-              </div>
-
-              <div class="govuk-checkboxes__item">
-                <input class="govuk-checkboxes__input" id="f-roles-11" name="roles" type="checkbox" value="Panel Deputy User" {{ if contains .User.Roles "Panel Deputy User" }}checked{{ end }}>
-                <label class="govuk-label govuk-checkboxes__label" for="f-roles-11">Panel Deputy User</label>
-              </div>
-
-              <div class="govuk-checkboxes__item">
-                <input class="govuk-checkboxes__input" id="f-roles-12" name="roles" type="checkbox" value="Public API" {{ if contains .User.Roles "Public API" }}checked{{ end }}>
-                <label class="govuk-label govuk-checkboxes__label" for="f-roles-12">Public API</label>
-              </div>
-
-              <div class="govuk-checkboxes__item">
-                <input class="govuk-checkboxes__input" id="f-roles-13" name="roles" type="checkbox" value="Reporting User" {{ if contains .User.Roles "Reporting User" }}checked{{ end }}>
-                <label class="govuk-label govuk-checkboxes__label" for="f-roles-13">Reporting User</label>
-              </div>
-
-              <div class="govuk-checkboxes__item">
-                <input class="govuk-checkboxes__input" id="f-roles-14" name="roles" type="checkbox" value="System Admin" aria-describedby="f-roles-14-item-hint" {{ if contains .User.Roles "System Admin" }}checked{{ end }}>
-                <label class="f-govuk-label govuk-checkboxes__label" for="f-roles-14">System Admin</label>
-                <div id="f-roles-14-item-hint" class="govuk-hint govuk-checkboxes__hint">
-                  System Admins can add and edit other users
-                </div>
-              </div>
-
-              <div class="govuk-checkboxes__item">
-                <input class="govuk-checkboxes__input" id="f-roles-15" name="roles" type="checkbox" value="Unit Manager" {{ if contains .User.Roles "Unit Manager" }}checked{{ end }}>
-                <label class="govuk-label govuk-checkboxes__label" for="f-roles-15">Unit Manager</label>
-              </div>
-
-              <div class="govuk-checkboxes__item">
-                <input class="govuk-checkboxes__input" id="f-roles-16" name="roles" type="checkbox" value="Visits Team User" {{ if contains .User.Roles "Visits Team User" }}checked{{ end }}>
-                <label class="govuk-label govuk-checkboxes__label" for="f-roles-16">Visits Team User</label>
-              </div>
+              {{ range $i, $e := .Roles }}
+                {{ if eq $e "System Admin"  }}
+                  <div class="govuk-checkboxes__item">
+                    <input class="govuk-checkboxes__input" id="f-roles-{{ $i }}" name="roles" type="checkbox" value="{{ $e }}" aria-describedby="f-roles-{{ $i }}-item-hint" {{ if contains $.User.Roles $e }}checked{{ end }}>
+                    <label class="govuk-label govuk-checkboxes__label" for="f-roles-{{ $i }}">{{ $e }}</label>
+                    <div id="f-roles-{{ $i }}-item-hint" class="govuk-hint govuk-checkboxes__hint">
+                      System Admins can add and edit other users
+                    </div>
+                  </div>
+                {{ else }}
+                  <div class="govuk-checkboxes__item">
+                    <input class="govuk-checkboxes__input" id="f-roles-{{ $i }}" name="roles" type="checkbox" value="{{ $e }}" {{ if contains $.User.Roles $e }}checked{{ end }}>
+                    <label class="govuk-label govuk-checkboxes__label" for="f-roles-{{ $i }}">{{ $e }}</label>
+                  </div>
+                {{ end }}
+              {{ end }}
             </div>
           </fieldset>
         </div>

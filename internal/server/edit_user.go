@@ -11,11 +11,13 @@ import (
 type EditUserClient interface {
 	User(sirius.Context, int) (sirius.AuthUser, error)
 	EditUser(sirius.Context, sirius.AuthUser) error
+	Roles(sirius.Context) ([]string, error)
 }
 
 type editUserVars struct {
 	Path              string
 	XSRFToken         string
+	Roles             []string
 	User              sirius.AuthUser
 	DeleteUserEnabled bool
 	Success           bool
@@ -31,9 +33,15 @@ func editUser(client EditUserClient, tmpl Template, deleteUserEnabled bool) Hand
 
 		ctx := getContext(r)
 
+		roles, err := client.Roles(ctx)
+		if err != nil {
+			return err
+		}
+
 		vars := editUserVars{
 			Path:              r.URL.Path,
 			XSRFToken:         ctx.XSRFToken,
+			Roles:             roles,
 			DeleteUserEnabled: deleteUserEnabled,
 		}
 

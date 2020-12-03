@@ -12,26 +12,41 @@ import (
 )
 
 type mockAddUserClient struct {
-	count            int
-	lastCtx          sirius.Context
-	lastEmail        string
-	lastFirstname    string
-	lastSurname      string
-	lastOrganisation string
-	lastRoles        []string
-	err              error
+	addUser struct {
+		count            int
+		lastCtx          sirius.Context
+		lastEmail        string
+		lastFirstname    string
+		lastSurname      string
+		lastOrganisation string
+		lastRoles        []string
+		err              error
+	}
+
+	roles struct {
+		count   int
+		lastCtx sirius.Context
+		err     error
+	}
 }
 
 func (m *mockAddUserClient) AddUser(ctx sirius.Context, email, firstname, surname, organisation string, roles []string) error {
-	m.count += 1
-	m.lastCtx = ctx
-	m.lastEmail = email
-	m.lastFirstname = firstname
-	m.lastSurname = surname
-	m.lastOrganisation = organisation
-	m.lastRoles = roles
+	m.addUser.count += 1
+	m.addUser.lastCtx = ctx
+	m.addUser.lastEmail = email
+	m.addUser.lastFirstname = firstname
+	m.addUser.lastSurname = surname
+	m.addUser.lastOrganisation = organisation
+	m.addUser.lastRoles = roles
 
-	return m.err
+	return m.addUser.err
+}
+
+func (m *mockAddUserClient) Roles(ctx sirius.Context) ([]string, error) {
+	m.roles.count += 1
+	m.roles.lastCtx = ctx
+
+	return []string{"System Admin", "Manager"}, m.roles.err
 }
 
 func TestGetAddUser(t *testing.T) {
@@ -46,12 +61,16 @@ func TestGetAddUser(t *testing.T) {
 	err := addUser(client, template)(w, r)
 	assert.Nil(err)
 
-	assert.Equal(0, client.count)
+	assert.Equal(1, client.roles.count)
+	assert.Equal(getContext(r), client.roles.lastCtx)
+
+	assert.Equal(0, client.addUser.count)
 
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
 	assert.Equal(addUserVars{
-		Path: "/path",
+		Path:  "/path",
+		Roles: []string{"System Admin", "Manager"},
 	}, template.lastVars)
 }
 
@@ -68,19 +87,22 @@ func TestPostAddUser(t *testing.T) {
 	err := addUser(client, template)(w, r)
 	assert.Nil(err)
 
-	assert.Equal(1, client.count)
-	assert.Equal(getContext(r), client.lastCtx)
-	assert.Equal("a", client.lastEmail)
-	assert.Equal("b", client.lastFirstname)
-	assert.Equal("c", client.lastSurname)
-	assert.Equal("d", client.lastOrganisation)
-	assert.Equal([]string{"e", "f"}, client.lastRoles)
+	assert.Equal(1, client.roles.count)
+
+	assert.Equal(1, client.addUser.count)
+	assert.Equal(getContext(r), client.addUser.lastCtx)
+	assert.Equal("a", client.addUser.lastEmail)
+	assert.Equal("b", client.addUser.lastFirstname)
+	assert.Equal("c", client.addUser.lastSurname)
+	assert.Equal("d", client.addUser.lastOrganisation)
+	assert.Equal([]string{"e", "f"}, client.addUser.lastRoles)
 
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
 	assert.Equal(addUserVars{
 		Path:    "/path",
 		Success: true,
+		Roles:   []string{"System Admin", "Manager"},
 	}, template.lastVars)
 }
 
@@ -93,7 +115,7 @@ func TestPostAddUserValidationError(t *testing.T) {
 		},
 	}
 	client := &mockAddUserClient{}
-	client.err = sirius.ValidationError{
+	client.addUser.err = sirius.ValidationError{
 		Errors: errors,
 	}
 	template := &mockTemplate{}
@@ -107,12 +129,14 @@ func TestPostAddUserValidationError(t *testing.T) {
 	resp := w.Result()
 	assert.Equal(http.StatusBadRequest, resp.StatusCode)
 
-	assert.Equal(1, client.count)
+	assert.Equal(1, client.roles.count)
+	assert.Equal(1, client.addUser.count)
 
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
 	assert.Equal(addUserVars{
 		Path:   "/path",
+		Roles:  []string{"System Admin", "Manager"},
 		Errors: errors,
 	}, template.lastVars)
 }
@@ -122,7 +146,7 @@ func TestPostAddUserOtherError(t *testing.T) {
 
 	expectedErr := errors.New("oops")
 	client := &mockAddUserClient{}
-	client.err = expectedErr
+	client.addUser.err = expectedErr
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
@@ -131,6 +155,26 @@ func TestPostAddUserOtherError(t *testing.T) {
 	err := addUser(client, template)(w, r)
 	assert.Equal(expectedErr, err)
 
-	assert.Equal(1, client.count)
+	assert.Equal(1, client.roles.count)
+	assert.Equal(1, client.addUser.count)
+	assert.Equal(0, template.count)
+}
+
+func TestPostAddUserRolesError(t *testing.T) {
+	assert := assert.New(t)
+
+	expectedErr := errors.New("oops")
+	client := &mockAddUserClient{}
+	client.roles.err = expectedErr
+	template := &mockTemplate{}
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("POST", "/path", nil)
+
+	err := addUser(client, template)(w, r)
+	assert.Equal(expectedErr, err)
+
+	assert.Equal(1, client.roles.count)
+	assert.Equal(0, client.addUser.count)
 	assert.Equal(0, template.count)
 }
