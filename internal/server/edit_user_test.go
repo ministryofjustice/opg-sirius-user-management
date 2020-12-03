@@ -26,6 +26,12 @@ type mockEditUserClient struct {
 		lastUser sirius.AuthUser
 		err      error
 	}
+
+	roles struct {
+		count   int
+		lastCtx sirius.Context
+		err     error
+	}
 }
 
 func (m *mockEditUserClient) User(ctx sirius.Context, id int) (sirius.AuthUser, error) {
@@ -44,6 +50,13 @@ func (m *mockEditUserClient) EditUser(ctx sirius.Context, user sirius.AuthUser) 
 	return m.editUser.err
 }
 
+func (m *mockEditUserClient) Roles(ctx sirius.Context) ([]string, error) {
+	m.roles.count += 1
+	m.roles.lastCtx = ctx
+
+	return []string{"System Admin", "Manager"}, m.roles.err
+}
+
 func TestGetEditUser(t *testing.T) {
 	assert := assert.New(t)
 
@@ -57,6 +70,8 @@ func TestGetEditUser(t *testing.T) {
 	err := editUser(client, template, false)(w, r)
 	assert.Nil(err)
 
+	assert.Equal(1, client.roles.count)
+	assert.Equal(getContext(r), client.roles.lastCtx)
 	assert.Equal(1, client.user.count)
 	assert.Equal(123, client.user.lastID)
 	assert.Equal(0, client.editUser.count)
@@ -64,8 +79,9 @@ func TestGetEditUser(t *testing.T) {
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
 	assert.Equal(editUserVars{
-		Path: "/edit-user/123",
-		User: client.user.data,
+		Path:  "/edit-user/123",
+		User:  client.user.data,
+		Roles: []string{"System Admin", "Manager"},
 	}, template.lastVars)
 }
 
@@ -82,6 +98,7 @@ func TestGetEditUserDeleteEnabled(t *testing.T) {
 	err := editUser(client, template, true)(w, r)
 	assert.Nil(err)
 
+	assert.Equal(1, client.roles.count)
 	assert.Equal(1, client.user.count)
 	assert.Equal(123, client.user.lastID)
 	assert.Equal(0, client.editUser.count)
@@ -91,6 +108,7 @@ func TestGetEditUserDeleteEnabled(t *testing.T) {
 	assert.Equal(editUserVars{
 		Path:              "/edit-user/123",
 		User:              client.user.data,
+		Roles:             []string{"System Admin", "Manager"},
 		DeleteUserEnabled: true,
 	}, template.lastVars)
 }
@@ -104,18 +122,11 @@ func TestGetEditUserBadPath(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			assert := assert.New(t)
 
-			client := &mockEditUserClient{}
-			template := &mockTemplate{}
-
 			w := httptest.NewRecorder()
 			r, _ := http.NewRequest("GET", path, nil)
 
-			err := editUser(client, template, false)(w, r)
+			err := editUser(nil, nil, false)(w, r)
 			assert.Equal(StatusError(http.StatusNotFound), err)
-
-			assert.Equal(0, client.user.count)
-			assert.Equal(0, client.editUser.count)
-			assert.Equal(0, template.count)
 		})
 	}
 }
@@ -133,6 +144,9 @@ func TestPostEditUser(t *testing.T) {
 
 	err := editUser(client, template, false)(w, r)
 	assert.Nil(err)
+
+	assert.Equal(1, client.roles.count)
+	assert.Equal(getContext(r), client.roles.lastCtx)
 
 	assert.Equal(1, client.editUser.count)
 	assert.Equal(getContext(r), client.editUser.lastCtx)
@@ -153,6 +167,7 @@ func TestPostEditUser(t *testing.T) {
 	assert.Equal(editUserVars{
 		Path:    "/edit-user/123",
 		Success: true,
+		Roles:   []string{"System Admin", "Manager"},
 		User: sirius.AuthUser{
 			ID:           123,
 			Email:        "a",
@@ -180,13 +195,15 @@ func TestPostEditUserClientError(t *testing.T) {
 	err := editUser(client, template, false)(w, r)
 	assert.Nil(err)
 
+	assert.Equal(1, client.roles.count)
 	assert.Equal(1, client.editUser.count)
 	assert.Equal(0, client.user.count)
 
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
 	assert.Equal(editUserVars{
-		Path: "/edit-user/123",
+		Path:  "/edit-user/123",
+		Roles: []string{"System Admin", "Manager"},
 		User: sirius.AuthUser{
 			ID:           123,
 			Firstname:    "b",
@@ -218,7 +235,28 @@ func TestPostEditUserOtherError(t *testing.T) {
 	err := editUser(client, template, false)(w, r)
 	assert.Equal(expectedErr, err)
 
+	assert.Equal(1, client.roles.count)
 	assert.Equal(1, client.editUser.count)
+	assert.Equal(0, client.user.count)
+	assert.Equal(0, template.count)
+}
+
+func TestPostEditUserRolesError(t *testing.T) {
+	assert := assert.New(t)
+
+	expectedErr := errors.New("oops")
+	client := &mockEditUserClient{}
+	client.roles.err = expectedErr
+	template := &mockTemplate{}
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("POST", "/edit-user/123", nil)
+
+	err := editUser(client, template, false)(w, r)
+	assert.Equal(expectedErr, err)
+
+	assert.Equal(1, client.roles.count)
+	assert.Equal(0, client.editUser.count)
 	assert.Equal(0, client.user.count)
 	assert.Equal(0, template.count)
 }

@@ -8,11 +8,13 @@ import (
 
 type AddUserClient interface {
 	AddUser(ctx sirius.Context, email, firstname, surname, organisation string, roles []string) error
+	Roles(sirius.Context) ([]string, error)
 }
 
 type addUserVars struct {
 	Path      string
 	XSRFToken string
+	Roles     []string
 	Success   bool
 	Errors    sirius.ValidationErrors
 }
@@ -21,9 +23,15 @@ func addUser(client AddUserClient, tmpl Template) Handler {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := getContext(r)
 
+		roles, err := client.Roles(ctx)
+		if err != nil {
+			return err
+		}
+
 		vars := addUserVars{
 			Path:      r.URL.Path,
 			XSRFToken: ctx.XSRFToken,
+			Roles:     roles,
 		}
 
 		switch r.Method {
