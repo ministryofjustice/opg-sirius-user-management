@@ -1,7 +1,9 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 
@@ -62,7 +64,9 @@ func deleteUser(client DeleteUserClient, tmpl Template, deleteUserEnabled bool) 
 			} else if err != nil {
 				return err
 			} else {
-				return RedirectError("/users")
+				message := fmt.Sprintf("User %s %s (%s) was deleted", user.Firstname, user.Surname, user.Email)
+				message = url.QueryEscape(message)
+				return RedirectError(fmt.Sprintf("/users?success=%s", message))
 			}
 		}
 

@@ -111,6 +111,37 @@ func TestListUsersRequiresSearch(t *testing.T) {
 	}, template.lastVars)
 }
 
+func TestListUsersShowsSuccessMessage(t *testing.T) {
+	assert := assert.New(t)
+
+	client := &mockListUsersClient{
+		data: []sirius.User{},
+	}
+	template := &mockTemplate{}
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("GET", "/path?success=User+was+deleted", nil)
+
+	handler := listUsers(client, template)
+	err := handler(w, r)
+
+	assert.Nil(err)
+
+	resp := w.Result()
+	assert.Equal(http.StatusOK, resp.StatusCode)
+
+	assert.Equal(0, client.count)
+
+	assert.Equal(1, template.count)
+	assert.Equal("page", template.lastName)
+	assert.Equal(listUsersVars{
+		Path:    "/path",
+		Search:  "",
+		Users:   nil,
+		Success: "User was deleted",
+	}, template.lastVars)
+}
+
 func TestListUsersClientError(t *testing.T) {
 	assert := assert.New(t)
 
