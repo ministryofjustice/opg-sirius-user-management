@@ -38,7 +38,7 @@ func New(logger Logger, client Client, templates map[string]*template.Template, 
 	wrap := errorHandler(logger, templates["error.gotmpl"], prefix, siriusPublicURL)
 	systemAdminOnly := allowRoles(client, "System Admin")
 
-	deleteUserEnabled := siriusURL != "https://live.sirius-opg.uk"
+	deleteUserEnabled := siriusPublicURL != "https://live.sirius-opg.uk"
 
 	mux := http.NewServeMux()
 	mux.Handle("/", http.RedirectHandler(prefix+"/my-details", http.StatusFound))
