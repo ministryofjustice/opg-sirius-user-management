@@ -3,7 +3,6 @@ package server
 import (
 	"fmt"
 	"net/http"
-	"net/url"
 	"strconv"
 	"strings"
 
@@ -16,10 +15,11 @@ type DeleteUserClient interface {
 }
 
 type deleteUserVars struct {
-	Path      string
-	XSRFToken string
-	User      sirius.AuthUser
-	Errors    sirius.ValidationErrors
+	Path           string
+	XSRFToken      string
+	User           sirius.AuthUser
+	Errors         sirius.ValidationErrors
+	SuccessMessage string
 }
 
 func deleteUser(client DeleteUserClient, tmpl Template, deleteUserEnabled bool) Handler {
@@ -64,9 +64,7 @@ func deleteUser(client DeleteUserClient, tmpl Template, deleteUserEnabled bool) 
 			} else if err != nil {
 				return err
 			} else {
-				message := fmt.Sprintf("User %s %s (%s) was deleted", user.Firstname, user.Surname, user.Email)
-				message = url.QueryEscape(message)
-				return RedirectError(fmt.Sprintf("/users?success=%s", message))
+				vars.SuccessMessage = fmt.Sprintf("User %s %s (%s) was deleted.", user.Firstname, user.Surname, user.Email)
 			}
 		}
 

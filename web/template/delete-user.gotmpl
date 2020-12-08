@@ -1,7 +1,9 @@
 {{ template "page" . }}
 
 {{ define "backlink" }}
-  <a class="govuk-back-link" href="{{ prefix (printf "/edit-user/%d" .User.ID) }}">Back</a>
+  {{ if not .SuccessMessage }}
+    <a class="govuk-back-link" href="{{ prefix (printf "/edit-user/%d" .User.ID) }}">Back</a>
+  {{ end }}
 {{ end }}
 
 {{ define "title" }}
@@ -15,15 +17,21 @@
 
       <h1 class="govuk-heading-xl">Delete account</h1>
 
-      <p class="govuk-body">
-        Are you sure you want to delete <strong>{{ .User.Firstname }} {{ .User.Surname }}'s</strong> account?
-      </p>
+      {{ if .SuccessMessage }}
+        <p class="govuk-body">{{ .SuccessMessage }}</p>
 
-      <form class="form" action="" method="post">
-        <input type="hidden" name="xsrfToken" value="{{ .XSRFToken }}" />
-        <button type="submit" class="govuk-button govuk-button--warning govuk-!-margin-right-1">Delete account</button>
-        <a href="{{ prefix (printf "/edit-user/%d" .User.ID) }}" class="govuk-button govuk-button--secondary">Cancel</a>
-      </form>
+        <a href="{{ prefix "/users" }}" class="govuk-button">Continue</a>
+      {{ else }}
+        <p class="govuk-body">
+          Are you sure you want to delete <strong>{{ .User.Firstname }} {{ .User.Surname }}'s</strong> account?
+        </p>
+
+        <form class="form" action="" method="post">
+          <input type="hidden" name="xsrfToken" value="{{ .XSRFToken }}" />
+          <button type="submit" class="govuk-button govuk-button--warning govuk-!-margin-right-1">Delete account</button>
+          <a href="{{ prefix (printf "/edit-user/%d" .User.ID) }}" class="govuk-button govuk-button--secondary">Cancel</a>
+        </form>
+      {{ end }}
     </div>
   </div>
 {{ end }}
