@@ -15,13 +15,15 @@
     <div class="govuk-grid-column-two-thirds">
       {{ template "error-summary" .Errors }}
 
-      <h1 class="govuk-heading-xl">Delete account</h1>
-
       {{ if .SuccessMessage }}
+        <h1 class="govuk-heading-xl">User account deleted</h1>
+
         <p class="govuk-body">{{ .SuccessMessage }}</p>
 
         <a href="{{ prefix "/users" }}" class="govuk-button">Continue</a>
       {{ else }}
+        <h1 class="govuk-heading-xl">Delete account</h1>
+
         <p class="govuk-body">
           Are you sure you want to delete <strong>{{ .User.Firstname }} {{ .User.Surname }}'s</strong> account?
         </p>
