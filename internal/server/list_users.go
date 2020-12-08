@@ -11,11 +11,10 @@ type ListUsersClient interface {
 }
 
 type listUsersVars struct {
-	Path    string
-	Users   []sirius.User
-	Search  string
-	Errors  sirius.ValidationErrors
-	Success string
+	Path   string
+	Users  []sirius.User
+	Search string
+	Errors sirius.ValidationErrors
 }
 
 func listUsers(client ListUsersClient, tmpl Template) Handler {
@@ -45,12 +44,6 @@ func listUsers(client ListUsersClient, tmpl Template) Handler {
 			} else {
 				vars.Users = users
 			}
-		}
-
-		success := r.URL.Query()["success"]
-
-		if len(success) == 1 {
-			vars.Success = success[0]
 		}
 
 		return tmpl.ExecuteTemplate(w, "page", vars)
