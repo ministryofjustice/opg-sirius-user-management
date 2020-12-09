@@ -117,21 +117,27 @@ func TestPostDeleteUser(t *testing.T) {
 	assert := assert.New(t)
 
 	client := &mockDeleteUserClient{}
-	client.user.data = sirius.AuthUser{Firstname: "test"}
+	client.user.data = sirius.AuthUser{Firstname: "test", Surname: "user", Email: "user@opgtest.com"}
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/delete-user/123", nil)
 
 	err := deleteUser(client, template, true)(w, r)
-	assert.Equal(RedirectError("/users"), err)
+	assert.Nil(err)
 
 	assert.Equal(1, client.deleteUser.count)
 	assert.Equal(getContext(r), client.deleteUser.lastCtx)
 	assert.Equal(123, client.deleteUser.lastUserID)
 
 	assert.Equal(1, client.user.count)
-	assert.Equal(0, template.count)
+	assert.Equal(1, template.count)
+
+	assert.Equal(deleteUserVars{
+		Path:           "/delete-user/123",
+		User:           client.user.data,
+		SuccessMessage: "User test user (user@opgtest.com) was deleted.",
+	}, template.lastVars)
 }
 
 func TestPostDeleteUserClientError(t *testing.T) {
