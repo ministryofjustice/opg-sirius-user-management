@@ -34,7 +34,7 @@ func TestDeleteUser(t *testing.T) {
 			setup: func() {
 				pact.
 					AddInteraction().
-					Given("A user").
+					Given("A user that can be deleted").
 					UponReceiving("A request to delete the user").
 					WithRequest(dsl.Request{
 						Method: http.MethodDelete,
