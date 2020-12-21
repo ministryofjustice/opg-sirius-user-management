@@ -22,7 +22,7 @@ func main() {
 	port := getEnv("PORT", "8080")
 	webDir := getEnv("WEB_DIR", "web")
 	siriusURL := getEnv("SIRIUS_URL", "http://localhost:9001")
-	siriusPublicURL := getEnv("SIRIUS_PUBLIC_URL", "http://localhost:9001")
+	siriusPublicURL := getEnv("SIRIUS_PUBLIC_URL", "")
 	prefix := getEnv("PREFIX", "")
 
 	layouts, _ := template.
