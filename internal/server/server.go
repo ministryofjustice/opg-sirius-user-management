@@ -59,7 +59,7 @@ func New(logger Logger, client Client, templates map[string]*template.Template, 
 			allowRoles(client, "System Admin", "Manager")(
 				viewTeam(client, templates["team.gotmpl"]))))
 
-	mux.Handle("/teams/add/",
+	mux.Handle("/teams/add",
 		wrap(
 			systemAdminOnly(
 				addTeam(client, templates["team-add.gotmpl"]))))
