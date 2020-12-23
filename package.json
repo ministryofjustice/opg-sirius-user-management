@@ -8,7 +8,7 @@
     "heroku-postbuild": "cd prototype && yarn install && node ./node_modules/gulp/bin/gulp generate-assets"
   },
   "dependencies": {
-    "@ministryofjustice/frontend": "^0.0.19-alpha",
+    "@ministryofjustice/frontend": "0.0.19-alpha",
     "cypress": "5.3.0",
     "govuk-frontend": "^3.9.0"
   },
