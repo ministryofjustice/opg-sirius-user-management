@@ -27,6 +27,7 @@ type Client interface {
 	ListUsersClient
 	MyDetailsClient
 	ResendConfirmationClient
+	UnlockUserClient
 	ViewTeamClient
 }
 
@@ -100,6 +101,11 @@ func New(logger Logger, client Client, templates map[string]*template.Template, 
 		wrap(
 			systemAdminOnly(
 				editUser(client, templates["edit-user.gotmpl"], deleteUserEnabled))))
+
+	mux.Handle("/unlock-user/",
+		wrap(
+			systemAdminOnly(
+				unlockUser(client, templates["unlock-user.gotmpl"]))))
 
 	mux.Handle("/delete-user/",
 		wrap(
