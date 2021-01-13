@@ -12,6 +12,7 @@ import (
 
 type exampleAuthUser struct {
 	ID        int      `json:"id" pact:"example=123"`
+	OtherID   int      `json:"other_id" pact:"example=92"`
 	Firstname string   `json:"firstname" pact:"example=system"`
 	Surname   string   `json:"surname" pact:"example=admin"`
 	Email     string   `json:"email" pact:"example=system.admin@opgtest.com"`
