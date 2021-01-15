@@ -49,7 +49,6 @@ func TestMyDetails(t *testing.T) {
 						Body: dsl.Like(map[string]interface{}{
 							"id":          dsl.Like(47),
 							"name":        dsl.Like("system"),
-							"phoneNumber": dsl.Like("03004560300"),
 							"teams": dsl.EachLike(map[string]interface{}{
 								"displayName": dsl.Like("Allocations - (Supervision)"),
 							}, 1),
@@ -71,7 +70,6 @@ func TestMyDetails(t *testing.T) {
 			expectedMyDetails: MyDetails{
 				ID:          47,
 				Name:        "system",
-				PhoneNumber: "03004560300",
 				Teams: []MyDetailsTeam{
 					{DisplayName: "Allocations - (Supervision)"},
 				},
