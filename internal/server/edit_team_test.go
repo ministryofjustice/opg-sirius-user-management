@@ -32,7 +32,8 @@ type mockEditTeamClient struct {
 		lastCtx    sirius.Context
 		lastGroup  string
 		lastMethod string
-		data       bool
+		postData   bool
+		deleteData bool
 		err        error
 	}
 
@@ -73,7 +74,13 @@ func (m *mockEditTeamClient) HasPermission(ctx sirius.Context, group string, met
 	m.hasPermission.lastGroup = group
 	m.hasPermission.lastMethod = method
 
-	return m.hasPermission.data, m.hasPermission.err
+	if method == "post" {
+		return m.hasPermission.postData, m.hasPermission.err
+	} else if method == "delete" {
+		return m.hasPermission.deleteData, m.hasPermission.err
+	} else {
+		return false, m.hasPermission.err
+	}
 }
 
 func TestGetEditTeam(t *testing.T) {
@@ -87,7 +94,7 @@ func TestGetEditTeam(t *testing.T) {
 			Label:  "Test type",
 		},
 	}
-	client.hasPermission.data = true
+	client.hasPermission.postData = true
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
@@ -101,9 +108,9 @@ func TestGetEditTeam(t *testing.T) {
 
 	assert.Equal(1, client.teamTypes.count)
 
-	assert.Equal(1, client.hasPermission.count)
-	assert.Equal("team", client.hasPermission.lastGroup)
-	assert.Equal("post", client.hasPermission.lastMethod)
+	assert.Equal(2, client.hasPermission.count)
+	assert.Equal("v1-teams", client.hasPermission.lastGroup)
+	assert.Equal("delete", client.hasPermission.lastMethod)
 
 	assert.Equal(0, client.editTeam.count)
 
@@ -128,7 +135,7 @@ func TestGetEditTeamWithoutTypeEditPermission(t *testing.T) {
 			Label:  "Test type",
 		},
 	}
-	client.hasPermission.data = false
+	client.hasPermission.postData = false
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
@@ -141,6 +148,34 @@ func TestGetEditTeamWithoutTypeEditPermission(t *testing.T) {
 		Path:            "/teams/edit/123",
 		Team:            client.team.data,
 		TeamTypeOptions: client.teamTypes.data,
+	}, template.lastVars)
+}
+
+func TestGetEditTeamWithDeletePermission(t *testing.T) {
+	assert := assert.New(t)
+
+	client := &mockEditTeamClient{}
+	client.team.data = sirius.Team{DisplayName: "Complaints team"}
+	client.teamTypes.data = []sirius.RefDataTeamType{
+		{
+			Handle: "TEST",
+			Label:  "Test type",
+		},
+	}
+	client.hasPermission.deleteData = true
+	template := &mockTemplate{}
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("GET", "/teams/edit/123", nil)
+
+	err := editTeam(client, template)(w, r)
+	assert.Nil(err)
+
+	assert.Equal(editTeamVars{
+		Path:            "/teams/edit/123",
+		Team:            client.team.data,
+		TeamTypeOptions: client.teamTypes.data,
+		CanDeleteTeam:   true,
 	}, template.lastVars)
 }
 
@@ -182,7 +217,7 @@ func TestPostEditTeam(t *testing.T) {
 		PhoneNumber: "01234",
 	}
 	client.teamTypes.data = []sirius.RefDataTeamType{}
-	client.hasPermission.data = true
+	client.hasPermission.postData = true
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
@@ -226,7 +261,7 @@ func TestPostEditLpaTeam(t *testing.T) {
 		Email:       "complaint@opgtest.com",
 		PhoneNumber: "01234",
 	}
-	client.hasPermission.data = true
+	client.hasPermission.postData = true
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
@@ -271,7 +306,7 @@ func TestPostEditTeamWithoutPermission(t *testing.T) {
 		PhoneNumber: "01234",
 	}
 	client.teamTypes.data = []sirius.RefDataTeamType{}
-	client.hasPermission.data = false
+	client.hasPermission.postData = false
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
@@ -315,7 +350,7 @@ func TestPostEditTeamValidationError(t *testing.T) {
 		Email:       "complaint@opgtest.com",
 		PhoneNumber: "01234",
 	}
-	client.hasPermission.data = true
+	client.hasPermission.postData = true
 	client.editTeam.err = &sirius.ValidationError{
 		Errors: validationErrors,
 	}

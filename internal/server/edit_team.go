@@ -21,6 +21,7 @@ type editTeamVars struct {
 	Team            sirius.Team
 	TeamTypeOptions []sirius.RefDataTeamType
 	CanEditTeamType bool
+	CanDeleteTeam   bool
 	Success         bool
 	Errors          sirius.ValidationErrors
 }
@@ -44,6 +45,11 @@ func editTeam(client EditTeamClient, tmpl Template) Handler {
 			return err
 		}
 
+		canDeleteTeam, err := client.HasPermission(ctx, "v1-teams", "delete")
+		if err != nil {
+			return err
+		}
+
 		teamTypes, err := client.TeamTypes(ctx)
 		if err != nil {
 			return err
@@ -55,6 +61,7 @@ func editTeam(client EditTeamClient, tmpl Template) Handler {
 			Team:            team,
 			TeamTypeOptions: teamTypes,
 			CanEditTeamType: canEditTeamType,
+			CanDeleteTeam:   canDeleteTeam,
 		}
 
 		switch r.Method {
