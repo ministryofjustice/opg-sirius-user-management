@@ -27,14 +27,11 @@ type mockEditTeamClient struct {
 		err     error
 	}
 
-	hasPermission struct {
-		count      int
-		lastCtx    sirius.Context
-		lastGroup  string
-		lastMethod string
-		postData   bool
-		deleteData bool
-		err        error
+	permissions struct {
+		count   int
+		lastCtx sirius.Context
+		data    sirius.PermissionSet
+		err     error
 	}
 
 	editTeam struct {
@@ -68,19 +65,11 @@ func (m *mockEditTeamClient) EditTeam(ctx sirius.Context, team sirius.Team) erro
 	return m.editTeam.err
 }
 
-func (m *mockEditTeamClient) HasPermission(ctx sirius.Context, group string, method string) (bool, error) {
-	m.hasPermission.count += 1
-	m.hasPermission.lastCtx = ctx
-	m.hasPermission.lastGroup = group
-	m.hasPermission.lastMethod = method
+func (m *mockEditTeamClient) GetMyPermissions(ctx sirius.Context) (sirius.PermissionSet, error) {
+	m.permissions.count += 1
+	m.permissions.lastCtx = ctx
 
-	if method == "post" {
-		return m.hasPermission.postData, m.hasPermission.err
-	} else if method == "delete" {
-		return m.hasPermission.deleteData, m.hasPermission.err
-	} else {
-		return false, m.hasPermission.err
-	}
+	return m.permissions.data, m.permissions.err
 }
 
 func TestGetEditTeam(t *testing.T) {
@@ -94,7 +83,7 @@ func TestGetEditTeam(t *testing.T) {
 			Label:  "Test type",
 		},
 	}
-	client.hasPermission.postData = true
+	client.permissions.data = sirius.PermissionSet{"team": sirius.PermissionGroup{Permissions: []string{"post"}}}
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
@@ -108,9 +97,7 @@ func TestGetEditTeam(t *testing.T) {
 
 	assert.Equal(1, client.teamTypes.count)
 
-	assert.Equal(2, client.hasPermission.count)
-	assert.Equal("v1-teams", client.hasPermission.lastGroup)
-	assert.Equal("delete", client.hasPermission.lastMethod)
+	assert.Equal(1, client.permissions.count)
 
 	assert.Equal(0, client.editTeam.count)
 
@@ -135,7 +122,7 @@ func TestGetEditTeamWithoutTypeEditPermission(t *testing.T) {
 			Label:  "Test type",
 		},
 	}
-	client.hasPermission.postData = false
+	client.permissions.data = sirius.PermissionSet{}
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
@@ -162,7 +149,7 @@ func TestGetEditTeamWithDeletePermission(t *testing.T) {
 			Label:  "Test type",
 		},
 	}
-	client.hasPermission.deleteData = true
+	client.permissions.data = sirius.PermissionSet{"v1-teams": sirius.PermissionGroup{Permissions: []string{"delete"}}}
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
@@ -217,7 +204,7 @@ func TestPostEditTeam(t *testing.T) {
 		PhoneNumber: "01234",
 	}
 	client.teamTypes.data = []sirius.RefDataTeamType{}
-	client.hasPermission.postData = true
+	client.permissions.data = sirius.PermissionSet{"team": sirius.PermissionGroup{Permissions: []string{"post"}}}
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
@@ -261,7 +248,7 @@ func TestPostEditLpaTeam(t *testing.T) {
 		Email:       "complaint@opgtest.com",
 		PhoneNumber: "01234",
 	}
-	client.hasPermission.postData = true
+	client.permissions.data = sirius.PermissionSet{"team": sirius.PermissionGroup{Permissions: []string{"post"}}}
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
@@ -306,7 +293,7 @@ func TestPostEditTeamWithoutPermission(t *testing.T) {
 		PhoneNumber: "01234",
 	}
 	client.teamTypes.data = []sirius.RefDataTeamType{}
-	client.hasPermission.postData = false
+	client.permissions.data = sirius.PermissionSet{}
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
@@ -350,7 +337,7 @@ func TestPostEditTeamValidationError(t *testing.T) {
 		Email:       "complaint@opgtest.com",
 		PhoneNumber: "01234",
 	}
-	client.hasPermission.postData = true
+	client.permissions.data = sirius.PermissionSet{"team": sirius.PermissionGroup{Permissions: []string{"post"}}}
 	client.editTeam.err = &sirius.ValidationError{
 		Errors: validationErrors,
 	}
@@ -439,11 +426,11 @@ func TestPostEditTeamRefDataError(t *testing.T) {
 	assert.Equal(0, template.count)
 }
 
-func TestPostEditTeamHasPermissionError(t *testing.T) {
+func TestPostEditTeamGetyPermissionsError(t *testing.T) {
 	assert := assert.New(t)
 
 	client := &mockEditTeamClient{}
-	client.hasPermission.err = StatusError(http.StatusInternalServerError)
+	client.permissions.err = StatusError(http.StatusInternalServerError)
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
