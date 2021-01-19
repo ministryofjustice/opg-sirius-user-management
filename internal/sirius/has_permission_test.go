@@ -127,7 +127,7 @@ func TestHasPermissionStatusError(t *testing.T) {
 }
 
 func TestPermissionSetChecksPermission(t *testing.T) {
-	permissions := permissionSet{
+	permissions := PermissionSet{
 		"user": {
 			Permissions: []string{"GET", "PATCH"},
 		},

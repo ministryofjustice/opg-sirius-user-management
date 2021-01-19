@@ -19,6 +19,7 @@ type Client interface {
 	AddUserClient
 	AllowRolesClient
 	ChangePasswordClient
+	DeleteTeamClient
 	DeleteUserClient
 	EditMyDetailsClient
 	EditTeamClient
@@ -69,6 +70,11 @@ func New(logger Logger, client Client, templates map[string]*template.Template, 
 		wrap(
 			allowRoles(client, "System Admin", "Manager")(
 				editTeam(client, templates["team-edit.gotmpl"]))))
+
+	mux.Handle("/teams/delete/",
+		wrap(
+			systemAdminOnly(
+				deleteTeam(client, templates["team-delete.gotmpl"]))))
 
 	mux.Handle("/teams/add-member/",
 		wrap(

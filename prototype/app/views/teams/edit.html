@@ -1,5 +1,7 @@
 {% extends "layout.html" %}
 
+{% from "moj/components/page-header-actions/macro.njk" import mojPageHeaderActions %}
+
 {% block pageTitle %}
   Edit Allocations - (Supervision) team - Sirius
 {% endblock %}
@@ -9,10 +11,21 @@
 {% endblock %}
 
 {% block content %}
+  {{ mojPageHeaderActions({
+    heading: {
+      html: '<h1 class="govuk-heading-xl">Edit Allocations - (Supervision) team</h1>'
+    },
+    items: [
+      {
+        text: 'Delete team',
+        href: '/teams/delete',
+        classes: 'govuk-button--warning'
+      }
+    ]
+  }) }}
+
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      <h1 class="govuk-heading-xl">Edit Allocations - (Supervision) team</h1>
-
       <form class="form" action="/teams" method="post">
 
         {{ govukInput({

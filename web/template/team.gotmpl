@@ -30,7 +30,7 @@
   {{ if .Team.Members }}
     <form action="{{ prefix (printf "/teams/remove-member/%d" .Team.ID) }}" method="POST">
       <input type="hidden" name="xsrfToken" value="{{ .XSRFToken }}" />
-      
+
       <button type="submit" class="govuk-button govuk-button--secondary">
         Remove selected from team
       </button>
@@ -49,8 +49,8 @@
               <th scope="row" class="govuk-table__header">
                 <div class="govuk-checkboxes govuk-checkboxes--small">
                   <div class="govuk-checkboxes__item">
-                    <input class="govuk-checkboxes__input" name="selected[]" type="checkbox" value="{{ .ID }}">
-                    <label class="govuk-label govuk-checkboxes__label">
+                    <input class="govuk-checkboxes__input" name="selected[]" type="checkbox" value="{{ .ID }}" id="f-select-user-{{ .ID }}">
+                    <label class="govuk-label govuk-checkboxes__label" for="f-select-user-{{ .ID }}">
                       <span class="govuk-visually-hidden">Select {{ .DisplayName }}</span>
                     </label>
                   </div>

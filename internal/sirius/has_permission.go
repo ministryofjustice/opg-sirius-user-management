@@ -10,9 +10,9 @@ type PermissionGroup struct {
 	Permissions []string `json:"permissions"`
 }
 
-type permissionSet map[string]PermissionGroup
+type PermissionSet map[string]PermissionGroup
 
-func (ps permissionSet) HasPermission(group string, method string) bool {
+func (ps PermissionSet) HasPermission(group string, method string) bool {
 	for _, b := range ps[group].Permissions {
 		if strings.EqualFold(b, method) {
 			return true
@@ -22,33 +22,43 @@ func (ps permissionSet) HasPermission(group string, method string) bool {
 }
 
 type myPermissions struct {
-	Data permissionSet `json:"data"`
+	Data PermissionSet `json:"data"`
 }
 
-func (c *Client) HasPermission(ctx Context, group string, method string) (bool, error) {
+func (c *Client) GetMyPermissions(ctx Context) (PermissionSet, error) {
 	req, err := c.newRequest(ctx, http.MethodGet, "/api/permission", nil)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 
 	resp, err := c.http.Do(req)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusUnauthorized {
-		return false, ErrUnauthorized
+		return nil, ErrUnauthorized
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return false, newStatusError(resp)
+		return nil, newStatusError(resp)
 	}
 
 	var v myPermissions
 	if err := json.NewDecoder(resp.Body).Decode(&v); err != nil {
+		return nil, err
+	}
+
+	return v.Data, nil
+}
+
+func (c *Client) HasPermission(ctx Context, group string, method string) (bool, error) {
+	myPermissions, err := c.GetMyPermissions(ctx)
+
+	if err != nil {
 		return false, err
 	}
 
-	return v.Data.HasPermission(group, method), nil
+	return myPermissions.HasPermission(group, method), nil
 }
