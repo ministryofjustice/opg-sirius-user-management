@@ -426,7 +426,7 @@ func TestPostEditTeamRefDataError(t *testing.T) {
 	assert.Equal(0, template.count)
 }
 
-func TestPostEditTeamGetyPermissionsError(t *testing.T) {
+func TestPostEditTeamGetPermissionsError(t *testing.T) {
 	assert := assert.New(t)
 
 	client := &mockEditTeamClient{}
