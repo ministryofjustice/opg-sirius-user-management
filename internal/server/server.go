@@ -47,42 +47,42 @@ func New(logger Logger, client Client, templates map[string]*template.Template, 
 
 	mux.Handle("/users",
 		wrap(
-			requirePermissions(client, PermissionRequest{"v1-users", "put"})(
+			requirePermissions(client, PermissionRequest{"v1-users", http.MethodPut})(
 				listUsers(client, templates["users.gotmpl"]))))
 
 	mux.Handle("/teams",
 		wrap(
-			requirePermissions(client, PermissionRequest{"team", "put"})(
+			requirePermissions(client, PermissionRequest{"team", http.MethodPut})(
 				listTeams(client, templates["teams.gotmpl"]))))
 
 	mux.Handle("/teams/",
 		wrap(
-			requirePermissions(client, PermissionRequest{"team", "put"})(
+			requirePermissions(client, PermissionRequest{"team", http.MethodPut})(
 				viewTeam(client, templates["team.gotmpl"]))))
 
 	mux.Handle("/teams/add",
 		wrap(
-			requirePermissions(client, PermissionRequest{"team", "post"})(
+			requirePermissions(client, PermissionRequest{"team", http.MethodPost})(
 				addTeam(client, templates["team-add.gotmpl"]))))
 
 	mux.Handle("/teams/edit/",
 		wrap(
-			requirePermissions(client, PermissionRequest{"team", "put"})(
+			requirePermissions(client, PermissionRequest{"team", http.MethodPut})(
 				editTeam(client, templates["team-edit.gotmpl"]))))
 
 	mux.Handle("/teams/delete/",
 		wrap(
-			requirePermissions(client, PermissionRequest{"team", "delete"})(
+			requirePermissions(client, PermissionRequest{"team", http.MethodDelete})(
 				deleteTeam(client, templates["team-delete.gotmpl"]))))
 
 	mux.Handle("/teams/add-member/",
 		wrap(
-			requirePermissions(client, PermissionRequest{"team", "put"})(
+			requirePermissions(client, PermissionRequest{"team", http.MethodPut})(
 				addTeamMember(client, templates["team-add-member.gotmpl"]))))
 
 	mux.Handle("/teams/remove-member/",
 		wrap(
-			requirePermissions(client, PermissionRequest{"team", "put"})(
+			requirePermissions(client, PermissionRequest{"team", http.MethodPut})(
 				removeTeamMember(client, templates["team-remove-member.gotmpl"]))))
 
 	mux.Handle("/my-details",
@@ -99,27 +99,27 @@ func New(logger Logger, client Client, templates map[string]*template.Template, 
 
 	mux.Handle("/add-user",
 		wrap(
-			requirePermissions(client, PermissionRequest{"v1-users", "post"})(
+			requirePermissions(client, PermissionRequest{"v1-users", http.MethodPost})(
 				addUser(client, templates["add-user.gotmpl"]))))
 
 	mux.Handle("/edit-user/",
 		wrap(
-			requirePermissions(client, PermissionRequest{"v1-users", "put"})(
+			requirePermissions(client, PermissionRequest{"v1-users", http.MethodPut})(
 				editUser(client, templates["edit-user.gotmpl"], deleteUserEnabled))))
 
 	mux.Handle("/unlock-user/",
 		wrap(
-			requirePermissions(client, PermissionRequest{"v1-users", "put"})(
+			requirePermissions(client, PermissionRequest{"v1-users", http.MethodPut})(
 				unlockUser(client, templates["unlock-user.gotmpl"]))))
 
 	mux.Handle("/delete-user/",
 		wrap(
-			requirePermissions(client, PermissionRequest{"v1-users", "delete"})(
+			requirePermissions(client, PermissionRequest{"v1-users", http.MethodDelete})(
 				deleteUser(client, templates["delete-user.gotmpl"], deleteUserEnabled))))
 
 	mux.Handle("/resend-confirmation",
 		wrap(
-			requirePermissions(client, PermissionRequest{"v1-users", "put"})(
+			requirePermissions(client, PermissionRequest{"v1-users", http.MethodPut})(
 				resendConfirmation(client, templates["resend-confirmation.gotmpl"]))))
 
 	static := http.FileServer(http.Dir(webDir + "/static"))

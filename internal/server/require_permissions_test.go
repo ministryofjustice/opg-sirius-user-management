@@ -31,7 +31,7 @@ func TestRequirePermissions(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
 
-	err := requirePermissions(client, PermissionRequest{"team", "get"})(func(w http.ResponseWriter, r *http.Request) error {
+	err := requirePermissions(client, PermissionRequest{"team", http.MethodGet})(func(w http.ResponseWriter, r *http.Request) error {
 		return StatusError(http.StatusOK)
 	})(w, r)
 
@@ -47,26 +47,26 @@ func TestRequirePermissionsChecksAll(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
 
-	handler := requirePermissions(client, PermissionRequest{"team", "get"}, PermissionRequest{"team", "post"})(func(w http.ResponseWriter, r *http.Request) error {
+	handler := requirePermissions(client, PermissionRequest{"team", http.MethodGet}, PermissionRequest{"team", http.MethodPost})(func(w http.ResponseWriter, r *http.Request) error {
 		return StatusError(http.StatusOK)
 	})
 
-	client.permissions = sirius.PermissionSet{"team": sirius.PermissionGroup{Permissions: []string{"get", "post"}}}
+	client.permissions = sirius.PermissionSet{"team": sirius.PermissionGroup{Permissions: []string{http.MethodGet, http.MethodPost}}}
 	err := handler(w, r)
 	assert.Equal(StatusError(http.StatusOK), err)
 	assert.Equal(1, client.count)
 
-	client.permissions = sirius.PermissionSet{"team": sirius.PermissionGroup{Permissions: []string{"get", "post", "patch"}}}
+	client.permissions = sirius.PermissionSet{"team": sirius.PermissionGroup{Permissions: []string{http.MethodGet, http.MethodPost, http.MethodPatch}}}
 	err = handler(w, r)
 	assert.Equal(StatusError(http.StatusOK), err)
 	assert.Equal(2, client.count)
 
-	client.permissions = sirius.PermissionSet{"team": sirius.PermissionGroup{Permissions: []string{"get"}}}
+	client.permissions = sirius.PermissionSet{"team": sirius.PermissionGroup{Permissions: []string{http.MethodGet}}}
 	err = handler(w, r)
 	assert.Equal(StatusError(http.StatusForbidden), err)
 	assert.Equal(3, client.count)
 
-	client.permissions = sirius.PermissionSet{"user": sirius.PermissionGroup{Permissions: []string{"get", "post"}}}
+	client.permissions = sirius.PermissionSet{"user": sirius.PermissionGroup{Permissions: []string{http.MethodGet, http.MethodPost}}}
 	err = handler(w, r)
 	assert.Equal(StatusError(http.StatusForbidden), err)
 	assert.Equal(4, client.count)
@@ -80,7 +80,7 @@ func TestRequirePermissionsMissingPermission(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
 
-	err := requirePermissions(client, PermissionRequest{"team", "get"})(func(w http.ResponseWriter, r *http.Request) error {
+	err := requirePermissions(client, PermissionRequest{"team", http.MethodGet})(func(w http.ResponseWriter, r *http.Request) error {
 		return StatusError(http.StatusOK)
 	})(w, r)
 
@@ -98,7 +98,7 @@ func TestRequirePermissionsError(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", nil)
 
-	err := requirePermissions(client, PermissionRequest{"team", "get"})(func(w http.ResponseWriter, r *http.Request) error {
+	err := requirePermissions(client, PermissionRequest{"team", http.MethodGet})(func(w http.ResponseWriter, r *http.Request) error {
 		return StatusError(http.StatusOK)
 	})(w, r)
 

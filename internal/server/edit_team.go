@@ -45,8 +45,8 @@ func editTeam(client EditTeamClient, tmpl Template) Handler {
 			return err
 		}
 
-		canEditTeamType := myPermissions.HasPermission("team", "post")
-		canDeleteTeam := myPermissions.HasPermission("v1-teams", "delete")
+		canEditTeamType := myPermissions.HasPermission("team", http.MethodPost)
+		canDeleteTeam := myPermissions.HasPermission("v1-teams", http.MethodDelete)
 
 		teamTypes, err := client.TeamTypes(ctx)
 		if err != nil {
