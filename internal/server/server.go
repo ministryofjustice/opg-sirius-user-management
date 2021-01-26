@@ -17,7 +17,6 @@ type Logger interface {
 type Client interface {
 	AddTeamClient
 	AddUserClient
-	AllowRolesClient
 	ChangePasswordClient
 	DeleteTeamClient
 	DeleteUserClient
@@ -27,6 +26,7 @@ type Client interface {
 	ListTeamsClient
 	ListUsersClient
 	MyDetailsClient
+	RequirePermissionClient
 	ResendConfirmationClient
 	UnlockUserClient
 	ViewTeamClient
