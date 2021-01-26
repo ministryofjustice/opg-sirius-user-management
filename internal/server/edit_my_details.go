@@ -33,7 +33,7 @@ func editMyDetails(client EditMyDetailsClient, tmpl Template) Handler {
 			return err
 		}
 
-		if !myPermissions.HasPermission("user", "patch") {
+		if !myPermissions.HasPermission("v1-users-updatetelephonenumber", http.MethodPut) {
 			return StatusError(http.StatusForbidden)
 		}
 

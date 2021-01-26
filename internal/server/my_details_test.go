@@ -101,7 +101,7 @@ func TestGetMyDetailsUsesPermission(t *testing.T) {
 		},
 	}
 	client := &mockMyDetailsClient{data: data}
-	client.permissions.data = sirius.PermissionSet{"user": sirius.PermissionGroup{Permissions: []string{"patch"}}}
+	client.permissions.data = sirius.PermissionSet{"v1-users-updatetelephonenumber": sirius.PermissionGroup{Permissions: []string{"put"}}}
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()

@@ -42,7 +42,7 @@ func myDetails(client MyDetailsClient, tmpl Template) Handler {
 			return err
 		}
 
-		canEditPhoneNumber := myPermissions.HasPermission("user", "patch")
+		canEditPhoneNumber := myPermissions.HasPermission("v1-users-updatetelephonenumber", http.MethodPut)
 
 		vars := myDetailsVars{
 			Path:               r.URL.Path,
