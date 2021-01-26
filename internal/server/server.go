@@ -72,7 +72,7 @@ func New(logger Logger, client Client, templates map[string]*template.Template, 
 
 	mux.Handle("/teams/delete/",
 		wrap(
-			requirePermissions(client, PermissionRequest{"team", http.MethodDelete})(
+			requirePermissions(client, PermissionRequest{"v1-teams", http.MethodDelete})(
 				deleteTeam(client, templates["team-delete.gotmpl"]))))
 
 	mux.Handle("/teams/add-member/",

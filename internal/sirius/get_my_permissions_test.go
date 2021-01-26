@@ -156,7 +156,10 @@ func TestPermissionsIgnoredPact(t *testing.T) {
 									"permissions": []string{"PUT", "POST", "DELETE"},
 								},
 								"team": map[string]interface{}{
-									"permissions": []string{"GET", "POST", "PUT", "DELETE"},
+									"permissions": []string{"GET", "POST", "PUT"},
+								},
+								"v1-teams": map[string]interface{}{
+									"permissions": []string{"DELETE"},
 								},
 							},
 						}),
@@ -169,7 +172,8 @@ func TestPermissionsIgnoredPact(t *testing.T) {
 			expectedResponse: PermissionSet{
 				"v1-users-updatetelephonenumber": PermissionGroup{Permissions: []string{"PUT"}},
 				"v1-users":                       PermissionGroup{Permissions: []string{"PUT", "POST", "DELETE"}},
-				"team":                           PermissionGroup{Permissions: []string{"GET", "POST", "PUT", "DELETE"}},
+				"team":                           PermissionGroup{Permissions: []string{"GET", "POST", "PUT"}},
+				"v1-teams":                       PermissionGroup{Permissions: []string{"DELETE"}},
 			},
 		},
 	}
