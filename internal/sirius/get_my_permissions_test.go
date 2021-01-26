@@ -9,11 +9,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type PermissionRequest struct {
-	group  string
-	method string
-}
-
 func TestPermissions(t *testing.T) {
 	pact := &dsl.Pact{
 		Consumer:          "sirius-user-management",
@@ -29,9 +24,8 @@ func TestPermissions(t *testing.T) {
 		name             string
 		setup            func()
 		cookies          []*http.Cookie
-		expectedResponse bool
+		expectedResponse PermissionSet
 		expectedError    error
-		permission       PermissionRequest
 	}{
 		{
 			name: "OK",
@@ -68,11 +62,10 @@ func TestPermissions(t *testing.T) {
 				{Name: "XSRF-TOKEN", Value: "abcde"},
 				{Name: "Other", Value: "other"},
 			},
-			permission: PermissionRequest{
-				group:  "user",
-				method: "PATCH",
+			expectedResponse: PermissionSet{
+				"user": PermissionGroup{Permissions: []string{"PATCH"}},
+				"team": PermissionGroup{Permissions: []string{"POST"}},
 			},
-			expectedResponse: true,
 		},
 		{
 			name: "Unauthorized",
@@ -103,8 +96,8 @@ func TestPermissions(t *testing.T) {
 			assert.Nil(t, pact.Verify(func() error {
 				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
 
-				hasPermission, err := client.HasPermission(getContext(tc.cookies), tc.permission.group, tc.permission.method)
-				assert.Equal(t, tc.expectedResponse, hasPermission)
+				myPermissions, err := client.GetMyPermissions(getContext(tc.cookies))
+				assert.Equal(t, tc.expectedResponse, myPermissions)
 				assert.Equal(t, tc.expectedError, err)
 				return nil
 			}))
@@ -118,7 +111,7 @@ func TestHasPermissionStatusError(t *testing.T) {
 
 	client, _ := NewClient(http.DefaultClient, s.URL)
 
-	_, err := client.HasPermission(getContext(nil), "", "")
+	_, err := client.GetMyPermissions(getContext(nil))
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
 		URL:    s.URL + "/api/permission",
@@ -138,5 +131,6 @@ func TestPermissionSetChecksPermission(t *testing.T) {
 
 	assert.True(t, permissions.HasPermission("user", "PATCH"))
 	assert.True(t, permissions.HasPermission("team", "GET"))
+	assert.True(t, permissions.HasPermission("team", "get"))
 	assert.False(t, permissions.HasPermission("team", "PATCHs"))
 }
