@@ -9,7 +9,7 @@ import (
 type EditMyDetailsClient interface {
 	MyDetails(sirius.Context) (sirius.MyDetails, error)
 	EditMyDetails(sirius.Context, int, string) error
-	HasPermission(sirius.Context, string, string) (bool, error)
+	GetMyPermissions(sirius.Context) (sirius.PermissionSet, error)
 }
 
 type editMyDetailsVars struct {
@@ -28,11 +28,12 @@ func editMyDetails(client EditMyDetailsClient, tmpl Template) Handler {
 
 		ctx := getContext(r)
 
-		if ok, err := client.HasPermission(ctx, "user", "patch"); !ok {
-			if err != nil {
-				return err
-			}
+		myPermissions, err := client.GetMyPermissions(ctx)
+		if err != nil {
+			return err
+		}
 
+		if !myPermissions.HasPermission("user", "patch") {
 			return StatusError(http.StatusForbidden)
 		}
 

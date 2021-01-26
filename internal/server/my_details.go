@@ -8,7 +8,7 @@ import (
 
 type MyDetailsClient interface {
 	MyDetails(sirius.Context) (sirius.MyDetails, error)
-	HasPermission(sirius.Context, string, string) (bool, error)
+	GetMyPermissions(sirius.Context) (sirius.PermissionSet, error)
 }
 
 type myDetailsVars struct {
@@ -37,10 +37,12 @@ func myDetails(client MyDetailsClient, tmpl Template) Handler {
 			return err
 		}
 
-		canEditPhoneNumber, err := client.HasPermission(ctx, "user", "patch")
+		myPermissions, err := client.GetMyPermissions(ctx)
 		if err != nil {
 			return err
 		}
+
+		canEditPhoneNumber := myPermissions.HasPermission("user", "patch")
 
 		vars := myDetailsVars{
 			Path:               r.URL.Path,

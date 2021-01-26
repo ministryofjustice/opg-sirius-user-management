@@ -11,16 +11,16 @@ import (
 )
 
 type mockMyDetailsClient struct {
-	count            int
-	permissionsCount int
-	lastCtx          sirius.Context
-	err              error
-	permissionsErr   error
-	data             sirius.MyDetails
-	hasPermission    bool
-	lastPermission   struct {
-		Group  string
-		Method string
+	count   int
+	lastCtx sirius.Context
+	err     error
+	data    sirius.MyDetails
+
+	permissions struct {
+		count   int
+		lastCtx sirius.Context
+		data    sirius.PermissionSet
+		err     error
 	}
 }
 
@@ -31,13 +31,11 @@ func (m *mockMyDetailsClient) MyDetails(ctx sirius.Context) (sirius.MyDetails, e
 	return m.data, m.err
 }
 
-func (m *mockMyDetailsClient) HasPermission(ctx sirius.Context, group string, method string) (bool, error) {
-	m.permissionsCount += 1
-	m.lastCtx = ctx
-	m.lastPermission.Group = group
-	m.lastPermission.Method = method
+func (m *mockMyDetailsClient) GetMyPermissions(ctx sirius.Context) (sirius.PermissionSet, error) {
+	m.permissions.count += 1
+	m.permissions.lastCtx = ctx
 
-	return m.hasPermission, m.permissionsErr
+	return m.permissions.data, m.permissions.err
 }
 
 func TestGetMyDetails(t *testing.T) {
@@ -70,7 +68,7 @@ func TestGetMyDetails(t *testing.T) {
 	assert.Equal(getContext(r), client.lastCtx)
 
 	assert.Equal(1, client.count)
-	assert.Equal(1, client.permissionsCount)
+	assert.Equal(1, client.permissions.count)
 
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
@@ -102,7 +100,8 @@ func TestGetMyDetailsUsesPermission(t *testing.T) {
 			{DisplayName: "A Team"},
 		},
 	}
-	client := &mockMyDetailsClient{data: data, hasPermission: true}
+	client := &mockMyDetailsClient{data: data}
+	client.permissions.data = sirius.PermissionSet{"user": sirius.PermissionGroup{Permissions: []string{"patch"}}}
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
@@ -116,11 +115,9 @@ func TestGetMyDetailsUsesPermission(t *testing.T) {
 	resp := w.Result()
 	assert.Equal(http.StatusOK, resp.StatusCode)
 	assert.Equal(getContext(r), client.lastCtx)
-	assert.Equal("user", client.lastPermission.Group)
-	assert.Equal("patch", client.lastPermission.Method)
 
 	assert.Equal(1, client.count)
-	assert.Equal(1, client.permissionsCount)
+	assert.Equal(1, client.permissions.count)
 
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
