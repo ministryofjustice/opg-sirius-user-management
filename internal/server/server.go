@@ -38,7 +38,6 @@ type Template interface {
 
 func New(logger Logger, client Client, templates map[string]*template.Template, prefix, siriusURL, siriusPublicURL, webDir string) http.Handler {
 	wrap := errorHandler(logger, templates["error.gotmpl"], prefix, siriusPublicURL)
-	systemAdminOnly := allowRoles(client, "System Admin")
 
 	deleteUserEnabled := siriusPublicURL != "https://live.sirius-opg.uk"
 
@@ -48,42 +47,42 @@ func New(logger Logger, client Client, templates map[string]*template.Template, 
 
 	mux.Handle("/users",
 		wrap(
-			systemAdminOnly(
+			requirePermissions(client, PermissionRequest{"v1-users", "put"})(
 				listUsers(client, templates["users.gotmpl"]))))
 
 	mux.Handle("/teams",
 		wrap(
-			allowRoles(client, "System Admin", "Manager")(
+			requirePermissions(client, PermissionRequest{"team", "put"})(
 				listTeams(client, templates["teams.gotmpl"]))))
 
 	mux.Handle("/teams/",
 		wrap(
-			allowRoles(client, "System Admin", "Manager")(
+			requirePermissions(client, PermissionRequest{"team", "put"})(
 				viewTeam(client, templates["team.gotmpl"]))))
 
 	mux.Handle("/teams/add",
 		wrap(
-			systemAdminOnly(
+			requirePermissions(client, PermissionRequest{"team", "post"})(
 				addTeam(client, templates["team-add.gotmpl"]))))
 
 	mux.Handle("/teams/edit/",
 		wrap(
-			allowRoles(client, "System Admin", "Manager")(
+			requirePermissions(client, PermissionRequest{"team", "put"})(
 				editTeam(client, templates["team-edit.gotmpl"]))))
 
 	mux.Handle("/teams/delete/",
 		wrap(
-			systemAdminOnly(
+			requirePermissions(client, PermissionRequest{"team", "delete"})(
 				deleteTeam(client, templates["team-delete.gotmpl"]))))
 
 	mux.Handle("/teams/add-member/",
 		wrap(
-			allowRoles(client, "System Admin", "Manager")(
+			requirePermissions(client, PermissionRequest{"team", "put"})(
 				addTeamMember(client, templates["team-add-member.gotmpl"]))))
 
 	mux.Handle("/teams/remove-member/",
 		wrap(
-			allowRoles(client, "System Admin", "Manager")(
+			requirePermissions(client, PermissionRequest{"team", "put"})(
 				removeTeamMember(client, templates["team-remove-member.gotmpl"]))))
 
 	mux.Handle("/my-details",
@@ -100,27 +99,27 @@ func New(logger Logger, client Client, templates map[string]*template.Template, 
 
 	mux.Handle("/add-user",
 		wrap(
-			systemAdminOnly(
+			requirePermissions(client, PermissionRequest{"v1-users", "post"})(
 				addUser(client, templates["add-user.gotmpl"]))))
 
 	mux.Handle("/edit-user/",
 		wrap(
-			systemAdminOnly(
+			requirePermissions(client, PermissionRequest{"v1-users", "put"})(
 				editUser(client, templates["edit-user.gotmpl"], deleteUserEnabled))))
 
 	mux.Handle("/unlock-user/",
 		wrap(
-			systemAdminOnly(
+			requirePermissions(client, PermissionRequest{"v1-users", "put"})(
 				unlockUser(client, templates["unlock-user.gotmpl"]))))
 
 	mux.Handle("/delete-user/",
 		wrap(
-			systemAdminOnly(
+			requirePermissions(client, PermissionRequest{"v1-users", "delete"})(
 				deleteUser(client, templates["delete-user.gotmpl"], deleteUserEnabled))))
 
 	mux.Handle("/resend-confirmation",
 		wrap(
-			systemAdminOnly(
+			requirePermissions(client, PermissionRequest{"v1-users", "put"})(
 				resendConfirmation(client, templates["resend-confirmation.gotmpl"]))))
 
 	static := http.FileServer(http.Dir(webDir + "/static"))
