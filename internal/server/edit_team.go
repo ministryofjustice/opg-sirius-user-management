@@ -12,7 +12,6 @@ type EditTeamClient interface {
 	Team(sirius.Context, int) (sirius.Team, error)
 	EditTeam(sirius.Context, sirius.Team) error
 	TeamTypes(sirius.Context) ([]sirius.RefDataTeamType, error)
-	MyPermissions(sirius.Context) (sirius.PermissionSet, error)
 }
 
 type editTeamVars struct {
@@ -44,13 +43,8 @@ func editTeam(client EditTeamClient, tmpl Template) Handler {
 			return err
 		}
 
-		myPermissions, err := client.MyPermissions(ctx)
-		if err != nil {
-			return err
-		}
-
-		canEditTeamType := myPermissions.HasPermission("team", http.MethodPost)
-		canDeleteTeam := myPermissions.HasPermission("v1-teams", http.MethodDelete)
+		canEditTeamType := perm.HasPermission("team", http.MethodPost)
+		canDeleteTeam := perm.HasPermission("v1-teams", http.MethodDelete)
 
 		teamTypes, err := client.TeamTypes(ctx)
 		if err != nil {
