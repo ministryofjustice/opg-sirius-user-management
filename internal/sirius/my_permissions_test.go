@@ -109,8 +109,7 @@ func TestPermissionsIgnoredPact(t *testing.T) {
 	// We need this test to produce a specific array of permissions in the
 	// response so that Cypress tests will pass. Since Pact won't let us return
 	// multiple array entries from `dsl.EachLike` we have to write a separate
-	// test with the specific output. We call the consumer "z-append" to ensure
-	// the Pact is loaded last and overwrites the actual test of /api/permission
+	// test with the specific output.
 	pact := &dsl.Pact{
 		Consumer:          "ignored",
 		Provider:          "ignored",
