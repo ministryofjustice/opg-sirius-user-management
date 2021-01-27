@@ -18,7 +18,11 @@ type listUsersVars struct {
 }
 
 func listUsers(client ListUsersClient, tmpl Template) Handler {
-	return func(w http.ResponseWriter, r *http.Request) error {
+	return func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error {
+		if !perm.HasPermission("v1-users", http.MethodPut) {
+			return StatusError(http.StatusForbidden)
+		}
+
 		if r.Method != http.MethodGet {
 			return StatusError(http.StatusMethodNotAllowed)
 		}

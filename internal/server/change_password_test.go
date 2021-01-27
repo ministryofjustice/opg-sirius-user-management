@@ -39,7 +39,7 @@ func TestGetChangePassword(t *testing.T) {
 	r, _ := http.NewRequest("GET", "/path", nil)
 
 	handler := changePassword(nil, template)
-	err := handler(w, r)
+	err := handler(sirius.PermissionSet{}, w, r)
 
 	assert.Nil(err)
 
@@ -61,7 +61,7 @@ func TestPostChangePassword(t *testing.T) {
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
 	handler := changePassword(client, template)
-	err := handler(w, r)
+	err := handler(sirius.PermissionSet{}, w, r)
 
 	assert.Nil(err)
 
@@ -87,7 +87,7 @@ func TestPostChangePasswordUnauthenticated(t *testing.T) {
 	r, _ := http.NewRequest("POST", "/path", nil)
 
 	handler := changePassword(client, template)
-	err := handler(w, r)
+	err := handler(sirius.PermissionSet{}, w, r)
 
 	assert.Equal(sirius.ErrUnauthorized, err)
 
@@ -104,7 +104,7 @@ func TestPostChangePasswordSiriusError(t *testing.T) {
 	r, _ := http.NewRequest("POST", "/path", nil)
 
 	handler := changePassword(client, template)
-	err := handler(w, r)
+	err := handler(sirius.PermissionSet{}, w, r)
 
 	assert.Nil(err)
 
@@ -134,7 +134,7 @@ func TestPostChangePasswordOtherError(t *testing.T) {
 	r, _ := http.NewRequest("POST", "/path", nil)
 
 	handler := changePassword(client, template)
-	err := handler(w, r)
+	err := handler(sirius.PermissionSet{}, w, r)
 
 	assert.Equal(expectedErr, err)
 

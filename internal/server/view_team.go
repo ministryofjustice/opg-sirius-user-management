@@ -19,7 +19,11 @@ type viewTeamVars struct {
 }
 
 func viewTeam(client ViewTeamClient, tmpl Template) Handler {
-	return func(w http.ResponseWriter, r *http.Request) error {
+	return func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error {
+		if !perm.HasPermission("team", http.MethodPut) {
+			return StatusError(http.StatusForbidden)
+		}
+
 		if r.Method != http.MethodGet {
 			return StatusError(http.StatusMethodNotAllowed)
 		}

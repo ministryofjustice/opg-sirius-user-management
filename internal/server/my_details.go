@@ -8,7 +8,6 @@ import (
 
 type MyDetailsClient interface {
 	MyDetails(sirius.Context) (sirius.MyDetails, error)
-	MyPermissions(sirius.Context) (sirius.PermissionSet, error)
 }
 
 type myDetailsVars struct {
@@ -25,7 +24,7 @@ type myDetailsVars struct {
 }
 
 func myDetails(client MyDetailsClient, tmpl Template) Handler {
-	return func(w http.ResponseWriter, r *http.Request) error {
+	return func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error {
 		if r.Method != http.MethodGet {
 			return StatusError(http.StatusMethodNotAllowed)
 		}
@@ -37,12 +36,7 @@ func myDetails(client MyDetailsClient, tmpl Template) Handler {
 			return err
 		}
 
-		myPermissions, err := client.MyPermissions(ctx)
-		if err != nil {
-			return err
-		}
-
-		canEditPhoneNumber := myPermissions.HasPermission("v1-users-updatetelephonenumber", http.MethodPut)
+		canEditPhoneNumber := perm.HasPermission("v1-users-updatetelephonenumber", http.MethodPut)
 
 		vars := myDetailsVars{
 			Path:               r.URL.Path,

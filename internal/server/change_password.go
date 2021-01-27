@@ -18,7 +18,7 @@ type changePasswordVars struct {
 }
 
 func changePassword(client ChangePasswordClient, tmpl Template) Handler {
-	return func(w http.ResponseWriter, r *http.Request) error {
+	return func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error {
 		ctx := getContext(r)
 
 		vars := changePasswordVars{

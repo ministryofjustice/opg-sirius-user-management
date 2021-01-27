@@ -37,7 +37,7 @@ type Template interface {
 }
 
 func New(logger Logger, client Client, templates map[string]*template.Template, prefix, siriusURL, siriusPublicURL, webDir string) http.Handler {
-	wrap := errorHandler(logger, templates["error.gotmpl"], prefix, siriusPublicURL)
+	wrap := errorHandler(logger, client, templates["error.gotmpl"], prefix, siriusPublicURL)
 
 	deleteUserEnabled := siriusPublicURL != "https://live.sirius-opg.uk"
 
@@ -152,7 +152,7 @@ func (e StatusError) Code() int {
 	return int(e)
 }
 
-type Handler func(w http.ResponseWriter, r *http.Request) error
+type Handler func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error
 
 type errorVars struct {
 	SiriusURL string
@@ -162,10 +162,16 @@ type errorVars struct {
 	Error string
 }
 
-func errorHandler(logger Logger, tmplError Template, prefix, siriusURL string) func(next Handler) http.Handler {
+func errorHandler(logger Logger, client Client, tmplError Template, prefix, siriusURL string) func(next Handler) http.Handler {
 	return func(next Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if err := next(w, r); err != nil {
+			myPermissions, err := client.MyPermissions(getContext(r))
+
+			if err == nil {
+				err = next(myPermissions, w, r)
+			}
+
+			if err != nil {
 				if err == sirius.ErrUnauthorized {
 					http.Redirect(w, r, siriusURL+"/auth", http.StatusFound)
 					return

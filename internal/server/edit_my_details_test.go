@@ -23,13 +23,6 @@ type mockEditMyDetailsClient struct {
 		ID          int
 		PhoneNumber string
 	}
-
-	permissions struct {
-		count   int
-		lastCtx sirius.Context
-		data    sirius.PermissionSet
-		err     error
-	}
 }
 
 func (m *mockEditMyDetailsClient) MyDetails(ctx sirius.Context) (sirius.MyDetails, error) {
@@ -50,11 +43,8 @@ func (m *mockEditMyDetailsClient) EditMyDetails(ctx sirius.Context, id int, phon
 	return m.errSave
 }
 
-func (m *mockEditMyDetailsClient) MyPermissions(ctx sirius.Context) (sirius.PermissionSet, error) {
-	m.permissions.count += 1
-	m.permissions.lastCtx = ctx
-
-	return m.permissions.data, m.permissions.err
+func (m *mockEditMyDetailsClient) requiredPermissions() sirius.PermissionSet {
+	return sirius.PermissionSet{"v1-users-updatetelephonenumber": sirius.PermissionGroup{Permissions: []string{"put"}}}
 }
 
 func TestGetEditMyDetails(t *testing.T) {
@@ -72,22 +62,19 @@ func TestGetEditMyDetails(t *testing.T) {
 		},
 	}
 	client := &mockEditMyDetailsClient{data: data}
-	client.permissions.data = sirius.PermissionSet{"v1-users-updatetelephonenumber": sirius.PermissionGroup{Permissions: []string{"put"}}}
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
 
 	handler := editMyDetails(client, template)
-	err := handler(w, r)
+	err := handler(client.requiredPermissions(), w, r)
 
 	assert.Nil(err)
 
 	resp := w.Result()
 	assert.Equal(http.StatusOK, resp.StatusCode)
 	assert.Equal(getContext(r), client.lastCtx)
-
-	assert.Equal(1, client.permissions.count)
 
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
@@ -101,14 +88,13 @@ func TestGetEditMyDetailsUnauthenticated(t *testing.T) {
 	assert := assert.New(t)
 
 	client := &mockEditMyDetailsClient{err: sirius.ErrUnauthorized}
-	client.permissions.data = sirius.PermissionSet{"v1-users-updatetelephonenumber": sirius.PermissionGroup{Permissions: []string{"put"}}}
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "", nil)
 
 	handler := editMyDetails(client, template)
-	err := handler(w, r)
+	err := handler(client.requiredPermissions(), w, r)
 
 	assert.Equal(sirius.ErrUnauthorized, err)
 
@@ -125,7 +111,7 @@ func TestGetEditMyDetailsNotPermitted(t *testing.T) {
 	r, _ := http.NewRequest("GET", "", nil)
 
 	handler := editMyDetails(client, template)
-	err := handler(w, r)
+	err := handler(sirius.PermissionSet{}, w, r)
 
 	assert.Equal(StatusError(http.StatusForbidden), err)
 
@@ -136,14 +122,13 @@ func TestGetEditMyDetailsSiriusErrors(t *testing.T) {
 	assert := assert.New(t)
 
 	client := &mockEditMyDetailsClient{err: errors.New("err")}
-	client.permissions.data = sirius.PermissionSet{"v1-users-updatetelephonenumber": sirius.PermissionGroup{Permissions: []string{"put"}}}
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "", nil)
 
 	handler := editMyDetails(client, template)
-	err := handler(w, r)
+	err := handler(client.requiredPermissions(), w, r)
 
 	assert.Equal("err", err.Error())
 
@@ -158,7 +143,6 @@ func TestPostEditMyDetails(t *testing.T) {
 			ID: 31,
 		},
 	}
-	client.permissions.data = sirius.PermissionSet{"v1-users-updatetelephonenumber": sirius.PermissionGroup{Permissions: []string{"put"}}}
 
 	template := &mockTemplate{}
 
@@ -167,7 +151,7 @@ func TestPostEditMyDetails(t *testing.T) {
 	r.Header.Add("Content-type", "application/x-www-form-urlencoded")
 
 	handler := editMyDetails(client, template)
-	err := handler(w, r)
+	err := handler(client.requiredPermissions(), w, r)
 
 	assert.Nil(err)
 
@@ -192,14 +176,13 @@ func TestPostEditMyDetailsUnauthenticated(t *testing.T) {
 	assert := assert.New(t)
 
 	client := &mockEditMyDetailsClient{errSave: sirius.ErrUnauthorized}
-	client.permissions.data = sirius.PermissionSet{"v1-users-updatetelephonenumber": sirius.PermissionGroup{Permissions: []string{"put"}}}
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", strings.NewReader("phonenumber=0189202"))
 
 	handler := editMyDetails(client, template)
-	err := handler(w, r)
+	err := handler(client.requiredPermissions(), w, r)
 
 	assert.Equal(sirius.ErrUnauthorized, err)
 
@@ -213,7 +196,6 @@ func TestPostEditMyDetailsSiriusErrors(t *testing.T) {
 	assert := assert.New(t)
 
 	client := &mockEditMyDetailsClient{errSave: errors.New("err")}
-	client.permissions.data = sirius.PermissionSet{"v1-users-updatetelephonenumber": sirius.PermissionGroup{Permissions: []string{"put"}}}
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
@@ -221,7 +203,7 @@ func TestPostEditMyDetailsSiriusErrors(t *testing.T) {
 	r.Header.Add("Content-type", "application/x-www-form-urlencoded")
 
 	handler := editMyDetails(client, template)
-	err := handler(w, r)
+	err := handler(client.requiredPermissions(), w, r)
 
 	assert.Equal("err", err.Error())
 
@@ -243,7 +225,6 @@ func TestPostEditMyDetailsInvalidRequest(t *testing.T) {
 	}
 
 	client := &mockEditMyDetailsClient{errSave: validationError}
-	client.permissions.data = sirius.PermissionSet{"v1-users-updatetelephonenumber": sirius.PermissionGroup{Permissions: []string{"put"}}}
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
@@ -251,7 +232,7 @@ func TestPostEditMyDetailsInvalidRequest(t *testing.T) {
 	r.Header.Add("Content-type", "application/x-www-form-urlencoded")
 
 	handler := editMyDetails(client, template)
-	err := handler(w, r)
+	err := handler(client.requiredPermissions(), w, r)
 
 	assert.Nil(err)
 

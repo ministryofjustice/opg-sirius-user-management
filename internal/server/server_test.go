@@ -46,8 +46,8 @@ func TestErrorHandler(t *testing.T) {
 
 	tmplError := &mockTemplate{}
 
-	wrap := errorHandler(nil, tmplError, "/prefix", "http://sirius")
-	handler := wrap(func(w http.ResponseWriter, r *http.Request) error {
+	wrap := errorHandler(nil, nil, tmplError, "/prefix", "http://sirius")
+	handler := wrap(func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error {
 		w.WriteHeader(http.StatusTeapot)
 		return nil
 	})
@@ -67,8 +67,8 @@ func TestErrorHandlerUnauthorized(t *testing.T) {
 
 	tmplError := &mockTemplate{}
 
-	wrap := errorHandler(nil, tmplError, "/prefix", "http://sirius")
-	handler := wrap(func(w http.ResponseWriter, r *http.Request) error {
+	wrap := errorHandler(nil, nil, tmplError, "/prefix", "http://sirius")
+	handler := wrap(func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error {
 		return sirius.ErrUnauthorized
 	})
 
@@ -89,8 +89,8 @@ func TestErrorHandlerRedirect(t *testing.T) {
 
 	tmplError := &mockTemplate{}
 
-	wrap := errorHandler(nil, tmplError, "/prefix", "http://sirius")
-	handler := wrap(func(w http.ResponseWriter, r *http.Request) error {
+	wrap := errorHandler(nil, nil, tmplError, "/prefix", "http://sirius")
+	handler := wrap(func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error {
 		return RedirectError("/here")
 	})
 
@@ -112,8 +112,8 @@ func TestErrorHandlerStatus(t *testing.T) {
 	logger := &mockLogger{}
 	tmplError := &mockTemplate{}
 
-	wrap := errorHandler(logger, tmplError, "/prefix", "http://sirius")
-	handler := wrap(func(w http.ResponseWriter, r *http.Request) error {
+	wrap := errorHandler(logger, nil, tmplError, "/prefix", "http://sirius")
+	handler := wrap(func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error {
 		return StatusError(http.StatusTeapot)
 	})
 
@@ -144,8 +144,8 @@ func TestErrorHandlerStatusKnown(t *testing.T) {
 			logger := &mockLogger{}
 			tmplError := &mockTemplate{}
 
-			wrap := errorHandler(logger, tmplError, "/prefix", "http://sirius")
-			handler := wrap(func(w http.ResponseWriter, r *http.Request) error {
+			wrap := errorHandler(logger, nil, tmplError, "/prefix", "http://sirius")
+			handler := wrap(func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error {
 				return StatusError(code)
 			})
 

@@ -72,6 +72,10 @@ func (m *mockEditTeamClient) MyPermissions(ctx sirius.Context) (sirius.Permissio
 	return m.permissions.data, m.permissions.err
 }
 
+func (m *mockEditTeamClient) requiredPermissions() sirius.PermissionSet {
+	return sirius.PermissionSet{"team": sirius.PermissionGroup{Permissions: []string{"put"}}}
+}
+
 func TestGetEditTeam(t *testing.T) {
 	assert := assert.New(t)
 
@@ -89,7 +93,7 @@ func TestGetEditTeam(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/teams/edit/123", nil)
 
-	err := editTeam(client, template)(w, r)
+	err := editTeam(client, template)(client.requiredPermissions(), w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.team.count)
@@ -111,6 +115,16 @@ func TestGetEditTeam(t *testing.T) {
 	}, template.lastVars)
 }
 
+func TestGetEditTeamNoPermission(t *testing.T) {
+	assert := assert.New(t)
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("GET", "/path", nil)
+
+	err := editTeam(nil, nil)(sirius.PermissionSet{}, w, r)
+	assert.Equal(StatusError(http.StatusForbidden), err)
+}
+
 func TestGetEditTeamWithoutTypeEditPermission(t *testing.T) {
 	assert := assert.New(t)
 
@@ -128,7 +142,7 @@ func TestGetEditTeamWithoutTypeEditPermission(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/teams/edit/123", nil)
 
-	err := editTeam(client, template)(w, r)
+	err := editTeam(client, template)(client.requiredPermissions(), w, r)
 	assert.Nil(err)
 
 	assert.Equal(editTeamVars{
@@ -155,7 +169,7 @@ func TestGetEditTeamWithDeletePermission(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/teams/edit/123", nil)
 
-	err := editTeam(client, template)(w, r)
+	err := editTeam(client, template)(client.requiredPermissions(), w, r)
 	assert.Nil(err)
 
 	assert.Equal(editTeamVars{
@@ -181,7 +195,7 @@ func TestGetEditTeamBadPath(t *testing.T) {
 
 			r, _ := http.NewRequest("GET", path, nil)
 
-			err := editTeam(client, template)(nil, r)
+			err := editTeam(client, template)(client.requiredPermissions(), nil, r)
 
 			assert.Equal(StatusError(http.StatusNotFound), err)
 
@@ -211,7 +225,7 @@ func TestPostEditTeam(t *testing.T) {
 	r, _ := http.NewRequest("POST", "/teams/edit/123", strings.NewReader("name=New+name&service=supervision&supervision-type=FINANCE&email=new@opgtest.com&phone=9876"))
 	r.Header.Add("Content-type", "application/x-www-form-urlencoded")
 
-	err := editTeam(client, template)(w, r)
+	err := editTeam(client, template)(client.requiredPermissions(), w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.team.count)
@@ -255,7 +269,7 @@ func TestPostEditLpaTeam(t *testing.T) {
 	r, _ := http.NewRequest("POST", "/teams/edit/123", strings.NewReader("name=New+name&service=lpa&email=new@opgtest.com&phone=9876"))
 	r.Header.Add("Content-type", "application/x-www-form-urlencoded")
 
-	err := editTeam(client, template)(w, r)
+	err := editTeam(client, template)(client.requiredPermissions(), w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.team.count)
@@ -300,7 +314,7 @@ func TestPostEditTeamWithoutPermission(t *testing.T) {
 	r, _ := http.NewRequest("POST", "/teams/edit/123", strings.NewReader("name=New+name&service=lpa&email=new@opgtest.com&phone=9876"))
 	r.Header.Add("Content-type", "application/x-www-form-urlencoded")
 
-	err := editTeam(client, template)(w, r)
+	err := editTeam(client, template)(client.requiredPermissions(), w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.editTeam.count)
@@ -347,7 +361,7 @@ func TestPostEditTeamValidationError(t *testing.T) {
 	r, _ := http.NewRequest("POST", "/teams/edit/123", strings.NewReader("name=New+name&service=supervision&supervision-type=FINANCE&email=new@opgtest.com&phone=9876"))
 	r.Header.Add("Content-type", "application/x-www-form-urlencoded")
 
-	err := editTeam(client, template)(w, r)
+	err := editTeam(client, template)(client.requiredPermissions(), w, r)
 	assert.Nil(err)
 
 	assert.Equal(http.StatusBadRequest, w.Result().StatusCode)
@@ -383,7 +397,7 @@ func TestPostEditTeamOtherError(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/teams/edit/123", nil)
 
-	err := editTeam(client, template)(w, r)
+	err := editTeam(client, template)(client.requiredPermissions(), w, r)
 
 	assert.Equal(expectedErr, err)
 
@@ -400,7 +414,7 @@ func TestPostEditTeamRetrieveError(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/teams/edit/123", nil)
 
-	err := editTeam(client, template)(w, r)
+	err := editTeam(client, template)(client.requiredPermissions(), w, r)
 
 	assert.Equal(StatusError(http.StatusNotFound), err)
 
@@ -418,7 +432,7 @@ func TestPostEditTeamRefDataError(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/teams/edit/123", nil)
 
-	err := editTeam(client, template)(w, r)
+	err := editTeam(client, template)(client.requiredPermissions(), w, r)
 
 	assert.Equal(StatusError(http.StatusNotFound), err)
 
@@ -436,7 +450,7 @@ func TestPostEditTeamGetPermissionsError(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/teams/edit/123", nil)
 
-	err := editTeam(client, template)(w, r)
+	err := editTeam(client, template)(client.requiredPermissions(), w, r)
 
 	assert.Equal(StatusError(http.StatusInternalServerError), err)
 
@@ -455,7 +469,7 @@ func TestBadMethodEditTeam(t *testing.T) {
 
 	r, _ := http.NewRequest("DELETE", "/teams/edit/123", nil)
 
-	err := editTeam(client, template)(nil, r)
+	err := editTeam(client, template)(client.requiredPermissions(), nil, r)
 
 	assert.Equal(StatusError(http.StatusMethodNotAllowed), err)
 

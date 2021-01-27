@@ -15,13 +15,6 @@ type mockMyDetailsClient struct {
 	lastCtx sirius.Context
 	err     error
 	data    sirius.MyDetails
-
-	permissions struct {
-		count   int
-		lastCtx sirius.Context
-		data    sirius.PermissionSet
-		err     error
-	}
 }
 
 func (m *mockMyDetailsClient) MyDetails(ctx sirius.Context) (sirius.MyDetails, error) {
@@ -29,13 +22,6 @@ func (m *mockMyDetailsClient) MyDetails(ctx sirius.Context) (sirius.MyDetails, e
 	m.lastCtx = ctx
 
 	return m.data, m.err
-}
-
-func (m *mockMyDetailsClient) MyPermissions(ctx sirius.Context) (sirius.PermissionSet, error) {
-	m.permissions.count += 1
-	m.permissions.lastCtx = ctx
-
-	return m.permissions.data, m.permissions.err
 }
 
 func TestGetMyDetails(t *testing.T) {
@@ -59,7 +45,7 @@ func TestGetMyDetails(t *testing.T) {
 	r, _ := http.NewRequest("GET", "/path", nil)
 
 	handler := myDetails(client, template)
-	err := handler(w, r)
+	err := handler(sirius.PermissionSet{}, w, r)
 
 	assert.Nil(err)
 
@@ -68,7 +54,6 @@ func TestGetMyDetails(t *testing.T) {
 	assert.Equal(getContext(r), client.lastCtx)
 
 	assert.Equal(1, client.count)
-	assert.Equal(1, client.permissions.count)
 
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
@@ -101,23 +86,19 @@ func TestGetMyDetailsUsesPermission(t *testing.T) {
 		},
 	}
 	client := &mockMyDetailsClient{data: data}
-	client.permissions.data = sirius.PermissionSet{"v1-users-updatetelephonenumber": sirius.PermissionGroup{Permissions: []string{"put"}}}
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
 
 	handler := myDetails(client, template)
-	err := handler(w, r)
+	err := handler(sirius.PermissionSet{"v1-users-updatetelephonenumber": sirius.PermissionGroup{Permissions: []string{"put"}}}, w, r)
 
 	assert.Nil(err)
 
 	resp := w.Result()
 	assert.Equal(http.StatusOK, resp.StatusCode)
 	assert.Equal(getContext(r), client.lastCtx)
-
-	assert.Equal(1, client.count)
-	assert.Equal(1, client.permissions.count)
 
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
@@ -145,7 +126,7 @@ func TestGetMyDetailsUnauthenticated(t *testing.T) {
 	r, _ := http.NewRequest("GET", "", nil)
 
 	handler := myDetails(client, template)
-	err := handler(w, r)
+	err := handler(sirius.PermissionSet{}, w, r)
 
 	assert.Equal(sirius.ErrUnauthorized, err)
 
@@ -162,7 +143,7 @@ func TestGetMyDetailsSiriusErrors(t *testing.T) {
 	r, _ := http.NewRequest("GET", "", nil)
 
 	handler := myDetails(client, template)
-	err := handler(w, r)
+	err := handler(sirius.PermissionSet{}, w, r)
 
 	assert.Equal("err", err.Error())
 
@@ -177,7 +158,7 @@ func TestPostMyDetails(t *testing.T) {
 	r, _ := http.NewRequest("POST", "", nil)
 
 	handler := myDetails(nil, template)
-	err := handler(w, r)
+	err := handler(sirius.PermissionSet{}, w, r)
 
 	assert.Equal(StatusError(http.StatusMethodNotAllowed), err)
 

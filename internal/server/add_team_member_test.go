@@ -58,6 +58,10 @@ func (c *mockAddTeamMemberClient) SearchUsers(ctx sirius.Context, search string)
 	return c.searchUsers.data, c.searchUsers.err
 }
 
+func (c *mockAddTeamMemberClient) requiredPermissions() sirius.PermissionSet {
+	return sirius.PermissionSet{"team": sirius.PermissionGroup{Permissions: []string{"put"}}}
+}
+
 func TestGetAddTeamMember(t *testing.T) {
 	assert := assert.New(t)
 
@@ -67,7 +71,7 @@ func TestGetAddTeamMember(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/teams/add-member/123", nil)
 
-	err := addTeamMember(client, template)(w, r)
+	err := addTeamMember(client, template)(client.requiredPermissions(), w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.team.count)
@@ -82,6 +86,16 @@ func TestGetAddTeamMember(t *testing.T) {
 	assert.Equal(addTeamMemberVars{
 		Path: "/teams/add-member/123",
 	}, template.lastVars)
+}
+
+func TestGetAddTeamMemberNoPermission(t *testing.T) {
+	assert := assert.New(t)
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("GET", "/teams/add-member/123", nil)
+
+	err := addTeamMember(nil, nil)(sirius.PermissionSet{}, w, r)
+	assert.Equal(StatusError(http.StatusForbidden), err)
 }
 
 func TestGetAddTeamMemberSearch(t *testing.T) {
@@ -101,7 +115,7 @@ func TestGetAddTeamMemberSearch(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/teams/add-member/123?search=admin", nil)
 
-	err := addTeamMember(client, template)(w, r)
+	err := addTeamMember(client, template)(client.requiredPermissions(), w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.team.count)
@@ -137,7 +151,7 @@ func TestGetAddTeamMemberTeamError(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/teams/add-member/123", nil)
 
-	err := addTeamMember(client, template)(w, r)
+	err := addTeamMember(client, template)(client.requiredPermissions(), w, r)
 	assert.Equal(expectedError, err)
 
 	assert.Equal(1, client.team.count)
@@ -161,7 +175,7 @@ func TestGetAddTeamMemberSearchClientError(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/teams/add-member/123?search=admin", nil)
 
-	err := addTeamMember(client, template)(w, r)
+	err := addTeamMember(client, template)(client.requiredPermissions(), w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.team.count)
@@ -200,7 +214,7 @@ func TestGetAddTeamMemberSearchError(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/teams/add-member/123?search=admin", nil)
 
-	err := addTeamMember(client, template)(w, r)
+	err := addTeamMember(client, template)(client.requiredPermissions(), w, r)
 	assert.Equal(expectedError, err)
 
 	assert.Equal(1, client.team.count)
@@ -218,8 +232,9 @@ func TestGetAddTeamMemberBadPath(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			assert := assert.New(t)
 
+			client := &mockAddTeamMemberClient{}
 			r, _ := http.NewRequest("GET", path, nil)
-			err := editTeam(nil, nil)(nil, r)
+			err := editTeam(nil, nil)(client.requiredPermissions(), nil, r)
 
 			assert.Equal(StatusError(http.StatusNotFound), err)
 		})
@@ -241,7 +256,7 @@ func TestPostAddTeamMember(t *testing.T) {
 	r, _ := http.NewRequest("POST", "/teams/add-member/123", strings.NewReader("id=5&search=admin&email=system.admin@opgtest.com"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
-	err := addTeamMember(client, template)(w, r)
+	err := addTeamMember(client, template)(client.requiredPermissions(), w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.team.count)
@@ -291,7 +306,7 @@ func TestPostAddTeamMemberClientError(t *testing.T) {
 	r, _ := http.NewRequest("POST", "/teams/add-member/123", strings.NewReader("id=5&search=admin&email=system.admin@opgtest.com"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
-	err := addTeamMember(client, template)(w, r)
+	err := addTeamMember(client, template)(client.requiredPermissions(), w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.team.count)
@@ -338,7 +353,7 @@ func TestPostAddTeamMemberValidationError(t *testing.T) {
 	r, _ := http.NewRequest("POST", "/teams/add-member/123", strings.NewReader("id=5&search=admin&email=system.admin@opgtest.com"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
-	err := addTeamMember(client, template)(w, r)
+	err := addTeamMember(client, template)(client.requiredPermissions(), w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.team.count)
@@ -375,7 +390,7 @@ func TestPostAddTeamMemberOtherError(t *testing.T) {
 	r, _ := http.NewRequest("POST", "/teams/add-member/123", strings.NewReader("id=5&search=admin&email=system.admin@opgtest.com"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
-	err := addTeamMember(client, template)(w, r)
+	err := addTeamMember(client, template)(client.requiredPermissions(), w, r)
 	assert.Equal(expectedError, err)
 
 	assert.Equal(1, client.team.count)
@@ -387,9 +402,10 @@ func TestPostAddTeamMemberOtherError(t *testing.T) {
 func TestPutAddTeamMemberTeam(t *testing.T) {
 	assert := assert.New(t)
 
+	client := &mockAddTeamMemberClient{}
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("PUT", "/teams/add-member/123", nil)
 
-	err := addTeamMember(nil, nil)(w, r)
+	err := addTeamMember(nil, nil)(client.requiredPermissions(), w, r)
 	assert.Equal(StatusError(http.StatusMethodNotAllowed), err)
 }

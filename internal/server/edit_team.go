@@ -27,7 +27,11 @@ type editTeamVars struct {
 }
 
 func editTeam(client EditTeamClient, tmpl Template) Handler {
-	return func(w http.ResponseWriter, r *http.Request) error {
+	return func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error {
+		if !perm.HasPermission("team", http.MethodPut) {
+			return StatusError(http.StatusForbidden)
+		}
+
 		id, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/teams/edit/"))
 		if err != nil {
 			return StatusError(http.StatusNotFound)
