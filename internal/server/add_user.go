@@ -20,7 +20,11 @@ type addUserVars struct {
 }
 
 func addUser(client AddUserClient, tmpl Template) Handler {
-	return func(w http.ResponseWriter, r *http.Request) error {
+	return func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error {
+		if !perm.HasPermission("v1-users", http.MethodPost) {
+			return StatusError(http.StatusForbidden)
+		}
+
 		ctx := getContext(r)
 
 		roles, err := client.Roles(ctx)

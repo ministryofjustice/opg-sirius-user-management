@@ -57,6 +57,10 @@ func (m *mockEditUserClient) Roles(ctx sirius.Context) ([]string, error) {
 	return []string{"System Admin", "Manager"}, m.roles.err
 }
 
+func (m *mockEditUserClient) requiredPermissions() sirius.PermissionSet {
+	return sirius.PermissionSet{"v1-users": sirius.PermissionGroup{Permissions: []string{"put"}}}
+}
+
 func TestGetEditUser(t *testing.T) {
 	assert := assert.New(t)
 
@@ -67,7 +71,7 @@ func TestGetEditUser(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/edit-user/123", nil)
 
-	err := editUser(client, template, false)(w, r)
+	err := editUser(client, template, false)(client.requiredPermissions(), w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.roles.count)
@@ -85,6 +89,16 @@ func TestGetEditUser(t *testing.T) {
 	}, template.lastVars)
 }
 
+func TestGetEditUserNoPermission(t *testing.T) {
+	assert := assert.New(t)
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("GET", "/path", nil)
+
+	err := editUser(nil, nil, false)(sirius.PermissionSet{}, w, r)
+	assert.Equal(StatusError(http.StatusForbidden), err)
+}
+
 func TestGetEditUserDeleteEnabled(t *testing.T) {
 	assert := assert.New(t)
 
@@ -95,7 +109,7 @@ func TestGetEditUserDeleteEnabled(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/edit-user/123", nil)
 
-	err := editUser(client, template, true)(w, r)
+	err := editUser(client, template, true)(client.requiredPermissions(), w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.roles.count)
@@ -122,10 +136,11 @@ func TestGetEditUserBadPath(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			assert := assert.New(t)
 
+			client := &mockEditUserClient{}
 			w := httptest.NewRecorder()
 			r, _ := http.NewRequest("GET", path, nil)
 
-			err := editUser(nil, nil, false)(w, r)
+			err := editUser(nil, nil, false)(client.requiredPermissions(), w, r)
 			assert.Equal(StatusError(http.StatusNotFound), err)
 		})
 	}
@@ -142,7 +157,7 @@ func TestPostEditUser(t *testing.T) {
 	r, _ := http.NewRequest("POST", "/edit-user/123", strings.NewReader("email=a&firstname=b&surname=c&organisation=d&roles=e&roles=f&locked=Yes&suspended=No"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
-	err := editUser(client, template, false)(w, r)
+	err := editUser(client, template, false)(client.requiredPermissions(), w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.roles.count)
@@ -192,7 +207,7 @@ func TestPostEditUserClientError(t *testing.T) {
 	r, _ := http.NewRequest("POST", "/edit-user/123", strings.NewReader("email=a&firstname=b&surname=c&organisation=d&roles=e&roles=f&locked=Yes&suspended=No"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
-	err := editUser(client, template, false)(w, r)
+	err := editUser(client, template, false)(client.requiredPermissions(), w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.roles.count)
@@ -232,7 +247,7 @@ func TestPostEditUserOtherError(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/edit-user/123", nil)
 
-	err := editUser(client, template, false)(w, r)
+	err := editUser(client, template, false)(client.requiredPermissions(), w, r)
 	assert.Equal(expectedErr, err)
 
 	assert.Equal(1, client.roles.count)
@@ -252,7 +267,7 @@ func TestPostEditUserRolesError(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/edit-user/123", nil)
 
-	err := editUser(client, template, false)(w, r)
+	err := editUser(client, template, false)(client.requiredPermissions(), w, r)
 	assert.Equal(expectedErr, err)
 
 	assert.Equal(1, client.roles.count)

@@ -17,13 +17,13 @@ type Logger interface {
 type Client interface {
 	AddTeamClient
 	AddUserClient
-	AllowRolesClient
 	ChangePasswordClient
 	DeleteTeamClient
 	DeleteUserClient
 	EditMyDetailsClient
 	EditTeamClient
 	EditUserClient
+	ErrorHandlerClient
 	ListTeamsClient
 	ListUsersClient
 	MyDetailsClient
@@ -37,8 +37,7 @@ type Template interface {
 }
 
 func New(logger Logger, client Client, templates map[string]*template.Template, prefix, siriusURL, siriusPublicURL, webDir string) http.Handler {
-	wrap := errorHandler(logger, templates["error.gotmpl"], prefix, siriusPublicURL)
-	systemAdminOnly := allowRoles(client, "System Admin")
+	wrap := errorHandler(logger, client, templates["error.gotmpl"], prefix, siriusPublicURL)
 
 	deleteUserEnabled := siriusPublicURL != "https://live.sirius-opg.uk"
 
@@ -48,43 +47,35 @@ func New(logger Logger, client Client, templates map[string]*template.Template, 
 
 	mux.Handle("/users",
 		wrap(
-			systemAdminOnly(
-				listUsers(client, templates["users.gotmpl"]))))
+			listUsers(client, templates["users.gotmpl"])))
 
 	mux.Handle("/teams",
 		wrap(
-			allowRoles(client, "System Admin", "Manager")(
-				listTeams(client, templates["teams.gotmpl"]))))
+			listTeams(client, templates["teams.gotmpl"])))
 
 	mux.Handle("/teams/",
 		wrap(
-			allowRoles(client, "System Admin", "Manager")(
-				viewTeam(client, templates["team.gotmpl"]))))
+			viewTeam(client, templates["team.gotmpl"])))
 
 	mux.Handle("/teams/add",
 		wrap(
-			systemAdminOnly(
-				addTeam(client, templates["team-add.gotmpl"]))))
+			addTeam(client, templates["team-add.gotmpl"])))
 
 	mux.Handle("/teams/edit/",
 		wrap(
-			allowRoles(client, "System Admin", "Manager")(
-				editTeam(client, templates["team-edit.gotmpl"]))))
+			editTeam(client, templates["team-edit.gotmpl"])))
 
 	mux.Handle("/teams/delete/",
 		wrap(
-			systemAdminOnly(
-				deleteTeam(client, templates["team-delete.gotmpl"]))))
+			deleteTeam(client, templates["team-delete.gotmpl"])))
 
 	mux.Handle("/teams/add-member/",
 		wrap(
-			allowRoles(client, "System Admin", "Manager")(
-				addTeamMember(client, templates["team-add-member.gotmpl"]))))
+			addTeamMember(client, templates["team-add-member.gotmpl"])))
 
 	mux.Handle("/teams/remove-member/",
 		wrap(
-			allowRoles(client, "System Admin", "Manager")(
-				removeTeamMember(client, templates["team-remove-member.gotmpl"]))))
+			removeTeamMember(client, templates["team-remove-member.gotmpl"])))
 
 	mux.Handle("/my-details",
 		wrap(
@@ -100,28 +91,23 @@ func New(logger Logger, client Client, templates map[string]*template.Template, 
 
 	mux.Handle("/add-user",
 		wrap(
-			systemAdminOnly(
-				addUser(client, templates["add-user.gotmpl"]))))
+			addUser(client, templates["add-user.gotmpl"])))
 
 	mux.Handle("/edit-user/",
 		wrap(
-			systemAdminOnly(
-				editUser(client, templates["edit-user.gotmpl"], deleteUserEnabled))))
+			editUser(client, templates["edit-user.gotmpl"], deleteUserEnabled)))
 
 	mux.Handle("/unlock-user/",
 		wrap(
-			systemAdminOnly(
-				unlockUser(client, templates["unlock-user.gotmpl"]))))
+			unlockUser(client, templates["unlock-user.gotmpl"])))
 
 	mux.Handle("/delete-user/",
 		wrap(
-			systemAdminOnly(
-				deleteUser(client, templates["delete-user.gotmpl"], deleteUserEnabled))))
+			deleteUser(client, templates["delete-user.gotmpl"], deleteUserEnabled)))
 
 	mux.Handle("/resend-confirmation",
 		wrap(
-			systemAdminOnly(
-				resendConfirmation(client, templates["resend-confirmation.gotmpl"]))))
+			resendConfirmation(client, templates["resend-confirmation.gotmpl"])))
 
 	static := http.FileServer(http.Dir(webDir + "/static"))
 	mux.Handle("/assets/", static)
@@ -153,7 +139,7 @@ func (e StatusError) Code() int {
 	return int(e)
 }
 
-type Handler func(w http.ResponseWriter, r *http.Request) error
+type Handler func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error
 
 type errorVars struct {
 	SiriusURL string
@@ -163,10 +149,20 @@ type errorVars struct {
 	Error string
 }
 
-func errorHandler(logger Logger, tmplError Template, prefix, siriusURL string) func(next Handler) http.Handler {
+type ErrorHandlerClient interface {
+	MyPermissions(sirius.Context) (sirius.PermissionSet, error)
+}
+
+func errorHandler(logger Logger, client ErrorHandlerClient, tmplError Template, prefix, siriusURL string) func(next Handler) http.Handler {
 	return func(next Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if err := next(w, r); err != nil {
+			myPermissions, err := client.MyPermissions(getContext(r))
+
+			if err == nil {
+				err = next(myPermissions, w, r)
+			}
+
+			if err != nil {
 				if err == sirius.ErrUnauthorized {
 					http.Redirect(w, r, siriusURL+"/auth", http.StatusFound)
 					return

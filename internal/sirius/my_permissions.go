@@ -25,7 +25,7 @@ type myPermissions struct {
 	Data PermissionSet `json:"data"`
 }
 
-func (c *Client) GetMyPermissions(ctx Context) (PermissionSet, error) {
+func (c *Client) MyPermissions(ctx Context) (PermissionSet, error) {
 	req, err := c.newRequest(ctx, http.MethodGet, "/api/permission", nil)
 	if err != nil {
 		return nil, err
@@ -51,14 +51,4 @@ func (c *Client) GetMyPermissions(ctx Context) (PermissionSet, error) {
 	}
 
 	return v.Data, nil
-}
-
-func (c *Client) HasPermission(ctx Context, group string, method string) (bool, error) {
-	myPermissions, err := c.GetMyPermissions(ctx)
-
-	if err != nil {
-		return false, err
-	}
-
-	return myPermissions.HasPermission(group, method), nil
 }

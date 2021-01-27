@@ -23,8 +23,8 @@ type deleteUserVars struct {
 }
 
 func deleteUser(client DeleteUserClient, tmpl Template, deleteUserEnabled bool) Handler {
-	return func(w http.ResponseWriter, r *http.Request) error {
-		if !deleteUserEnabled {
+	return func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error {
+		if !deleteUserEnabled || !perm.HasPermission("v1-users", http.MethodDelete) {
 			return StatusError(http.StatusForbidden)
 		}
 

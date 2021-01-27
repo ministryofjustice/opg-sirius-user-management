@@ -49,6 +49,10 @@ func (m *mockAddUserClient) Roles(ctx sirius.Context) ([]string, error) {
 	return []string{"System Admin", "Manager"}, m.roles.err
 }
 
+func (m *mockAddUserClient) requiredPermissions() sirius.PermissionSet {
+	return sirius.PermissionSet{"v1-users": sirius.PermissionGroup{Permissions: []string{"post"}}}
+}
+
 func TestGetAddUser(t *testing.T) {
 	assert := assert.New(t)
 
@@ -58,7 +62,7 @@ func TestGetAddUser(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
 
-	err := addUser(client, template)(w, r)
+	err := addUser(client, template)(client.requiredPermissions(), w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.roles.count)
@@ -74,6 +78,16 @@ func TestGetAddUser(t *testing.T) {
 	}, template.lastVars)
 }
 
+func TestGetAddUserNoPermission(t *testing.T) {
+	assert := assert.New(t)
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("GET", "/path", nil)
+
+	err := addUser(nil, nil)(sirius.PermissionSet{}, w, r)
+	assert.Equal(StatusError(http.StatusForbidden), err)
+}
+
 func TestPostAddUser(t *testing.T) {
 	assert := assert.New(t)
 
@@ -84,7 +98,7 @@ func TestPostAddUser(t *testing.T) {
 	r, _ := http.NewRequest("POST", "/path", strings.NewReader("email=a&firstname=b&surname=c&organisation=d&roles=e&roles=f"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
-	err := addUser(client, template)(w, r)
+	err := addUser(client, template)(client.requiredPermissions(), w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.roles.count)
@@ -123,7 +137,7 @@ func TestPostAddUserValidationError(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", nil)
 
-	err := addUser(client, template)(w, r)
+	err := addUser(client, template)(client.requiredPermissions(), w, r)
 	assert.Nil(err)
 
 	resp := w.Result()
@@ -152,7 +166,7 @@ func TestPostAddUserOtherError(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", nil)
 
-	err := addUser(client, template)(w, r)
+	err := addUser(client, template)(client.requiredPermissions(), w, r)
 	assert.Equal(expectedErr, err)
 
 	assert.Equal(1, client.roles.count)
@@ -171,7 +185,7 @@ func TestPostAddUserRolesError(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", nil)
 
-	err := addUser(client, template)(w, r)
+	err := addUser(client, template)(client.requiredPermissions(), w, r)
 	assert.Equal(expectedErr, err)
 
 	assert.Equal(1, client.roles.count)

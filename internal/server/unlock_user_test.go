@@ -43,6 +43,10 @@ func (m *mockUnlockUserClient) EditUser(ctx sirius.Context, user sirius.AuthUser
 	return m.editUser.err
 }
 
+func (m *mockUnlockUserClient) requiredPermissions() sirius.PermissionSet {
+	return sirius.PermissionSet{"v1-users": sirius.PermissionGroup{Permissions: []string{"put"}}}
+}
+
 func TestGetUnlockUser(t *testing.T) {
 	assert := assert.New(t)
 
@@ -53,7 +57,7 @@ func TestGetUnlockUser(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/unlock-user/123", nil)
 
-	err := unlockUser(client, template)(w, r)
+	err := unlockUser(client, template)(client.requiredPermissions(), w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.user.count)
@@ -68,6 +72,16 @@ func TestGetUnlockUser(t *testing.T) {
 	}, template.lastVars)
 }
 
+func TestGetUnlockUserNoPermission(t *testing.T) {
+	assert := assert.New(t)
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("GET", "/path", nil)
+
+	err := unlockUser(nil, nil)(sirius.PermissionSet{}, w, r)
+	assert.Equal(StatusError(http.StatusForbidden), err)
+}
+
 func TestGetUnlockUserError(t *testing.T) {
 	assert := assert.New(t)
 
@@ -80,7 +94,7 @@ func TestGetUnlockUserError(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/unlock-user/123", nil)
 
-	err := unlockUser(client, template)(w, r)
+	err := unlockUser(client, template)(client.requiredPermissions(), w, r)
 	assert.Equal(expectedError, err)
 
 	assert.Equal(1, client.user.count)
@@ -103,7 +117,7 @@ func TestGetUnlockUserBadPath(t *testing.T) {
 			w := httptest.NewRecorder()
 			r, _ := http.NewRequest("GET", path, nil)
 
-			err := unlockUser(client, template)(w, r)
+			err := unlockUser(client, template)(client.requiredPermissions(), w, r)
 			assert.Equal(StatusError(http.StatusNotFound), err)
 
 			assert.Equal(0, client.user.count)
@@ -123,7 +137,7 @@ func TestPostUnlockUser(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/unlock-user/123", nil)
 
-	err := unlockUser(client, template)(w, r)
+	err := unlockUser(client, template)(client.requiredPermissions(), w, r)
 	assert.Equal(RedirectError("/edit-user/123"), err)
 
 	assert.Equal(1, client.editUser.count)
@@ -148,7 +162,7 @@ func TestPostUnlockUserClientError(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/unlock-user/123", nil)
 
-	err := unlockUser(client, template)(w, r)
+	err := unlockUser(client, template)(client.requiredPermissions(), w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.user.count)
@@ -178,7 +192,7 @@ func TestPostUnlockUserOtherError(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/unlock-user/123", nil)
 
-	err := unlockUser(client, template)(w, r)
+	err := unlockUser(client, template)(client.requiredPermissions(), w, r)
 	assert.Equal(expectedErr, err)
 
 	assert.Equal(1, client.user.count)
@@ -189,9 +203,10 @@ func TestPostUnlockUserOtherError(t *testing.T) {
 func TestPutUnlockUser(t *testing.T) {
 	assert := assert.New(t)
 
+	client := &mockUnlockUserClient{}
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("PUT", "/unlock-user/123", nil)
 
-	err := unlockUser(nil, nil)(w, r)
+	err := unlockUser(nil, nil)(client.requiredPermissions(), w, r)
 	assert.Equal(StatusError(http.StatusMethodNotAllowed), err)
 }

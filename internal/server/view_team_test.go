@@ -25,6 +25,10 @@ func (m *mockViewTeamClient) Team(ctx sirius.Context, id int) (sirius.Team, erro
 	return m.data, m.err
 }
 
+func (m *mockViewTeamClient) requiredPermissions() sirius.PermissionSet {
+	return sirius.PermissionSet{"team": sirius.PermissionGroup{Permissions: []string{"put"}}}
+}
+
 func TestViewTeam(t *testing.T) {
 	assert := assert.New(t)
 
@@ -47,7 +51,7 @@ func TestViewTeam(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/teams/16", nil)
 
-	err := viewTeam(client, template)(w, r)
+	err := viewTeam(client, template)(client.requiredPermissions(), w, r)
 	assert.Nil(err)
 
 	resp := w.Result()
@@ -64,6 +68,16 @@ func TestViewTeam(t *testing.T) {
 	}, template.lastVars)
 }
 
+func TestViewTeamNoPermission(t *testing.T) {
+	assert := assert.New(t)
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("GET", "/path", nil)
+
+	err := viewTeam(nil, nil)(sirius.PermissionSet{}, w, r)
+	assert.Equal(StatusError(http.StatusForbidden), err)
+}
+
 func TestViewTeamNotFound(t *testing.T) {
 	assert := assert.New(t)
 
@@ -75,7 +89,7 @@ func TestViewTeamNotFound(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/teams/25", nil)
 
-	err := viewTeam(client, template)(w, r)
+	err := viewTeam(client, template)(client.requiredPermissions(), w, r)
 
 	assert.Equal(StatusError(http.StatusNotFound), err)
 }
@@ -89,7 +103,7 @@ func TestViewTeamBadPath(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/teams/jeoi", nil)
 
-	err := viewTeam(client, template)(w, r)
+	err := viewTeam(client, template)(client.requiredPermissions(), w, r)
 
 	assert.Equal(StatusError(http.StatusNotFound), err)
 }
@@ -97,9 +111,10 @@ func TestViewTeamBadPath(t *testing.T) {
 func TestPostViewTeam(t *testing.T) {
 	assert := assert.New(t)
 
+	client := &mockViewTeamClient{}
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "", nil)
 
-	err := viewTeam(nil, nil)(w, r)
+	err := viewTeam(nil, nil)(client.requiredPermissions(), w, r)
 	assert.Equal(StatusError(http.StatusMethodNotAllowed), err)
 }

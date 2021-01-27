@@ -23,7 +23,11 @@ type deleteTeamVars struct {
 }
 
 func deleteTeam(client DeleteTeamClient, tmpl Template) Handler {
-	return func(w http.ResponseWriter, r *http.Request) error {
+	return func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error {
+		if !perm.HasPermission("v1-teams", http.MethodDelete) {
+			return StatusError(http.StatusForbidden)
+		}
+
 		id, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/teams/delete/"))
 		if err != nil {
 			return StatusError(http.StatusNotFound)

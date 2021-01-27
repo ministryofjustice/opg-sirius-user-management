@@ -26,6 +26,10 @@ func (m *mockListUsersClient) SearchUsers(ctx sirius.Context, search string) ([]
 	return m.data, m.err
 }
 
+func (m *mockListUsersClient) requiredPermissions() sirius.PermissionSet {
+	return sirius.PermissionSet{"v1-users": sirius.PermissionGroup{Permissions: []string{"put"}}}
+}
+
 func TestListUsers(t *testing.T) {
 	assert := assert.New(t)
 
@@ -46,7 +50,7 @@ func TestListUsers(t *testing.T) {
 	r, _ := http.NewRequest("GET", "/path?search=milo", nil)
 
 	handler := listUsers(client, template)
-	err := handler(w, r)
+	err := handler(client.requiredPermissions(), w, r)
 
 	assert.Nil(err)
 
@@ -73,6 +77,16 @@ func TestListUsers(t *testing.T) {
 	}, template.lastVars)
 }
 
+func TestListUsersNoPermission(t *testing.T) {
+	assert := assert.New(t)
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("GET", "/path", nil)
+
+	err := listUsers(nil, nil)(sirius.PermissionSet{}, w, r)
+	assert.Equal(StatusError(http.StatusForbidden), err)
+}
+
 func TestListUsersRequiresSearch(t *testing.T) {
 	assert := assert.New(t)
 
@@ -93,7 +107,7 @@ func TestListUsersRequiresSearch(t *testing.T) {
 	r, _ := http.NewRequest("GET", "/path", nil)
 
 	handler := listUsers(client, template)
-	err := handler(w, r)
+	err := handler(client.requiredPermissions(), w, r)
 
 	assert.Nil(err)
 
@@ -123,7 +137,7 @@ func TestListUsersClientError(t *testing.T) {
 	r, _ := http.NewRequest("GET", "/path?search=m", nil)
 
 	handler := listUsers(client, template)
-	err := handler(w, r)
+	err := handler(client.requiredPermissions(), w, r)
 
 	assert.Nil(err)
 
@@ -157,7 +171,7 @@ func TestListUsersSiriusErrors(t *testing.T) {
 	r, _ := http.NewRequest("GET", "/?search=long", nil)
 
 	handler := listUsers(client, template)
-	err := handler(w, r)
+	err := handler(client.requiredPermissions(), w, r)
 
 	assert.Equal(expectedErr, err)
 	assert.Equal(0, template.count)
@@ -167,11 +181,12 @@ func TestPostListUsers(t *testing.T) {
 	assert := assert.New(t)
 	template := &mockTemplate{}
 
+	client := &mockListUsersClient{}
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "", nil)
 
 	handler := listUsers(nil, template)
-	err := handler(w, r)
+	err := handler(client.requiredPermissions(), w, r)
 
 	assert.Equal(StatusError(http.StatusMethodNotAllowed), err)
 

@@ -12,7 +12,6 @@ type EditTeamClient interface {
 	Team(sirius.Context, int) (sirius.Team, error)
 	EditTeam(sirius.Context, sirius.Team) error
 	TeamTypes(sirius.Context) ([]sirius.RefDataTeamType, error)
-	GetMyPermissions(sirius.Context) (sirius.PermissionSet, error)
 }
 
 type editTeamVars struct {
@@ -27,7 +26,11 @@ type editTeamVars struct {
 }
 
 func editTeam(client EditTeamClient, tmpl Template) Handler {
-	return func(w http.ResponseWriter, r *http.Request) error {
+	return func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error {
+		if !perm.HasPermission("team", http.MethodPut) {
+			return StatusError(http.StatusForbidden)
+		}
+
 		id, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/teams/edit/"))
 		if err != nil {
 			return StatusError(http.StatusNotFound)
@@ -40,13 +43,8 @@ func editTeam(client EditTeamClient, tmpl Template) Handler {
 			return err
 		}
 
-		myPermissions, err := client.GetMyPermissions(ctx)
-		if err != nil {
-			return err
-		}
-
-		canEditTeamType := myPermissions.HasPermission("team", "post")
-		canDeleteTeam := myPermissions.HasPermission("v1-teams", "delete")
+		canEditTeamType := perm.HasPermission("team", http.MethodPost)
+		canDeleteTeam := perm.HasPermission("v1-teams", http.MethodDelete)
 
 		teamTypes, err := client.TeamTypes(ctx)
 		if err != nil {

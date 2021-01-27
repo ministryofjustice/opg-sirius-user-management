@@ -26,14 +26,29 @@ func (m *mockResendConfirmationClient) ResendConfirmation(ctx sirius.Context, em
 	return m.err
 }
 
+func (m *mockResendConfirmationClient) requiredPermissions() sirius.PermissionSet {
+	return sirius.PermissionSet{"v1-users": sirius.PermissionGroup{Permissions: []string{"put"}}}
+}
+
 func TestGetResendConfirmation(t *testing.T) {
+	assert := assert.New(t)
+
+	client := &mockResendConfirmationClient{}
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("GET", "/path", nil)
+
+	err := resendConfirmation(nil, nil)(client.requiredPermissions(), w, r)
+	assert.Equal(RedirectError("/users"), err)
+}
+
+func TestGetResendConfirmationNoPermission(t *testing.T) {
 	assert := assert.New(t)
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
 
-	err := resendConfirmation(nil, nil)(w, r)
-	assert.Equal(RedirectError("/users"), err)
+	err := resendConfirmation(nil, nil)(sirius.PermissionSet{}, w, r)
+	assert.Equal(StatusError(http.StatusForbidden), err)
 }
 
 func TestPostResendConfirmation(t *testing.T) {
@@ -46,7 +61,7 @@ func TestPostResendConfirmation(t *testing.T) {
 	r, _ := http.NewRequest("POST", "/path", strings.NewReader("email=a&id=b"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
-	err := resendConfirmation(client, template)(w, r)
+	err := resendConfirmation(client, template)(client.requiredPermissions(), w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.count)
@@ -73,6 +88,6 @@ func TestPostResendConfirmationError(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", nil)
 
-	err := resendConfirmation(client, nil)(w, r)
+	err := resendConfirmation(client, nil)(client.requiredPermissions(), w, r)
 	assert.Equal(expectedErr, err)
 }

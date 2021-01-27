@@ -22,7 +22,11 @@ type unlockUserVars struct {
 }
 
 func unlockUser(client UnlockUserClient, tmpl Template) Handler {
-	return func(w http.ResponseWriter, r *http.Request) error {
+	return func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error {
+		if !perm.HasPermission("v1-users", http.MethodPut) {
+			return StatusError(http.StatusForbidden)
+		}
+
 		id, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/unlock-user/"))
 		if err != nil {
 			return StatusError(http.StatusNotFound)

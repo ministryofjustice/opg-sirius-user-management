@@ -48,6 +48,10 @@ func (m *mockAddTeamClient) TeamTypes(ctx sirius.Context) ([]sirius.RefDataTeamT
 	return m.teamTypes.data, m.teamTypes.err
 }
 
+func (m *mockAddTeamClient) requiredPermissions() sirius.PermissionSet {
+	return sirius.PermissionSet{"team": sirius.PermissionGroup{Permissions: []string{"post"}}}
+}
+
 func TestGetAddTeam(t *testing.T) {
 	assert := assert.New(t)
 
@@ -60,7 +64,7 @@ func TestGetAddTeam(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
 
-	err := addTeam(client, template)(w, r)
+	err := addTeam(client, template)(client.requiredPermissions(), w, r)
 	assert.Nil(err)
 
 	assert.Equal(0, client.addTeam.count)
@@ -76,6 +80,16 @@ func TestGetAddTeam(t *testing.T) {
 	}, template.lastVars)
 }
 
+func TestGetAddTeamNoPermission(t *testing.T) {
+	assert := assert.New(t)
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("GET", "/path", nil)
+
+	err := addTeam(nil, nil)(sirius.PermissionSet{}, w, r)
+	assert.Equal(StatusError(http.StatusForbidden), err)
+}
+
 func TestGetAddTeamTeamTypesError(t *testing.T) {
 	assert := assert.New(t)
 
@@ -88,7 +102,7 @@ func TestGetAddTeamTeamTypesError(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
 
-	err := addTeam(client, template)(w, r)
+	err := addTeam(client, template)(client.requiredPermissions(), w, r)
 	assert.Equal(expectedError, err)
 
 	assert.Equal(1, client.teamTypes.count)
@@ -110,7 +124,7 @@ func TestPostAddTeam(t *testing.T) {
 	r, _ := http.NewRequest("POST", "/path", strings.NewReader("name=a&service=b&supervision-type=c&phone=d&email=e"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
-	err := addTeam(client, template)(w, r)
+	err := addTeam(client, template)(client.requiredPermissions(), w, r)
 	assert.Equal(RedirectError("/teams/123"), err)
 
 	assert.Equal(1, client.addTeam.count)
@@ -138,7 +152,7 @@ func TestPostAddTeamLpa(t *testing.T) {
 	r, _ := http.NewRequest("POST", "/path", strings.NewReader("name=a&service=lpa&supervision-type=c&phone=d&email=e"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
-	err := addTeam(client, template)(w, r)
+	err := addTeam(client, template)(client.requiredPermissions(), w, r)
 	assert.Equal(RedirectError("/teams/123"), err)
 
 	assert.Equal(1, client.addTeam.count)
@@ -170,7 +184,7 @@ func TestPostAddTeamValidationError(t *testing.T) {
 	r, _ := http.NewRequest("POST", "/path", strings.NewReader("name=a&service=b&supervision-type=c&phone=d&email=e"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
-	err := addTeam(client, template)(w, r)
+	err := addTeam(client, template)(client.requiredPermissions(), w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.addTeam.count)
@@ -208,7 +222,7 @@ func TestPostAddTeamError(t *testing.T) {
 	r, _ := http.NewRequest("POST", "/path", strings.NewReader("name=a&service=b&supervision-type=c&phone=d&email=e"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
-	err := addTeam(client, template)(w, r)
+	err := addTeam(client, template)(client.requiredPermissions(), w, r)
 	assert.Equal(expectedError, err)
 
 	assert.Equal(1, client.addTeam.count)
@@ -223,6 +237,6 @@ func TestPutAddTeam(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("PUT", "/path", nil)
 
-	err := addTeam(client, nil)(w, r)
+	err := addTeam(client, nil)(client.requiredPermissions(), w, r)
 	assert.Equal(StatusError(http.StatusMethodNotAllowed), err)
 }

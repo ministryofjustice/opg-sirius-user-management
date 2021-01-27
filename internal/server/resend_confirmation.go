@@ -17,7 +17,11 @@ type resendConfirmationVars struct {
 }
 
 func resendConfirmation(client ResendConfirmationClient, tmpl Template) Handler {
-	return func(w http.ResponseWriter, r *http.Request) error {
+	return func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error {
+		if !perm.HasPermission("v1-users", http.MethodPut) {
+			return StatusError(http.StatusForbidden)
+		}
+
 		switch r.Method {
 		case http.MethodGet:
 			return RedirectError("/users")

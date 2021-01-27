@@ -25,7 +25,11 @@ type editUserVars struct {
 }
 
 func editUser(client EditUserClient, tmpl Template, deleteUserEnabled bool) Handler {
-	return func(w http.ResponseWriter, r *http.Request) error {
+	return func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error {
+		if !perm.HasPermission("v1-users", http.MethodPut) {
+			return StatusError(http.StatusForbidden)
+		}
+
 		id, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/edit-user/"))
 		if err != nil {
 			return StatusError(http.StatusNotFound)

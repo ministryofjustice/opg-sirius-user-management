@@ -26,7 +26,11 @@ type addTeamMemberVars struct {
 }
 
 func addTeamMember(client AddTeamMemberClient, tmpl Template) Handler {
-	return func(w http.ResponseWriter, r *http.Request) error {
+	return func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error {
+		if !perm.HasPermission("team", http.MethodPut) {
+			return StatusError(http.StatusForbidden)
+		}
+
 		if r.Method != http.MethodGet && r.Method != http.MethodPost {
 			return StatusError(http.StatusMethodNotAllowed)
 		}
