@@ -7,7 +7,7 @@ import (
 )
 
 type RequirePermissionClient interface {
-	GetMyPermissions(sirius.Context) (sirius.PermissionSet, error)
+	MyPermissions(sirius.Context) (sirius.PermissionSet, error)
 }
 
 type PermissionRequest struct {
@@ -18,7 +18,7 @@ type PermissionRequest struct {
 func requirePermissions(client RequirePermissionClient, permissions ...PermissionRequest) func(Handler) Handler {
 	return func(next Handler) Handler {
 		return func(w http.ResponseWriter, r *http.Request) error {
-			myPermissions, err := client.GetMyPermissions(getContext(r))
+			myPermissions, err := client.MyPermissions(getContext(r))
 			if err != nil {
 				return err
 			}

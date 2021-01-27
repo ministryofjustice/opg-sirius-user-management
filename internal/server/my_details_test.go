@@ -31,7 +31,7 @@ func (m *mockMyDetailsClient) MyDetails(ctx sirius.Context) (sirius.MyDetails, e
 	return m.data, m.err
 }
 
-func (m *mockMyDetailsClient) GetMyPermissions(ctx sirius.Context) (sirius.PermissionSet, error) {
+func (m *mockMyDetailsClient) MyPermissions(ctx sirius.Context) (sirius.PermissionSet, error) {
 	m.permissions.count += 1
 	m.permissions.lastCtx = ctx
 

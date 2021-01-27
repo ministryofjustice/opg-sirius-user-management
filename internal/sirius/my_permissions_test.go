@@ -96,7 +96,7 @@ func TestPermissions(t *testing.T) {
 			assert.Nil(t, pact.Verify(func() error {
 				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
 
-				myPermissions, err := client.GetMyPermissions(getContext(tc.cookies))
+				myPermissions, err := client.MyPermissions(getContext(tc.cookies))
 				assert.Equal(t, tc.expectedResponse, myPermissions)
 				assert.Equal(t, tc.expectedError, err)
 				return nil
@@ -185,7 +185,7 @@ func TestPermissionsIgnoredPact(t *testing.T) {
 			assert.Nil(t, pact.Verify(func() error {
 				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
 
-				myPermissions, err := client.GetMyPermissions(getContext(tc.cookies))
+				myPermissions, err := client.MyPermissions(getContext(tc.cookies))
 				assert.Equal(t, tc.expectedResponse, myPermissions)
 				assert.Equal(t, tc.expectedError, err)
 				return nil
@@ -200,7 +200,7 @@ func TestHasPermissionStatusError(t *testing.T) {
 
 	client, _ := NewClient(http.DefaultClient, s.URL)
 
-	_, err := client.GetMyPermissions(getContext(nil))
+	_, err := client.MyPermissions(getContext(nil))
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
 		URL:    s.URL + "/api/permission",

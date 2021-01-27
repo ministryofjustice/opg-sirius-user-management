@@ -50,7 +50,7 @@ func (m *mockEditMyDetailsClient) EditMyDetails(ctx sirius.Context, id int, phon
 	return m.errSave
 }
 
-func (m *mockEditMyDetailsClient) GetMyPermissions(ctx sirius.Context) (sirius.PermissionSet, error) {
+func (m *mockEditMyDetailsClient) MyPermissions(ctx sirius.Context) (sirius.PermissionSet, error) {
 	m.permissions.count += 1
 	m.permissions.lastCtx = ctx
 

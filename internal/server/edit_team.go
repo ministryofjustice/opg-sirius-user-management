@@ -12,7 +12,7 @@ type EditTeamClient interface {
 	Team(sirius.Context, int) (sirius.Team, error)
 	EditTeam(sirius.Context, sirius.Team) error
 	TeamTypes(sirius.Context) ([]sirius.RefDataTeamType, error)
-	GetMyPermissions(sirius.Context) (sirius.PermissionSet, error)
+	MyPermissions(sirius.Context) (sirius.PermissionSet, error)
 }
 
 type editTeamVars struct {
@@ -40,7 +40,7 @@ func editTeam(client EditTeamClient, tmpl Template) Handler {
 			return err
 		}
 
-		myPermissions, err := client.GetMyPermissions(ctx)
+		myPermissions, err := client.MyPermissions(ctx)
 		if err != nil {
 			return err
 		}

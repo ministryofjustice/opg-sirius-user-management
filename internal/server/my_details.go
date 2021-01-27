@@ -8,7 +8,7 @@ import (
 
 type MyDetailsClient interface {
 	MyDetails(sirius.Context) (sirius.MyDetails, error)
-	GetMyPermissions(sirius.Context) (sirius.PermissionSet, error)
+	MyPermissions(sirius.Context) (sirius.PermissionSet, error)
 }
 
 type myDetailsVars struct {
@@ -37,7 +37,7 @@ func myDetails(client MyDetailsClient, tmpl Template) Handler {
 			return err
 		}
 
-		myPermissions, err := client.GetMyPermissions(ctx)
+		myPermissions, err := client.MyPermissions(ctx)
 		if err != nil {
 			return err
 		}

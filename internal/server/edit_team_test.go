@@ -65,7 +65,7 @@ func (m *mockEditTeamClient) EditTeam(ctx sirius.Context, team sirius.Team) erro
 	return m.editTeam.err
 }
 
-func (m *mockEditTeamClient) GetMyPermissions(ctx sirius.Context) (sirius.PermissionSet, error) {
+func (m *mockEditTeamClient) MyPermissions(ctx sirius.Context) (sirius.PermissionSet, error) {
 	m.permissions.count += 1
 	m.permissions.lastCtx = ctx
 

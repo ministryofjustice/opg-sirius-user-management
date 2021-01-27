@@ -16,7 +16,7 @@ type mockRequirePermissionsClient struct {
 	err         error
 }
 
-func (m *mockRequirePermissionsClient) GetMyPermissions(ctx sirius.Context) (sirius.PermissionSet, error) {
+func (m *mockRequirePermissionsClient) MyPermissions(ctx sirius.Context) (sirius.PermissionSet, error) {
 	m.count++
 
 	return m.permissions, m.err
