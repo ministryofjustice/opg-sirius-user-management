@@ -1,6 +1,7 @@
 package server
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -37,6 +38,18 @@ func (m *mockTemplate) ExecuteTemplate(w io.Writer, name string, vars interface{
 	return nil
 }
 
+type mockErrorHandlerClient struct {
+	count       int
+	err         error
+	permissions sirius.PermissionSet
+}
+
+func (m *mockErrorHandlerClient) MyPermissions(ctx sirius.Context) (sirius.PermissionSet, error) {
+	m.count++
+
+	return m.permissions, m.err
+}
+
 func TestNew(t *testing.T) {
 	assert.Implements(t, (*http.Handler)(nil), New(nil, nil, nil, "", "", "", ""))
 }
@@ -44,9 +57,10 @@ func TestNew(t *testing.T) {
 func TestErrorHandler(t *testing.T) {
 	assert := assert.New(t)
 
+	client := &mockErrorHandlerClient{}
 	tmplError := &mockTemplate{}
 
-	wrap := errorHandler(nil, nil, tmplError, "/prefix", "http://sirius")
+	wrap := errorHandler(nil, client, tmplError, "/prefix", "http://sirius")
 	handler := wrap(func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error {
 		w.WriteHeader(http.StatusTeapot)
 		return nil
@@ -58,6 +72,9 @@ func TestErrorHandler(t *testing.T) {
 	handler.ServeHTTP(w, r)
 
 	resp := w.Result()
+
+	assert.Equal(1, client.count)
+
 	assert.Equal(http.StatusTeapot, resp.StatusCode)
 	assert.Equal(0, tmplError.count)
 }
@@ -65,9 +82,10 @@ func TestErrorHandler(t *testing.T) {
 func TestErrorHandlerUnauthorized(t *testing.T) {
 	assert := assert.New(t)
 
+	client := &mockErrorHandlerClient{}
 	tmplError := &mockTemplate{}
 
-	wrap := errorHandler(nil, nil, tmplError, "/prefix", "http://sirius")
+	wrap := errorHandler(nil, client, tmplError, "/prefix", "http://sirius")
 	handler := wrap(func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error {
 		return sirius.ErrUnauthorized
 	})
@@ -84,12 +102,44 @@ func TestErrorHandlerUnauthorized(t *testing.T) {
 	assert.Equal(0, tmplError.count)
 }
 
+func TestErrorHandlerMyPermissionsError(t *testing.T) {
+	assert := assert.New(t)
+
+	expectedError := errors.New("oops")
+
+	logger := &mockLogger{}
+	client := &mockErrorHandlerClient{}
+	client.err = expectedError
+	tmplError := &mockTemplate{}
+
+	wrap := errorHandler(logger, client, tmplError, "/prefix", "http://sirius")
+	handler := wrap(func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error {
+		return sirius.ErrUnauthorized
+	})
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("GET", "/path", nil)
+
+	handler.ServeHTTP(w, r)
+
+	resp := w.Result()
+
+	assert.Equal(1, logger.count)
+	assert.Equal(r, logger.lastRequest)
+	assert.Equal(expectedError, logger.lastError)
+
+	assert.Equal(http.StatusInternalServerError, resp.StatusCode)
+
+	assert.Equal(1, tmplError.count)
+}
+
 func TestErrorHandlerRedirect(t *testing.T) {
 	assert := assert.New(t)
 
+	client := &mockErrorHandlerClient{}
 	tmplError := &mockTemplate{}
 
-	wrap := errorHandler(nil, nil, tmplError, "/prefix", "http://sirius")
+	wrap := errorHandler(nil, client, tmplError, "/prefix", "http://sirius")
 	handler := wrap(func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error {
 		return RedirectError("/here")
 	})
@@ -110,9 +160,10 @@ func TestErrorHandlerStatus(t *testing.T) {
 	assert := assert.New(t)
 
 	logger := &mockLogger{}
+	client := &mockErrorHandlerClient{}
 	tmplError := &mockTemplate{}
 
-	wrap := errorHandler(logger, nil, tmplError, "/prefix", "http://sirius")
+	wrap := errorHandler(logger, client, tmplError, "/prefix", "http://sirius")
 	handler := wrap(func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error {
 		return StatusError(http.StatusTeapot)
 	})
@@ -142,9 +193,10 @@ func TestErrorHandlerStatusKnown(t *testing.T) {
 			assert := assert.New(t)
 
 			logger := &mockLogger{}
+			client := &mockErrorHandlerClient{}
 			tmplError := &mockTemplate{}
 
-			wrap := errorHandler(logger, nil, tmplError, "/prefix", "http://sirius")
+			wrap := errorHandler(logger, client, tmplError, "/prefix", "http://sirius")
 			handler := wrap(func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error {
 				return StatusError(code)
 			})

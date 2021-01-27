@@ -23,10 +23,10 @@ type Client interface {
 	EditMyDetailsClient
 	EditTeamClient
 	EditUserClient
+	ErrorHandlerClient
 	ListTeamsClient
 	ListUsersClient
 	MyDetailsClient
-	RequirePermissionClient
 	ResendConfirmationClient
 	UnlockUserClient
 	ViewTeamClient
@@ -47,43 +47,35 @@ func New(logger Logger, client Client, templates map[string]*template.Template, 
 
 	mux.Handle("/users",
 		wrap(
-			requirePermissions(client, PermissionRequest{"v1-users", http.MethodPut})(
-				listUsers(client, templates["users.gotmpl"]))))
+			listUsers(client, templates["users.gotmpl"])))
 
 	mux.Handle("/teams",
 		wrap(
-			requirePermissions(client, PermissionRequest{"team", http.MethodPut})(
-				listTeams(client, templates["teams.gotmpl"]))))
+			listTeams(client, templates["teams.gotmpl"])))
 
 	mux.Handle("/teams/",
 		wrap(
-			requirePermissions(client, PermissionRequest{"team", http.MethodPut})(
-				viewTeam(client, templates["team.gotmpl"]))))
+			viewTeam(client, templates["team.gotmpl"])))
 
 	mux.Handle("/teams/add",
 		wrap(
-			requirePermissions(client, PermissionRequest{"team", http.MethodPost})(
-				addTeam(client, templates["team-add.gotmpl"]))))
+			addTeam(client, templates["team-add.gotmpl"])))
 
 	mux.Handle("/teams/edit/",
 		wrap(
-			requirePermissions(client, PermissionRequest{"team", http.MethodPut})(
-				editTeam(client, templates["team-edit.gotmpl"]))))
+			editTeam(client, templates["team-edit.gotmpl"])))
 
 	mux.Handle("/teams/delete/",
 		wrap(
-			requirePermissions(client, PermissionRequest{"v1-teams", http.MethodDelete})(
-				deleteTeam(client, templates["team-delete.gotmpl"]))))
+			deleteTeam(client, templates["team-delete.gotmpl"])))
 
 	mux.Handle("/teams/add-member/",
 		wrap(
-			requirePermissions(client, PermissionRequest{"team", http.MethodPut})(
-				addTeamMember(client, templates["team-add-member.gotmpl"]))))
+			addTeamMember(client, templates["team-add-member.gotmpl"])))
 
 	mux.Handle("/teams/remove-member/",
 		wrap(
-			requirePermissions(client, PermissionRequest{"team", http.MethodPut})(
-				removeTeamMember(client, templates["team-remove-member.gotmpl"]))))
+			removeTeamMember(client, templates["team-remove-member.gotmpl"])))
 
 	mux.Handle("/my-details",
 		wrap(
@@ -99,28 +91,23 @@ func New(logger Logger, client Client, templates map[string]*template.Template, 
 
 	mux.Handle("/add-user",
 		wrap(
-			requirePermissions(client, PermissionRequest{"v1-users", http.MethodPost})(
-				addUser(client, templates["add-user.gotmpl"]))))
+			addUser(client, templates["add-user.gotmpl"])))
 
 	mux.Handle("/edit-user/",
 		wrap(
-			requirePermissions(client, PermissionRequest{"v1-users", http.MethodPut})(
-				editUser(client, templates["edit-user.gotmpl"], deleteUserEnabled))))
+			editUser(client, templates["edit-user.gotmpl"], deleteUserEnabled)))
 
 	mux.Handle("/unlock-user/",
 		wrap(
-			requirePermissions(client, PermissionRequest{"v1-users", http.MethodPut})(
-				unlockUser(client, templates["unlock-user.gotmpl"]))))
+			unlockUser(client, templates["unlock-user.gotmpl"])))
 
 	mux.Handle("/delete-user/",
 		wrap(
-			requirePermissions(client, PermissionRequest{"v1-users", http.MethodDelete})(
-				deleteUser(client, templates["delete-user.gotmpl"], deleteUserEnabled))))
+			deleteUser(client, templates["delete-user.gotmpl"], deleteUserEnabled)))
 
 	mux.Handle("/resend-confirmation",
 		wrap(
-			requirePermissions(client, PermissionRequest{"v1-users", http.MethodPut})(
-				resendConfirmation(client, templates["resend-confirmation.gotmpl"]))))
+			resendConfirmation(client, templates["resend-confirmation.gotmpl"])))
 
 	static := http.FileServer(http.Dir(webDir + "/static"))
 	mux.Handle("/assets/", static)
@@ -162,7 +149,11 @@ type errorVars struct {
 	Error string
 }
 
-func errorHandler(logger Logger, client Client, tmplError Template, prefix, siriusURL string) func(next Handler) http.Handler {
+type ErrorHandlerClient interface {
+	MyPermissions(sirius.Context) (sirius.PermissionSet, error)
+}
+
+func errorHandler(logger Logger, client ErrorHandlerClient, tmplError Template, prefix, siriusURL string) func(next Handler) http.Handler {
 	return func(next Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			myPermissions, err := client.MyPermissions(getContext(r))
