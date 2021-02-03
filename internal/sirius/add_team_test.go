@@ -40,21 +40,23 @@ func TestAddTeam(t *testing.T) {
 					UponReceiving("A request to add a new team").
 					WithRequest(dsl.Request{
 						Method: http.MethodPost,
-						Path:   dsl.String("/api/team"),
+						Path:   dsl.String("/api/v1/teams"),
 						Headers: dsl.MapMatcher{
 							"X-XSRF-TOKEN":        dsl.String("abcde"),
 							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
 							"OPG-Bypass-Membrane": dsl.String("1"),
-							"Content-Type":        dsl.String("application/x-www-form-urlencoded"),
+							"Content-Type":        dsl.String("application/json"),
 						},
-						Body: "email=john.doe@example.com&name=testteam&phone=0300456090&type=&teamType=",
+						Body: map[string]interface{}{
+							"email":       "john.doe@example.com",
+							"name":        "testteam",
+							"phoneNumber": "0300456090",
+						},
 					}).
 					WillRespondWith(dsl.Response{
 						Status: http.StatusCreated,
 						Body: dsl.Like(map[string]interface{}{
-							"data": dsl.Like(map[string]interface{}{
-								"id": dsl.Like(123),
-							}),
+							"id": dsl.Like(123),
 						}),
 					})
 			},
@@ -78,21 +80,24 @@ func TestAddTeam(t *testing.T) {
 					UponReceiving("A request to add a new supervision team").
 					WithRequest(dsl.Request{
 						Method: http.MethodPost,
-						Path:   dsl.String("/api/team"),
+						Path:   dsl.String("/api/v1/teams"),
 						Headers: dsl.MapMatcher{
 							"X-XSRF-TOKEN":        dsl.String("abcde"),
 							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
 							"OPG-Bypass-Membrane": dsl.String("1"),
-							"Content-Type":        dsl.String("application/x-www-form-urlencoded"),
+							"Content-Type":        dsl.String("application/json"),
 						},
-						Body: "email=john.doe@example.com&name=supervisiontestteam&phone=0300456090&type=&teamType=&teamType[handle]=INVESTIGATIONS",
+						Body: map[string]interface{}{
+							"email":       "john.doe@example.com",
+							"name":        "supervisiontestteam",
+							"phoneNumber": "0300456090",
+							"type":        "INVESTIGATIONS",
+						},
 					}).
 					WillRespondWith(dsl.Response{
 						Status: http.StatusCreated,
 						Body: dsl.Like(map[string]interface{}{
-							"data": dsl.Like(map[string]interface{}{
-								"id": dsl.Like(123),
-							}),
+							"id": dsl.Like(123),
 						}),
 					})
 			},
@@ -116,7 +121,7 @@ func TestAddTeam(t *testing.T) {
 					UponReceiving("A request to add a new team without cookies").
 					WithRequest(dsl.Request{
 						Method: http.MethodPost,
-						Path:   dsl.String("/api/team"),
+						Path:   dsl.String("/api/v1/teams"),
 						Headers: dsl.MapMatcher{
 							"OPG-Bypass-Membrane": dsl.String("1"),
 						},
@@ -137,23 +142,25 @@ func TestAddTeam(t *testing.T) {
 					UponReceiving("A request to add a new team errors").
 					WithRequest(dsl.Request{
 						Method: http.MethodPost,
-						Path:   dsl.String("/api/team"),
+						Path:   dsl.String("/api/v1/teams"),
 						Headers: dsl.MapMatcher{
 							"X-XSRF-TOKEN":        dsl.String("abcde"),
 							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
 							"OPG-Bypass-Membrane": dsl.String("1"),
-							"Content-Type":        dsl.String("application/x-www-form-urlencoded"),
+							"Content-Type":        dsl.String("application/json"),
 						},
-						Body: "email=john.doehrfgjuerhujghejrhrgherjrghgjrehergeghrjkrghkerhgerjkhgerjkheghergkhgekrhgerherhjghkjerhgherghjkerhgekjherkjhgerhgjehherkjhgkjehrghrehgkjrehjkghrjkehgrehehgkjhrejghhehgkjerhegjrhegrjhrjkhgkrhrghrkjegrkjehrghjkerhgjkhergjhrjkerregjhrekjhrgrehjkg@example.com&name=testteam&phone=0300456090&type=&teamType=",
+						Body: map[string]interface{}{
+							"email":       "john.doehrfgjuerhujghejrhrgherjrghgjrehergeghrjkrghkerhgerjkhgerjkheghergkhgekrhgerherhjghkjerhgherghjkerhgekjherkjhgerhgjehherkjhgkjehrghrehgkjrehjkghrjkehgrehehgkjhrejghhehgkjerhegjrhegrjhrjkhgkrhrghrkjegrkjehrghjkerhgjkhergjhrjkerregjhrekjhrgrehjkg@example.com",
+							"name":        "testteam",
+							"phoneNumber": "0300456090",
+						},
 					}).
 					WillRespondWith(dsl.Response{
 						Status: http.StatusBadRequest,
 						Body: dsl.Like(map[string]interface{}{
-							"data": dsl.Like(map[string]interface{}{
-								"errorMessages": dsl.Like(map[string]interface{}{
-									"email": dsl.Like(map[string]interface{}{
-										"emailAddressLengthExceeded": "The input is more than 255 characters long",
-									}),
+							"validation_errors": dsl.Like(map[string]interface{}{
+								"email": dsl.Like(map[string]interface{}{
+									"emailAddressLengthExceeded": "The input is more than 255 characters long",
 								}),
 							}),
 						}),
@@ -202,7 +209,7 @@ func TestAddTeamStatusError(t *testing.T) {
 	_, err := client.AddTeam(getContext(nil), "", "", "", "")
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
-		URL:    s.URL + "/api/team",
+		URL:    s.URL + "/api/v1/teams",
 		Method: http.MethodPost,
 	}, err)
 }

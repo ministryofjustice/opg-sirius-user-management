@@ -1,30 +1,35 @@
 package sirius
 
 import (
+	"bytes"
 	"encoding/json"
 	"net/http"
-	"net/url"
-	"strings"
 )
 
+type addTeamRequest struct {
+	Name        string `json:"name"`
+	Type        string `json:"type,omitempty"`
+	Email       string `json:"email,omitempty"`
+	PhoneNumber string `json:"phoneNumber,omitempty"`
+}
+
 func (c *Client) AddTeam(ctx Context, name, teamType, phone, email string) (int, error) {
-	form := url.Values{
-		"name":     {name},
-		"phone":    {phone},
-		"email":    {email},
-		"type":     {""},
-		"teamType": {""},
-	}
-
-	if teamType != "" {
-		form.Add("teamType[handle]", teamType)
-	}
-
-	req, err := c.newRequest(ctx, http.MethodPost, "/api/team", strings.NewReader(form.Encode()))
+	var body bytes.Buffer
+	err := json.NewEncoder(&body).Encode(addTeamRequest{
+		Name:        name,
+		Email:       email,
+		PhoneNumber: phone,
+		Type:        teamType,
+	})
 	if err != nil {
 		return 0, err
 	}
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	req, err := c.newRequest(ctx, http.MethodPost, "/api/v1/teams", &body)
+	if err != nil {
+		return 0, err
+	}
+	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := c.http.Do(req)
 	if err != nil {
@@ -38,20 +43,18 @@ func (c *Client) AddTeam(ctx Context, name, teamType, phone, email string) (int,
 
 	if resp.StatusCode != http.StatusCreated {
 		var v struct {
-			Data struct {
-				ErrorMessages ValidationErrors `json:"errorMessages"`
-			} `json:"data"`
+			ValidationErrors ValidationErrors `json:"validation_errors"`
 		}
 
 		if err := json.NewDecoder(resp.Body).Decode(&v); err == nil {
-			return 0, ValidationError{Errors: v.Data.ErrorMessages}
+			return 0, ValidationError{Errors: v.ValidationErrors}
 		}
 
 		return 0, newStatusError(resp)
 	}
 
-	var v apiTeamResponse
+	var v apiTeam
 	err = json.NewDecoder(resp.Body).Decode(&v)
 
-	return v.Data.ID, err
+	return v.ID, err
 }
