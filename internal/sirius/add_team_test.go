@@ -160,7 +160,7 @@ func TestAddTeam(t *testing.T) {
 						Body: dsl.Like(map[string]interface{}{
 							"validation_errors": dsl.Like(map[string]interface{}{
 								"email": dsl.Like(map[string]interface{}{
-									"emailAddressLengthExceeded": "The input is more than 255 characters long",
+									"stringLengthTooLong": "The input is more than 255 characters long",
 								}),
 							}),
 						}),
@@ -177,7 +177,7 @@ func TestAddTeam(t *testing.T) {
 			expectedError: ValidationError{
 				Errors: ValidationErrors{
 					"email": {
-						"emailAddressLengthExceeded": "The input is more than 255 characters long",
+						"stringLengthTooLong": "The input is more than 255 characters long",
 					},
 				},
 			},
