@@ -4,8 +4,7 @@
   "license": "MIT",
   "scripts": {
     "build": "webpack",
-    "cypress": "cypress open",
-    "heroku-postbuild": "cd prototype && yarn install && node ./node_modules/gulp/bin/gulp generate-assets"
+    "cypress": "cypress open"
   },
   "dependencies": {
     "@ministryofjustice/frontend": "0.0.19-alpha",

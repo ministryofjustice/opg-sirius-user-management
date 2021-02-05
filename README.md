@@ -100,11 +100,5 @@ depend on.
 
 ## Prototype
 
-This repo also contains a [prototype](prototype) that is deployed to
-<https://opg-sirius-users-prototype.herokuapp.com/>. To run locally use:
-
-```
-cd prototype
-yarn
-yarn start
-```
+The prototype for this repo is part of
+[ministryofjustice/opg-sirius-prototypes](https://github.com/ministryofjustice/opg-sirius-prototypes).
