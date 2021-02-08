@@ -71,7 +71,7 @@ func TestGetDeleteUser(t *testing.T) {
 		User: client.user.data,
 	}, template.lastVars)
 }
-/*
+
 func TestGetDeleteUserNoPermission(t *testing.T) {
 	assert := assert.New(t)
 
@@ -81,7 +81,6 @@ func TestGetDeleteUserNoPermission(t *testing.T) {
 	err := deleteUser(nil, nil)(sirius.PermissionSet{}, w, r)
 	assert.Equal(StatusError(http.StatusForbidden), err)
 }
-*/
 
 func TestGetDeleteUserError(t *testing.T) {
 	assert := assert.New(t)
