@@ -6,8 +6,9 @@ describe("Delete user", () => {
     });
 
     it("allows me to delete a user", () => {
-        cy.get("button[type=submit]").click();
-        cy.url().should("include", "/delete-user/123")
+        cy.get(".govuk-body").should("contain", "Are you sure you want to delete system admin?");
+        cy.get("button[type=submit]").contains("Delete User").click();
+
         cy.get('a[href*="/users"]').contains('Continue').click()
         cy.url().should("include", "/users");
     });
