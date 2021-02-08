@@ -1,4 +1,4 @@
-describe.skip("Delete user", () => {
+describe("Delete user", () => {
     beforeEach(() => {
         cy.setCookie("Other", "other");
         cy.setCookie("XSRF-TOKEN", "abcde");
@@ -6,7 +6,9 @@ describe.skip("Delete user", () => {
     });
 
     it("allows me to delete a user", () => {
-        cy.contains("button", "Delete account").click();
+        cy.get("button[type=submit]").click();
+        cy.url().should("include", "/delete-user/123")
+        cy.get('a[href*="/users"]').contains('Continue').click()
         cy.url().should("include", "/users");
     });
 });
