@@ -10,13 +10,11 @@ import (
 )
 
 type editTeamErrorsResponse struct {
-	Data *struct {
-		Errors *struct {
-			TeamType *struct {
-				TeamTypeAlreadyInUse string `json:"teamTypeAlreadyInUse" pact:"example=Invalid team type"`
-			} `json:"teamType"`
-		} `json:"errorMessages"`
-	} `json:"data"`
+	Errors *struct {
+		TeamType *struct {
+			TeamTypeAlreadyInUse string `json:"teamTypeAlreadyInUse" pact:"example=Invalid team type"`
+		} `json:"type"`
+	} `json:"validation_errors"`
 }
 
 func TestEditTeam(t *testing.T) {
@@ -52,15 +50,21 @@ func TestEditTeam(t *testing.T) {
 					Given("A user and a team").
 					UponReceiving("A request to edit the team").
 					WithRequest(dsl.Request{
-						Method: http.MethodPut,
-						Path:   dsl.String("/api/team/65"),
+						Method: http.MethodPatch,
+						Path:   dsl.String("/api/v1/teams/65"),
 						Headers: dsl.MapMatcher{
 							"X-XSRF-TOKEN":        dsl.String("abcde"),
 							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
 							"OPG-Bypass-Membrane": dsl.String("1"),
-							"Content-Type":        dsl.String("application/x-www-form-urlencoded"),
+							"Content-Type":        dsl.String("application/json"),
 						},
-						Body: "email=test.team%40opgtest.com&name=Test+team&phoneNumber=014729583920&teamType%5Bhandle%5D=INVESTIGATIONS",
+						Body: map[string]interface{}{
+							"email":       "test.team@opgtest.com",
+							"name":        "Test team",
+							"phoneNumber": "014729583920",
+							"type":        "INVESTIGATIONS",
+							"memberIds":   []int{},
+						},
 					}).
 					WillRespondWith(dsl.Response{
 						Status: http.StatusOK,
@@ -97,15 +101,21 @@ func TestEditTeam(t *testing.T) {
 					Given("A user and a team").
 					UponReceiving("A request to edit the team with members").
 					WithRequest(dsl.Request{
-						Method: http.MethodPut,
-						Path:   dsl.String("/api/team/65"),
+						Method: http.MethodPatch,
+						Path:   dsl.String("/api/v1/teams/65"),
 						Headers: dsl.MapMatcher{
 							"X-XSRF-TOKEN":        dsl.String("abcde"),
 							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
 							"OPG-Bypass-Membrane": dsl.String("1"),
-							"Content-Type":        dsl.String("application/x-www-form-urlencoded"),
+							"Content-Type":        dsl.String("application/json"),
 						},
-						Body: "email=test.team%40opgtest.com&members%5B0%5D%5Bid%5D=23&members%5B1%5D%5Bid%5D=87&name=Test+team&phoneNumber=014729583920&teamType%5Bhandle%5D=INVESTIGATIONS",
+						Body: map[string]interface{}{
+							"email":       "test.team@opgtest.com",
+							"name":        "Test team",
+							"phoneNumber": "014729583920",
+							"type":        "INVESTIGATIONS",
+							"memberIds":   []int{23, 87},
+						},
 					}).
 					WillRespondWith(dsl.Response{
 						Status: http.StatusOK,
@@ -131,12 +141,19 @@ func TestEditTeam(t *testing.T) {
 					Given("A user and a team").
 					UponReceiving("A request to edit the team without cookies").
 					WithRequest(dsl.Request{
-						Method: http.MethodPut,
-						Path:   dsl.String("/api/team/65"),
+						Method: http.MethodPatch,
+						Path:   dsl.String("/api/v1/teams/65"),
 						Headers: dsl.MapMatcher{
 							"OPG-Bypass-Membrane": dsl.String("1"),
+							"Content-Type":        dsl.String("application/json"),
 						},
-						Body: "email=&name=Test+team&phoneNumber=&teamType%5Bhandle%5D=FINANCE",
+						Body: map[string]interface{}{
+							"name":        "Test team",
+							"type":        "FINANCE",
+							"email":       "",
+							"phoneNumber": "",
+							"memberIds":   []int{},
+						},
 					}).
 					WillRespondWith(dsl.Response{
 						Status: http.StatusUnauthorized,
@@ -158,15 +175,21 @@ func TestEditTeam(t *testing.T) {
 					Given("A user and a team").
 					UponReceiving("A request to edit the team with an non-unique type").
 					WithRequest(dsl.Request{
-						Method: http.MethodPut,
-						Path:   dsl.String("/api/team/65"),
+						Method: http.MethodPatch,
+						Path:   dsl.String("/api/v1/teams/65"),
 						Headers: dsl.MapMatcher{
 							"X-XSRF-TOKEN":        dsl.String("abcde"),
 							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
 							"OPG-Bypass-Membrane": dsl.String("1"),
-							"Content-Type":        dsl.String("application/x-www-form-urlencoded"),
+							"Content-Type":        dsl.String("application/json"),
 						},
-						Body: "email=&name=Test+team&phoneNumber=&teamType%5Bhandle%5D=FINANCE",
+						Body: map[string]interface{}{
+							"name":        "Test team",
+							"type":        "FINANCE",
+							"email":       "",
+							"phoneNumber": "",
+							"memberIds":   []int{},
+						},
 					}).
 					WillRespondWith(dsl.Response{
 						Status: http.StatusBadRequest,
@@ -180,7 +203,7 @@ func TestEditTeam(t *testing.T) {
 			expectedError: func(port int) error {
 				return &ValidationError{
 					Errors: ValidationErrors{
-						"teamType": {
+						"type": {
 							"teamTypeAlreadyInUse": "Invalid team type",
 						},
 					},
@@ -214,7 +237,7 @@ func TestEditTeamStatusError(t *testing.T) {
 	err := client.EditTeam(getContext(nil), Team{ID: 65})
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
-		URL:    s.URL + "/api/team/65",
-		Method: http.MethodPut,
+		URL:    s.URL + "/api/v1/teams/65",
+		Method: http.MethodPatch,
 	}, err)
 }

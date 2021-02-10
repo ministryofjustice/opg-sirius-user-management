@@ -1,35 +1,46 @@
 package sirius
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/url"
-	"strconv"
-	"strings"
 )
 
+type editTeamRequest struct {
+	Name        string `json:"name"`
+	Type        string `json:"type"`
+	Email       string `json:"email"`
+	PhoneNumber string `json:"phoneNumber"`
+	MemberIds   []int  `json:"memberIds"`
+}
+
 func (c *Client) EditTeam(ctx Context, team Team) error {
-	form := url.Values{
-		"name":             {team.DisplayName},
-		"email":            {team.Email},
-		"phoneNumber":      {team.PhoneNumber},
-		"teamType[handle]": {team.Type},
+	memberIds := []int{}
+	for _, member := range team.Members {
+		memberIds = append(memberIds, member.ID)
 	}
 
-	for i, member := range team.Members {
-		form.Add(fmt.Sprintf("members[%d][id]", i), strconv.Itoa(member.ID))
-	}
+	var body bytes.Buffer
+	err := json.NewEncoder(&body).Encode(editTeamRequest{
+		Name:        team.DisplayName,
+		Email:       team.Email,
+		PhoneNumber: team.PhoneNumber,
+		Type:        team.Type,
+		MemberIds:   memberIds,
+	})
 
-	body := strings.NewReader(form.Encode())
-
-	requestURL := fmt.Sprintf("/api/team/%d", team.ID)
-
-	req, err := c.newRequest(ctx, http.MethodPut, requestURL, body)
 	if err != nil {
 		return err
 	}
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	requestURL := fmt.Sprintf("/api/v1/teams/%d", team.ID)
+
+	req, err := c.newRequest(ctx, http.MethodPatch, requestURL, &body)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := c.http.Do(req)
 	if err != nil {
@@ -43,14 +54,12 @@ func (c *Client) EditTeam(ctx Context, team Team) error {
 
 	if resp.StatusCode != http.StatusOK {
 		var v struct {
-			Data struct {
-				Errors ValidationErrors `json:"errorMessages"`
-			} `json:"data"`
+			ValidationErrors ValidationErrors `json:"validation_errors"`
 		}
 
 		if err := json.NewDecoder(resp.Body).Decode(&v); err == nil {
 			return &ValidationError{
-				Errors: v.Data.Errors,
+				Errors: v.ValidationErrors,
 			}
 		}
 
