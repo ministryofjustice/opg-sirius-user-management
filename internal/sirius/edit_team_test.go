@@ -47,7 +47,7 @@ func TestEditTeam(t *testing.T) {
 			setup: func() {
 				pact.
 					AddInteraction().
-					Given("A user and a team").
+					Given("Supervision team with members exists").
 					UponReceiving("A request to edit the team").
 					WithRequest(dsl.Request{
 						Method: http.MethodPut,
@@ -98,7 +98,7 @@ func TestEditTeam(t *testing.T) {
 			setup: func() {
 				pact.
 					AddInteraction().
-					Given("A user and a team").
+					Given("Supervision team with members exists").
 					UponReceiving("A request to edit the team with members").
 					WithRequest(dsl.Request{
 						Method: http.MethodPut,
@@ -138,7 +138,7 @@ func TestEditTeam(t *testing.T) {
 			setup: func() {
 				pact.
 					AddInteraction().
-					Given("A user and a team").
+					Given("Supervision team with members exists").
 					UponReceiving("A request to edit the team without cookies").
 					WithRequest(dsl.Request{
 						Method: http.MethodPut,
@@ -172,7 +172,7 @@ func TestEditTeam(t *testing.T) {
 			setup: func() {
 				pact.
 					AddInteraction().
-					Given("A user and a team").
+					Given("Supervision team with members exists").
 					UponReceiving("A request to edit the team with an non-unique type").
 					WithRequest(dsl.Request{
 						Method: http.MethodPut,
