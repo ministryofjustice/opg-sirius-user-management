@@ -50,7 +50,7 @@ func TestEditTeam(t *testing.T) {
 					Given("A user and a team").
 					UponReceiving("A request to edit the team").
 					WithRequest(dsl.Request{
-						Method: http.MethodPatch,
+						Method: http.MethodPut,
 						Path:   dsl.String("/api/v1/teams/65"),
 						Headers: dsl.MapMatcher{
 							"X-XSRF-TOKEN":        dsl.String("abcde"),
@@ -101,7 +101,7 @@ func TestEditTeam(t *testing.T) {
 					Given("A user and a team").
 					UponReceiving("A request to edit the team with members").
 					WithRequest(dsl.Request{
-						Method: http.MethodPatch,
+						Method: http.MethodPut,
 						Path:   dsl.String("/api/v1/teams/65"),
 						Headers: dsl.MapMatcher{
 							"X-XSRF-TOKEN":        dsl.String("abcde"),
@@ -141,7 +141,7 @@ func TestEditTeam(t *testing.T) {
 					Given("A user and a team").
 					UponReceiving("A request to edit the team without cookies").
 					WithRequest(dsl.Request{
-						Method: http.MethodPatch,
+						Method: http.MethodPut,
 						Path:   dsl.String("/api/v1/teams/65"),
 						Headers: dsl.MapMatcher{
 							"OPG-Bypass-Membrane": dsl.String("1"),
@@ -175,7 +175,7 @@ func TestEditTeam(t *testing.T) {
 					Given("A user and a team").
 					UponReceiving("A request to edit the team with an non-unique type").
 					WithRequest(dsl.Request{
-						Method: http.MethodPatch,
+						Method: http.MethodPut,
 						Path:   dsl.String("/api/v1/teams/65"),
 						Headers: dsl.MapMatcher{
 							"X-XSRF-TOKEN":        dsl.String("abcde"),
@@ -238,6 +238,6 @@ func TestEditTeamStatusError(t *testing.T) {
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
 		URL:    s.URL + "/api/v1/teams/65",
-		Method: http.MethodPatch,
+		Method: http.MethodPut,
 	}, err)
 }
