@@ -81,7 +81,7 @@ func TestEditTeam(t *testing.T) {
 			name: "OKSendsMembers",
 			team: Team{
 				ID:          65,
-				DisplayName: "Test team",
+				DisplayName: "Test team with members",
 				Type:        "INVESTIGATIONS",
 				PhoneNumber: "014729583920",
 				Email:       "test.team@opgtest.com",
@@ -111,7 +111,7 @@ func TestEditTeam(t *testing.T) {
 						},
 						Body: map[string]interface{}{
 							"email":       "test.team@opgtest.com",
-							"name":        "Test team",
+							"name":        "Test team with members",
 							"phoneNumber": "014729583920",
 							"type":        "INVESTIGATIONS",
 							"memberIds":   []int{23, 87},
@@ -166,14 +166,14 @@ func TestEditTeam(t *testing.T) {
 			name: "Validation Errors",
 			team: Team{
 				ID:          65,
-				DisplayName: "Test team",
+				DisplayName: "Test duplicate finance team",
 				Type:        "FINANCE",
 			},
 			setup: func() {
 				pact.
 					AddInteraction().
 					Given("Supervision team with members exists").
-					UponReceiving("A request to edit the team with an non-unique type").
+					UponReceiving("A request to edit the team with a non-unique type").
 					WithRequest(dsl.Request{
 						Method: http.MethodPut,
 						Path:   dsl.String("/api/v1/teams/65"),
@@ -184,7 +184,7 @@ func TestEditTeam(t *testing.T) {
 							"Content-Type":        dsl.String("application/json"),
 						},
 						Body: map[string]interface{}{
-							"name":        "Test team",
+							"name":        "Test duplicate finance team",
 							"type":        "FINANCE",
 							"email":       "",
 							"phoneNumber": "",
