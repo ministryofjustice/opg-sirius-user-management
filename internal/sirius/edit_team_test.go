@@ -12,7 +12,7 @@ import (
 type editTeamErrorsResponse struct {
 	Errors *struct {
 		TeamType *struct {
-			TeamTypeAlreadyInUse string `json:"teamTypeAlreadyInUse" pact:"example=Invalid team type"`
+			Error string `json:"error" pact:"example=Invalid team type"`
 		} `json:"type"`
 	} `json:"validation_errors"`
 }
@@ -90,9 +90,6 @@ func TestEditTeam(t *testing.T) {
 						ID:    23,
 						Email: "someone@opgtest.com",
 					},
-					{
-						ID: 87,
-					},
 				},
 			},
 			setup: func() {
@@ -114,7 +111,7 @@ func TestEditTeam(t *testing.T) {
 							"name":        "Test team with members",
 							"phoneNumber": "014729583920",
 							"type":        "INVESTIGATIONS",
-							"memberIds":   []int{23, 87},
+							"memberIds":   []int{23},
 						},
 					}).
 					WillRespondWith(dsl.Response{
@@ -204,7 +201,7 @@ func TestEditTeam(t *testing.T) {
 				return &ValidationError{
 					Errors: ValidationErrors{
 						"type": {
-							"teamTypeAlreadyInUse": "Invalid team type",
+							"error": "Invalid team type",
 						},
 					},
 				}
