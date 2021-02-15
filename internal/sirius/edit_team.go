@@ -16,9 +16,9 @@ type editTeamRequest struct {
 }
 
 func (c *Client) EditTeam(ctx Context, team Team) error {
-	memberIds := []int{}
-	for _, member := range team.Members {
-		memberIds = append(memberIds, member.ID)
+	memberIDs := make([]int, len(team.Members))
+	for i, member := range team.Members {
+		memberIDs[i] = member.ID
 	}
 
 	var body bytes.Buffer
@@ -27,7 +27,7 @@ func (c *Client) EditTeam(ctx Context, team Team) error {
 		Email:       team.Email,
 		PhoneNumber: team.PhoneNumber,
 		Type:        team.Type,
-		MemberIds:   memberIds,
+		MemberIds:   memberIDs,
 	})
 
 	if err != nil {
