@@ -36,7 +36,7 @@ func TestPermissions(t *testing.T) {
 					UponReceiving("A request to get my permissions").
 					WithRequest(dsl.Request{
 						Method: http.MethodGet,
-						Path:   dsl.String("/api/permission"),
+						Path:   dsl.String("/api/v1/permissions"),
 						Headers: dsl.MapMatcher{
 							"X-XSRF-TOKEN":        dsl.String("abcde"),
 							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
@@ -47,13 +47,11 @@ func TestPermissions(t *testing.T) {
 						Status:  http.StatusOK,
 						Headers: dsl.MapMatcher{"Content-Type": dsl.String("application/json")},
 						Body: dsl.Like(map[string]interface{}{
-							"data": map[string]interface{}{
-								"user": map[string]interface{}{
-									"permissions": dsl.EachLike("PATCH", 1),
-								},
-								"team": map[string]interface{}{
-									"permissions": dsl.EachLike("POST", 1),
-								},
+							"user": map[string]interface{}{
+								"permissions": dsl.EachLike("PATCH", 1),
+							},
+							"team": map[string]interface{}{
+								"permissions": dsl.EachLike("POST", 1),
 							},
 						}),
 					})
@@ -76,7 +74,7 @@ func TestPermissions(t *testing.T) {
 					UponReceiving("A request to get my permissions without cookies").
 					WithRequest(dsl.Request{
 						Method: http.MethodGet,
-						Path:   dsl.String("/api/permission"),
+						Path:   dsl.String("/api/v1/permissions"),
 						Headers: dsl.MapMatcher{
 							"OPG-Bypass-Membrane": dsl.String("1"),
 						},
@@ -136,7 +134,7 @@ func TestPermissionsIgnoredPact(t *testing.T) {
 					UponReceiving("A request to get all the permissions I need").
 					WithRequest(dsl.Request{
 						Method: http.MethodGet,
-						Path:   dsl.String("/api/permission"),
+						Path:   dsl.String("/api/v1/permissions"),
 						Headers: dsl.MapMatcher{
 							"X-XSRF-TOKEN":        dsl.String("abcde"),
 							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
@@ -147,19 +145,17 @@ func TestPermissionsIgnoredPact(t *testing.T) {
 						Status:  http.StatusOK,
 						Headers: dsl.MapMatcher{"Content-Type": dsl.String("application/json")},
 						Body: dsl.Like(map[string]interface{}{
-							"data": map[string]interface{}{
-								"v1-users-updatetelephonenumber": map[string]interface{}{
-									"permissions": []string{"PUT"},
-								},
-								"v1-users": map[string]interface{}{
-									"permissions": []string{"PUT", "POST", "DELETE"},
-								},
-								"team": map[string]interface{}{
-									"permissions": []string{"GET", "POST", "PUT"},
-								},
-								"v1-teams": map[string]interface{}{
-									"permissions": []string{"DELETE"},
-								},
+							"v1-users-updatetelephonenumber": map[string]interface{}{
+								"permissions": []string{"PUT"},
+							},
+							"v1-users": map[string]interface{}{
+								"permissions": []string{"PUT", "POST", "DELETE"},
+							},
+							"team": map[string]interface{}{
+								"permissions": []string{"GET", "POST", "PUT"},
+							},
+							"v1-teams": map[string]interface{}{
+								"permissions": []string{"DELETE"},
 							},
 						}),
 					})
@@ -202,7 +198,7 @@ func TestHasPermissionStatusError(t *testing.T) {
 	_, err := client.MyPermissions(getContext(nil))
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
-		URL:    s.URL + "/api/permission",
+		URL:    s.URL + "/api/v1/permissions",
 		Method: http.MethodGet,
 	}, err)
 }
