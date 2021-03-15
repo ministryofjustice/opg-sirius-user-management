@@ -21,12 +21,8 @@ func (ps PermissionSet) HasPermission(group string, method string) bool {
 	return false
 }
 
-type myPermissions struct {
-	Data PermissionSet `json:"data"`
-}
-
 func (c *Client) MyPermissions(ctx Context) (PermissionSet, error) {
-	req, err := c.newRequest(ctx, http.MethodGet, "/api/permission", nil)
+	req, err := c.newRequest(ctx, http.MethodGet, "/api/v1/permissions", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -45,10 +41,8 @@ func (c *Client) MyPermissions(ctx Context) (PermissionSet, error) {
 		return nil, newStatusError(resp)
 	}
 
-	var v myPermissions
-	if err := json.NewDecoder(resp.Body).Decode(&v); err != nil {
-		return nil, err
-	}
+	var v PermissionSet
+	err = json.NewDecoder(resp.Body).Decode(&v)
 
-	return v.Data, nil
+	return v, err
 }
