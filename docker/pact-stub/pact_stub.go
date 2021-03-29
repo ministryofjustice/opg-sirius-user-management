@@ -35,13 +35,7 @@ func readInteractions(dir string) ([]Interaction, error) {
 	}
 
 	for _, path := range paths {
-		path = filepath.Clean(path)
-
-		if !strings.HasPrefix(path, "pacts") {
-			return nil, fmt.Errorf("invalid interaction path")
-		}
-
-		file, err := os.Open(path)
+		file, err := os.Open(filepath.Clean(path))
 		if err != nil {
 			return nil, fmt.Errorf("opening %s: %w", path, err)
 		}
