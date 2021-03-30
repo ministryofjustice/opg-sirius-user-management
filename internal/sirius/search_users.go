@@ -32,10 +32,6 @@ type apiUser struct {
 	Suspended   bool   `json:"suspended"`
 }
 
-type apiUserList struct {
-	Data []apiUser `json:"data"`
-}
-
 type User struct {
 	ID          int    `json:"id"`
 	DisplayName string `json:"displayName"`
@@ -48,7 +44,7 @@ func (c *Client) SearchUsers(ctx Context, search string) ([]User, error) {
 		return nil, ClientError("Search term must be at least three characters")
 	}
 
-	req, err := c.newRequest(ctx, http.MethodGet, "/api/search/users?query="+search, nil)
+	req, err := c.newRequest(ctx, http.MethodGet, "/api/v1/search/users?query="+search, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -67,23 +63,21 @@ func (c *Client) SearchUsers(ctx Context, search string) ([]User, error) {
 		return nil, newStatusError(resp)
 	}
 
-	var v apiUserList
+	var v []apiUser
 	if err := json.NewDecoder(resp.Body).Decode(&v); err != nil {
 		return nil, err
 	}
 
-	apiUsers := v.Data
-
-	sort.SliceStable(apiUsers, func(i, j int) bool {
-		if strings.EqualFold(apiUsers[i].Surname, apiUsers[j].Surname) {
-			return strings.ToLower(apiUsers[i].DisplayName) < strings.ToLower(apiUsers[j].DisplayName)
+	sort.SliceStable(v, func(i, j int) bool {
+		if strings.EqualFold(v[i].Surname, v[j].Surname) {
+			return strings.ToLower(v[i].DisplayName) < strings.ToLower(v[j].DisplayName)
 		}
 
-		return strings.ToLower(apiUsers[i].Surname) < strings.ToLower(apiUsers[j].Surname)
+		return strings.ToLower(v[i].Surname) < strings.ToLower(v[j].Surname)
 	})
 
 	var users []User
-	for _, u := range apiUsers {
+	for _, u := range v {
 		user := User{
 			ID:          u.ID,
 			DisplayName: u.DisplayName,
