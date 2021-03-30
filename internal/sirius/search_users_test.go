@@ -9,19 +9,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type exampleUser struct {
-	ID          int    `json:"id" pact:"example=47"`
-	DisplayName string `json:"displayName" pact:"example=system admin"`
-	Surname     string `json:"surname" pact:"example=admin"`
-	Email       string `json:"email" pact:"example=system.admin@opgtest.com"`
-	Locked      bool   `json:"locked" pact:"example=false"`
-	Suspended   bool   `json:"suspended" pact:"example=false"`
-}
-
-type exampleUserList struct {
-	Data []exampleUser `json:"data" pact:"min=1"`
-}
-
 func TestSearchUsers(t *testing.T) {
 	pact := &dsl.Pact{
 		Consumer:          "sirius-user-management",
@@ -49,7 +36,7 @@ func TestSearchUsers(t *testing.T) {
 					UponReceiving("A search for admin users").
 					WithRequest(dsl.Request{
 						Method: http.MethodGet,
-						Path:   dsl.String("/api/search/users"),
+						Path:   dsl.String("/api/v1/search/users"),
 						Query: dsl.MapMatcher{
 							"query": dsl.String("admin"),
 						},
@@ -62,9 +49,14 @@ func TestSearchUsers(t *testing.T) {
 					WillRespondWith(dsl.Response{
 						Status:  http.StatusOK,
 						Headers: dsl.MapMatcher{"Content-Type": dsl.String("application/json")},
-						Body: dsl.Match(&exampleUserList{
-							Data: []exampleUser{},
-						}),
+						Body: dsl.EachLike(map[string]interface{}{
+							"id":          dsl.Like(47),
+							"displayName": dsl.String("system admin"),
+							"surname":     dsl.String("admin"),
+							"email":       dsl.String("system.admin@opgtest.com"),
+							"locked":      dsl.Like(false),
+							"suspended":   dsl.Like(false),
+						}, 1),
 					})
 			},
 			cookies: []*http.Cookie{
@@ -90,7 +82,7 @@ func TestSearchUsers(t *testing.T) {
 					UponReceiving("A search for admin users without cookies").
 					WithRequest(dsl.Request{
 						Method: http.MethodGet,
-						Path:   dsl.String("/api/search/users"),
+						Path:   dsl.String("/api/v1/search/users"),
 						Query: dsl.MapMatcher{
 							"query": dsl.String("admin"),
 						},
@@ -131,7 +123,7 @@ func TestSearchUsersStatusError(t *testing.T) {
 	_, err := client.SearchUsers(getContext(nil), "abc")
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
-		URL:    s.URL + "/api/search/users?query=abc",
+		URL:    s.URL + "/api/v1/search/users?query=abc",
 		Method: http.MethodGet,
 	}, err)
 }
