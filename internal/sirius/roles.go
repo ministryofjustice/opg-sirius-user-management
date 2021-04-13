@@ -7,33 +7,31 @@ import (
 )
 
 func (c *Client) Roles(ctx Context) ([]string, error) {
-	var v struct {
-		Data []string `json:"data"`
-	}
+	var v []string
 
-	req, err := c.newRequest(ctx, http.MethodGet, "/api/role", nil)
+	req, err := c.newRequest(ctx, http.MethodGet, "/api/v1/roles", nil)
 	if err != nil {
-		return v.Data, err
+		return v, err
 	}
 
 	resp, err := c.http.Do(req)
 	if err != nil {
-		return v.Data, err
+		return v, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusUnauthorized {
-		return v.Data, ErrUnauthorized
+		return v, ErrUnauthorized
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return v.Data, newStatusError(resp)
+		return v, newStatusError(resp)
 	}
 
 	err = json.NewDecoder(resp.Body).Decode(&v)
 
 	var roles []string
-	for _, role := range v.Data {
+	for _, role := range v {
 		if role != "COP User" && role != "OPG User" {
 			roles = append(roles, role)
 		}
