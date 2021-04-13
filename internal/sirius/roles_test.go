@@ -36,7 +36,7 @@ func TestRoles(t *testing.T) {
 					UponReceiving("A request for roles").
 					WithRequest(dsl.Request{
 						Method: http.MethodGet,
-						Path:   dsl.String("/api/role"),
+						Path:   dsl.String("/api/v1/roles"),
 						Headers: dsl.MapMatcher{
 							"X-XSRF-TOKEN":        dsl.String("abcde"),
 							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
@@ -45,9 +45,7 @@ func TestRoles(t *testing.T) {
 					}).
 					WillRespondWith(dsl.Response{
 						Status: http.StatusOK,
-						Body: dsl.Like(map[string]interface{}{
-							"data": dsl.EachLike("System Admin", 1),
-						}),
+						Body:   dsl.EachLike("System Admin", 1),
 					})
 			},
 			cookies: []*http.Cookie{
@@ -66,7 +64,7 @@ func TestRoles(t *testing.T) {
 					UponReceiving("A request for roles without cookies").
 					WithRequest(dsl.Request{
 						Method: http.MethodGet,
-						Path:   dsl.String("/api/role"),
+						Path:   dsl.String("/api/v1/roles"),
 						Headers: dsl.MapMatcher{
 							"OPG-Bypass-Membrane": dsl.String("1"),
 						},
@@ -105,7 +103,7 @@ func TestRolesStatusError(t *testing.T) {
 	_, err := client.Roles(getContext(nil))
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
-		URL:    s.URL + "/api/role",
+		URL:    s.URL + "/api/v1/roles",
 		Method: http.MethodGet,
 	}, err)
 }
