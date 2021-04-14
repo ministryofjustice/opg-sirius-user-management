@@ -3,6 +3,7 @@ package sirius
 import (
 	"encoding/json"
 	"net/http"
+	"net/url"
 	"sort"
 	"strings"
 )
@@ -44,7 +45,7 @@ func (c *Client) SearchUsers(ctx Context, search string) ([]User, error) {
 		return nil, ClientError("Search term must be at least three characters")
 	}
 
-	req, err := c.newRequest(ctx, http.MethodGet, "/api/v1/search/users?query="+search, nil)
+	req, err := c.newRequest(ctx, http.MethodGet, "/api/v1/search/users?query="+url.QueryEscape(search), nil)
 	if err != nil {
 		return nil, err
 	}
