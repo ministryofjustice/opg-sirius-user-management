@@ -128,6 +128,20 @@ func TestSearchUsersStatusError(t *testing.T) {
 	}, err)
 }
 
+func TestSearchUsersEscapesQuery(t *testing.T) {
+	s := teapotServer()
+	defer s.Close()
+
+	client, _ := NewClient(http.DefaultClient, s.URL)
+
+	_, err := client.SearchUsers(getContext(nil), "Maria Fernández")
+	assert.Equal(t, StatusError{
+		Code:   http.StatusTeapot,
+		URL:    s.URL + "/api/v1/search/users?query=Maria+Fern%C3%A1ndez",
+		Method: http.MethodGet,
+	}, err)
+}
+
 func TestSearchUsersTooShort(t *testing.T) {
 	client, _ := NewClient(http.DefaultClient, "")
 
