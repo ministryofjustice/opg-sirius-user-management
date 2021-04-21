@@ -49,7 +49,7 @@ func (m *mockAddTeamClient) TeamTypes(ctx sirius.Context) ([]sirius.RefDataTeamT
 }
 
 func (m *mockAddTeamClient) requiredPermissions() sirius.PermissionSet {
-	return sirius.PermissionSet{"team": sirius.PermissionGroup{Permissions: []string{"post"}}}
+	return sirius.PermissionSet{"v1-teams": sirius.PermissionGroup{Permissions: []string{"post"}}}
 }
 
 func TestGetAddTeam(t *testing.T) {

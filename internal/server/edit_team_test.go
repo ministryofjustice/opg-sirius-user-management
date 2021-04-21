@@ -60,7 +60,7 @@ func (m *mockEditTeamClient) EditTeam(ctx sirius.Context, team sirius.Team) erro
 
 func (m *mockEditTeamClient) requiredPermissions() sirius.PermissionSet {
 	return sirius.PermissionSet{
-		"team": sirius.PermissionGroup{Permissions: []string{"put", "post"}},
+		"v1-teams": sirius.PermissionGroup{Permissions: []string{"put", "post"}},
 	}
 }
 
@@ -127,7 +127,7 @@ func TestGetEditTeamWithoutTypeEditPermission(t *testing.T) {
 	r, _ := http.NewRequest("GET", "/teams/edit/123", nil)
 
 	err := editTeam(client, template)(sirius.PermissionSet{
-		"team": sirius.PermissionGroup{Permissions: []string{"put"}},
+		"v1-teams": sirius.PermissionGroup{Permissions: []string{"put"}},
 	}, w, r)
 	assert.Nil(err)
 
@@ -154,8 +154,9 @@ func TestGetEditTeamWithDeletePermission(t *testing.T) {
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/teams/edit/123", nil)
 
-	permissions := client.requiredPermissions()
-	permissions["v1-teams"] = sirius.PermissionGroup{Permissions: []string{"delete"}}
+	permissions := sirius.PermissionSet{
+		"v1-teams": sirius.PermissionGroup{Permissions: []string{"put", "post", "delete"}},
+	}
 
 	err := editTeam(client, template)(permissions, w, r)
 	assert.Nil(err)
@@ -301,7 +302,7 @@ func TestPostEditTeamWithoutPermission(t *testing.T) {
 	r.Header.Add("Content-type", "application/x-www-form-urlencoded")
 
 	err := editTeam(client, template)(sirius.PermissionSet{
-		"team": sirius.PermissionGroup{Permissions: []string{"put"}},
+		"v1-teams": sirius.PermissionGroup{Permissions: []string{"put"}},
 	}, w, r)
 	assert.Nil(err)
 

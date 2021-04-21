@@ -45,7 +45,7 @@ func (c *mockRemoveTeamMemberClient) EditTeam(ctx sirius.Context, team sirius.Te
 }
 
 func (m *mockRemoveTeamMemberClient) requiredPermissions() sirius.PermissionSet {
-	return sirius.PermissionSet{"team": sirius.PermissionGroup{Permissions: []string{"put"}}}
+	return sirius.PermissionSet{"v1-teams": sirius.PermissionGroup{Permissions: []string{"put"}}}
 }
 
 func generateTeamWithIds(ids ...int) sirius.Team {
