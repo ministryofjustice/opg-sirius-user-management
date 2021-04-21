@@ -59,7 +59,7 @@ func (c *mockAddTeamMemberClient) SearchUsers(ctx sirius.Context, search string)
 }
 
 func (c *mockAddTeamMemberClient) requiredPermissions() sirius.PermissionSet {
-	return sirius.PermissionSet{"team": sirius.PermissionGroup{Permissions: []string{"put"}}}
+	return sirius.PermissionSet{"v1-teams": sirius.PermissionGroup{Permissions: []string{"put"}}}
 }
 
 func TestGetAddTeamMember(t *testing.T) {
