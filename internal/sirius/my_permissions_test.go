@@ -47,10 +47,10 @@ func TestPermissions(t *testing.T) {
 						Status:  http.StatusOK,
 						Headers: dsl.MapMatcher{"Content-Type": dsl.String("application/json")},
 						Body: dsl.Like(map[string]interface{}{
-							"user": map[string]interface{}{
+							"v1-users": map[string]interface{}{
 								"permissions": dsl.EachLike("PATCH", 1),
 							},
-							"team": map[string]interface{}{
+							"v1-teams": map[string]interface{}{
 								"permissions": dsl.EachLike("POST", 1),
 							},
 						}),
@@ -61,8 +61,8 @@ func TestPermissions(t *testing.T) {
 				{Name: "Other", Value: "other"},
 			},
 			expectedResponse: PermissionSet{
-				"user": PermissionGroup{Permissions: []string{"PATCH"}},
-				"team": PermissionGroup{Permissions: []string{"POST"}},
+				"v1-users": PermissionGroup{Permissions: []string{"PATCH"}},
+				"v1-teams": PermissionGroup{Permissions: []string{"POST"}},
 			},
 		},
 		{
@@ -151,11 +151,8 @@ func TestPermissionsIgnoredPact(t *testing.T) {
 							"v1-users": map[string]interface{}{
 								"permissions": []string{"PUT", "POST", "DELETE"},
 							},
-							"team": map[string]interface{}{
-								"permissions": []string{"GET", "POST", "PUT"},
-							},
 							"v1-teams": map[string]interface{}{
-								"permissions": []string{"DELETE"},
+								"permissions": []string{"GET", "POST", "PUT", "DELETE"},
 							},
 						}),
 					})
@@ -167,8 +164,7 @@ func TestPermissionsIgnoredPact(t *testing.T) {
 			expectedResponse: PermissionSet{
 				"v1-users-updatetelephonenumber": PermissionGroup{Permissions: []string{"PUT"}},
 				"v1-users":                       PermissionGroup{Permissions: []string{"PUT", "POST", "DELETE"}},
-				"team":                           PermissionGroup{Permissions: []string{"GET", "POST", "PUT"}},
-				"v1-teams":                       PermissionGroup{Permissions: []string{"DELETE"}},
+				"v1-teams":                       PermissionGroup{Permissions: []string{"GET", "POST", "PUT", "DELETE"}},
 			},
 		},
 	}

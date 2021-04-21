@@ -25,7 +25,7 @@ func (m *mockListTeamsClient) Teams(ctx sirius.Context) ([]sirius.Team, error) {
 }
 
 func (m *mockListTeamsClient) requiredPermissions() sirius.PermissionSet {
-	return sirius.PermissionSet{"team": sirius.PermissionGroup{Permissions: []string{"put"}}}
+	return sirius.PermissionSet{"v1-teams": sirius.PermissionGroup{Permissions: []string{"put"}}}
 }
 
 func TestListTeams(t *testing.T) {

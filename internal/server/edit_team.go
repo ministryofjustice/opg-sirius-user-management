@@ -27,7 +27,7 @@ type editTeamVars struct {
 
 func editTeam(client EditTeamClient, tmpl Template) Handler {
 	return func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error {
-		if !perm.HasPermission("team", http.MethodPut) {
+		if !perm.HasPermission("v1-teams", http.MethodPut) {
 			return StatusError(http.StatusForbidden)
 		}
 
@@ -43,7 +43,7 @@ func editTeam(client EditTeamClient, tmpl Template) Handler {
 			return err
 		}
 
-		canEditTeamType := perm.HasPermission("team", http.MethodPost)
+		canEditTeamType := perm.HasPermission("v1-teams", http.MethodPost)
 		canDeleteTeam := perm.HasPermission("v1-teams", http.MethodDelete)
 
 		teamTypes, err := client.TeamTypes(ctx)
