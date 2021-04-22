@@ -1,18 +1,37 @@
 version: 2.1
 
+slack-fail-post-step: &slack-fail-post-step
+  post-steps:
+    - run:
+        name: Set Slack template
+        command: echo 'export SLACK_NOTIFY_TEMPLATE=$(cat ~/project/.circleci/slack_template.json)' >> $BASH_ENV
+    - slack/notify:
+        event: fail
+        channel: gt-notification-test
+        template: SLACK_NOTIFY_TEMPLATE
+
 workflows:
   version: 2
   pr:
     jobs:
       - test:
           context: moj-slack-notifications
-      - lint
+          <<: *slack-fail-post-step
+      - lint:
+          context: moj-slack-notifications
+          <<: *slack-fail-post-step
       - acceptance-test:
           requires: [test, lint]
+          context: moj-slack-notifications
+          <<: *slack-fail-post-step
       - cypress:
           requires: [acceptance-test]
+          context: moj-slack-notifications
+          <<: *slack-fail-post-step
       - push:
           requires: [cypress]
+          context: moj-slack-notifications
+          <<: *slack-fail-post-step
 
 orbs:
   codecov: codecov/codecov@1.1.1
@@ -44,9 +63,6 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Set Slack template
-          command: echo 'export SLACK_NOTIFY_TEMPLATE=$(cat ~/project/.circleci/slack_template.json)' >> $BASH_ENV
-      - run:
           name: Install modules
           command: go mod download
       - run: mkdir -p /tmp/test-results
@@ -75,10 +91,6 @@ jobs:
           paths:
             - sirius-user-management-sirius.json
             - ignored-ignored.json
-      - slack/notify:
-          event: fail
-          channel: gt-notification-test
-          template: SLACK_NOTIFY_TEMPLATE
 
   lint:
     docker:
