@@ -5,7 +5,7 @@ slack-fail-post-step: &slack-fail-post-step
     - slack/notify:
         branch_pattern: master
         event: fail
-        channel: gt-notification-test
+        channel: opg-sirius-develop
         custom: |
           {
             "blocks": [
