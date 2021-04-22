@@ -3,6 +3,7 @@ version: 2.1
 slack-fail-post-step: &slack-fail-post-step
   post-steps:
     - slack/notify:
+        branch_pattern: master
         event: fail
         channel: gt-notification-test
         custom: |
