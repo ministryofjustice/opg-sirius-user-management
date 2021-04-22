@@ -75,7 +75,41 @@ jobs:
       - slack/notify:
           channel: gt-notification-test
           event: fail
-          template: basic_fail_1
+          custom: |
+            {
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": ":circleci-fail: $CIRCLE_PROJECT_REPONAME build failed",
+                    "emoji": true
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Job*: $CIRCLE_JOB\n*Author*: $CIRCLE_USERNAME"
+                    }
+                  ]
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": ":circleci: View Job"
+                      },
+                      "url": "https://circleci.com/gh/ministryofjustice/opg-sirius-user-management/1611?utm_campaign=vcs-integration-link&utm_medium=referral&utm_source=github-build-link"
+                    }
+                  ]
+                }
+              ]
+            }
 
   lint:
     docker:
