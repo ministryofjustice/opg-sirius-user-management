@@ -159,14 +159,15 @@ jobs:
       - run:
           name: Push container
           command: |
-            export SHORT_HASH=${CIRCLE_SHA1:0:7} >> $BASH_ENV
+            export IMAGE_TAG=${CIRCLE_BRANCH//\//-}-${CIRCLE_SHA1:0:7} >> $BASH_ENV
+            echo $IMAGE_TAG
             docker tag sirius-user-management:latest << parameters.container_repo_url >>:latest
-            docker tag sirius-user-management:latest << parameters.container_repo_url >>:$CIRCLE_BRANCH-$SHORT_HASH
+            docker tag sirius-user-management:latest << parameters.container_repo_url >>:$IMAGE_TAG
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
               # We want all of the tags pushed
               docker push << parameters.container_repo_url >>
             else
-              docker push << parameters.container_repo_url >>:$CIRCLE_BRANCH-$SHORT_HASH
+              docker push << parameters.container_repo_url >>:$IMAGE_TAG
             fi
       - when:
           condition:
