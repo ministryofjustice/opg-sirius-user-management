@@ -44,6 +44,9 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Set Slack template
+          command: echo 'export SLACK_NOTIFY_TEMPLATE=$(cat ~/project/.circleci/slack_template.json)' >> $BASH_ENV
+      - run:
           name: Install modules
           command: go mod download
       - run: mkdir -p /tmp/test-results
@@ -73,43 +76,9 @@ jobs:
             - sirius-user-management-sirius.json
             - ignored-ignored.json
       - slack/notify:
-          channel: gt-notification-test
           event: fail
-          custom: |
-            {
-              "blocks": [
-                {
-                  "type": "header",
-                  "text": {
-                    "type": "plain_text",
-                    "text": ":circleci-fail: $CIRCLE_PROJECT_REPONAME build failed",
-                    "emoji": true
-                  }
-                },
-                {
-                  "type": "section",
-                  "fields": [
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Job*: $CIRCLE_JOB\n*Author*: $CIRCLE_USERNAME"
-                    }
-                  ]
-                },
-                {
-                  "type": "actions",
-                  "elements": [
-                    {
-                      "type": "button",
-                      "text": {
-                        "type": "plain_text",
-                        "text": ":circleci: View Job"
-                      },
-                      "url": "https://circleci.com/gh/ministryofjustice/opg-sirius-user-management/1611?utm_campaign=vcs-integration-link&utm_medium=referral&utm_source=github-build-link"
-                    }
-                  ]
-                }
-              ]
-            }
+          channel: gt-notification-test
+          template: SLACK_NOTIFY_TEMPLATE
 
   lint:
     docker:
