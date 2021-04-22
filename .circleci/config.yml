@@ -1,20 +1,74 @@
 version: 2.1
 
+slack-fail-post-step: &slack-fail-post-step
+  post-steps:
+    - slack/notify:
+        branch_pattern: master
+        event: fail
+        channel: opg-sirius-develop
+        custom: |
+          {
+            "blocks": [
+              {
+                "type": "header",
+                "text": {
+                  "type": "plain_text",
+                  "text": ":circleci-fail: $CIRCLE_PROJECT_REPONAME build failed",
+                  "emoji": true
+                }
+              },
+              {
+                "type": "section",
+                "fields": [
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Job*: $CIRCLE_JOB\n*Latest contributor*: $CIRCLE_USERNAME"
+                  }
+                ]
+              },
+              {
+                "type": "actions",
+                "elements": [
+                  {
+                    "type": "button",
+                    "text": {
+                      "type": "plain_text",
+                      "text": ":circleci: View Job"
+                    },
+                    "url": "$CIRCLE_BUILD_URL"
+                  }
+                ]
+              }
+            ]
+          }
+
+
 workflows:
   version: 2
   pr:
     jobs:
-      - test
-      - lint
+      - test:
+          context: moj-slack-notifications
+          <<: *slack-fail-post-step
+      - lint:
+          context: moj-slack-notifications
+          <<: *slack-fail-post-step
       - acceptance-test:
           requires: [test, lint]
+          context: moj-slack-notifications
+          <<: *slack-fail-post-step
       - cypress:
           requires: [acceptance-test]
+          context: moj-slack-notifications
+          <<: *slack-fail-post-step
       - push:
           requires: [cypress]
+          context: moj-slack-notifications
+          <<: *slack-fail-post-step
 
 orbs:
   codecov: codecov/codecov@1.1.1
+  slack: circleci/slack@4.4.0
   ecr:
     commands:
       login:
