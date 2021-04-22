@@ -2,13 +2,45 @@ version: 2.1
 
 slack-fail-post-step: &slack-fail-post-step
   post-steps:
-    - run:
-        name: Set Slack template
-        command: echo 'export SLACK_NOTIFY_TEMPLATE=$(cat ~/project/.circleci/slack_template.json)' >> $BASH_ENV
     - slack/notify:
         event: fail
         channel: gt-notification-test
-        template: SLACK_NOTIFY_TEMPLATE
+        custom: |
+          {
+            "blocks": [
+              {
+                "type": "header",
+                "text": {
+                  "type": "plain_text",
+                  "text": ":circleci-fail: $CIRCLE_PROJECT_REPONAME build failed",
+                  "emoji": true
+                }
+              },
+              {
+                "type": "section",
+                "fields": [
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Job*: $CIRCLE_JOB\n*Latest contributor*: $CIRCLE_USERNAME"
+                  }
+                ]
+              },
+              {
+                "type": "actions",
+                "elements": [
+                  {
+                    "type": "button",
+                    "text": {
+                      "type": "plain_text",
+                      "text": ":circleci: View Job"
+                    },
+                    "url": "$CIRCLE_BUILD_URL"
+                  }
+                ]
+              }
+            ]
+          }
+
 
 workflows:
   version: 2
