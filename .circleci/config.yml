@@ -4,7 +4,8 @@ workflows:
   version: 2
   pr:
     jobs:
-      - test
+      - test:
+          context: moj-slack-notifications
       - lint
       - acceptance-test:
           requires: [test, lint]
@@ -15,6 +16,7 @@ workflows:
 
 orbs:
   codecov: codecov/codecov@1.1.1
+  slack: circleci/slack@4.4.0
   ecr:
     commands:
       login:
@@ -70,6 +72,10 @@ jobs:
           paths:
             - sirius-user-management-sirius.json
             - ignored-ignored.json
+      - slack/notify:
+          channel: gt-notification-test
+          event: fail
+          template: basic_fail_1
 
   lint:
     docker:
