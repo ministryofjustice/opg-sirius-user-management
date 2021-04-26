@@ -19,6 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-go@v2
+      - uses: unfor19/install-aws-cli-action@v1
       - name: Install modules
         run: go mod download
       - name: Setup gotestsum
@@ -109,3 +110,93 @@ jobs:
       - name: Run cypress
         run: |
           docker-compose -f docker/docker-compose.ci.yml run cypress
+
+  build:
+    name: "Build & Push Containers"
+    runs-on: ubuntu-latest
+    needs: ['test', 'lint', 'acceptance-test', 'cypress']
+    outputs:
+      branch: ${{ steps.set-outputs.outputs.branch }}
+      new_tag: ${{ steps.bump_version.outputs.new_tag }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Extract branch name
+        run: echo BRANCH_NAME=${{ github.head_ref }} >> $GITHUB_ENV
+        id: extract_branch
+      - uses: unfor19/install-aws-cli-action@v1
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_SHARED }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_SHARED }}
+          aws-region: eu-west-1
+          role-to-assume: arn:aws:iam::311462405659:role/shared-ci
+          role-duration-seconds: 3600
+          role-session-name: GitHubActions
+
+      - name: Build Container
+        run: |
+          docker build --tag sirius-user-management:latest -f docker/sirius-user-management/Dockerfile .
+      - name: Scan
+        run: |
+          docker run --rm  -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy sirius-user-management:latest
+
+      - name: Bump version
+        id: bump_version
+        uses: anothrNick/github-tag-action@1.33.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INITIAL_VERSION: 1.0.0
+          DEFAULT_BUMP: minor
+          PRERELEASE_SUFFIX: ${{ env.BRANCH_NAME }}
+          RELEASE_BRANCHES: master
+          WITH_V: true
+      
+      - name: ECR Login
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          registries: 311462405659
+      
+      - name: Push Container
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          USER_MANAGEMENT_ECR_REPOSITORY: sirius-user-management
+        run: |
+          docker tag sirius-user-management:latest $ECR_REGISTRY/$USER_MANAGEMENT_ECR_REPOSITORY:latest
+          docker tag sirius-user-management:latest $ECR_REGISTRY/$USER_MANAGEMENT_ECR_REPOSITORY:${{ steps.bump_version.outputs.new_tag }}
+          if [ $BRANCH_NAME == "master" ]; then
+            # We want all of the tags pushed
+            docker push $ECR_REGISTRY/USER_MANAGEMENT_ECR_REPOSITORY
+          else
+            docker push $ECR_REGISTRY/USER_MANAGEMENT_ECR_REPOSITORY:${{ steps.bump_version.outputs.tag }}
+          fi
+      
+  push-tags:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_SHARED }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_SHARED }}
+          aws-region: eu-west-1
+          role-to-assume: arn:aws:iam::997462338508:role/shared-ci
+          role-duration-seconds: 3600
+          role-session-name: GitHubActions
+
+      - name: Install AWS CLI
+        id: install-aws-cli
+        uses: unfor19/install-aws-cli-action@v1
+
+      - name: Push Tag to Parameter Store
+        run: |
+          aws ssm put-parameter --name "opg-sirius-user-management-latest-green-build" --type "String" --value "${{ needs.build.outputs.new_tag}}" --overwrite --region=eu-west-1
+
+      - name: Trigger Dev Deploy
+        shell: bash
+        run: curl -u ${{ secrets.JENKINS_API_USER }}:${{ secrets.JENKINS_API_TOKEN }} "https://${{ secrets.JENKINS_URL }}/job/Sirius/job/Deploy_to_Development/build?token=${{ secrets.JENKINS_API_TOKEN_NAME }}&cause=Triggered+by+opg-sirius-user-management"
