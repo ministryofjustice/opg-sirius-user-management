@@ -120,6 +120,8 @@ jobs:
       new_tag: ${{ steps.bump_version.outputs.new_tag }}
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: '0'
       - name: Extract branch name
         run: echo BRANCH_NAME=${{ github.head_ref }} >> $GITHUB_ENV
         id: extract_branch
