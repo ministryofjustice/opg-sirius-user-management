@@ -167,9 +167,9 @@ jobs:
           docker tag sirius-user-management:latest $ECR_REGISTRY/$USER_MANAGEMENT_ECR_REPOSITORY:${{ steps.bump_version.outputs.new_tag }}
           if [ $BRANCH_NAME == "master" ]; then
             # We want all of the tags pushed
-            docker push $ECR_REGISTRY/USER_MANAGEMENT_ECR_REPOSITORY
+            docker push $ECR_REGISTRY/$USER_MANAGEMENT_ECR_REPOSITORY
           else
-            docker push $ECR_REGISTRY/USER_MANAGEMENT_ECR_REPOSITORY:${{ steps.bump_version.outputs.tag }}
+            docker push $ECR_REGISTRY/$USER_MANAGEMENT_ECR_REPOSITORY:${{ steps.bump_version.outputs.tag }}
           fi
       
   push-tags:
