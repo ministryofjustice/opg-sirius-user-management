@@ -54,7 +54,7 @@ func TestTeam(t *testing.T) {
 							"displayName": dsl.Like("Cool Team"),
 							"email":       dsl.Like("coolteam@opgtest.com"),
 							"phoneNumber": dsl.Like("01818118181"),
-							"extra":       dsl.Like("This is wrong"),
+							"extra":       dsl.Like("This is still wrong"),
 							"members": dsl.EachLike(map[string]interface{}{
 								"displayName": dsl.Like("John"),
 								"email":       dsl.Like("john@opgtest.com"),
