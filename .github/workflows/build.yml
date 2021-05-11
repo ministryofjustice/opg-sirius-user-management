@@ -132,6 +132,11 @@ jobs:
     - run: go mod vendor
     - run: zip -r package.zip .
 
+    - name: Run Gosec Security Scanner
+      uses: securego/gosec@master
+      with:
+        args: ./...
+
     - uses: wei/curl@master
       with:
         args: -O https://downloads.veracode.com/securityscan/pipeline-scan-LATEST.zip
