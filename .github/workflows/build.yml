@@ -146,30 +146,15 @@ jobs:
       with:
         args: ./...
 
-    - uses: wei/curl@master
-      with:
-        args: -O https://downloads.veracode.com/securityscan/pipeline-scan-LATEST.zip
-    - run: unzip -o pipeline-scan-LATEST.zip
-    - uses: actions/setup-java@v1
-      with:
-        java-version: 1.8
-
-    - run: java -jar pipeline-scan.jar --veracode_api_id "${{secrets.VERACODE_API_ID}}" --veracode_api_key "${{secrets.VERACODE_API_KEY}}" --fail_on_severity="Very High, High" --file package.zip
-      continue-on-error: true
-    - uses: actions/upload-artifact@v2
-      with:
-        name: results
-        path: results.json
     - name: Convert Veracode response into sarif
       id: veracode
-      uses: Veracode/veracode-pipeline-scan-results-to-sarif@v0.1.6
+      uses: veracode/veracode-uploadandscan-action@master
       with:
-        pipeline-results-json: results.json
-        output-results-sarif: veracode-results.sarif
-    - name: Upload sarif file to repository
-      uses: github/codeql-action/upload-sarif@v1
-      with:
-        sarif_file: veracode-results.sarif
+        appname: 'opg-sirius-user-management'
+        filepath: './package.zip'
+        include: '*.go'
+        vid: '${{ secrets.VERACODE_API_ID }}'
+        vkey: '${{ secrets.VERACODE_API_KEY }}'
 
   cypress:
     name: Cypress
