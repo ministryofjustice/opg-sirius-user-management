@@ -1,0 +1,42 @@
+name: Run security scan on main pipeline
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  scan:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - run: go mod vendor
+    - name: Build Veracode Package
+      run: |
+        mkdir package
+        cp -r internal package
+        cp -r vendor package
+        cp go.mod package
+        cp go.sum package
+        cp main.go package
+        cp main_test.go package
+        zip -r package.zip package
+
+    - name: Run Veracode upload and scan
+      id: veracode
+      uses: veracode/veracode-uploadandscan-action@master
+      with:
+        appname: 'opg-sirius-user-management'
+        filepath: './package.zip'
+        vid: '${{ secrets.VERACODE_API_ID }}'
+        vkey: '${{ secrets.VERACODE_API_KEY }}'
