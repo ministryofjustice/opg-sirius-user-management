@@ -35,11 +35,10 @@ func readInteractions(dir string) ([]Interaction, error) {
 	}
 
 	for _, path := range paths {
-		file, err := os.Open(filepath.Clean(path))
+		file, err := os.Open(path)
 		if err != nil {
 			return nil, fmt.Errorf("opening %s: %w", path, err)
 		}
-		/* #nosec */
 		defer file.Close()
 
 		var v Pacts
