@@ -172,6 +172,8 @@ jobs:
         run: |
           docker run --rm  -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy sirius-user-management:latest
 
+      - name: Set prerelease suffix
+        run: echo "PRERELEASE_SUFFIX=$(echo ${{ env.BRANCH_NAME }} | sed 's/[^0-9A-Za-z-]/-/g')" >> $GITHUB_ENV
       - name: Bump version
         id: bump_version
         uses: anothrNick/github-tag-action@1.33.0
@@ -179,7 +181,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           INITIAL_VERSION: 1.0.0
           DEFAULT_BUMP: minor
-          PRERELEASE_SUFFIX: ${{ env.BRANCH_NAME }}
           RELEASE_BRANCHES: main
           WITH_V: true
       
