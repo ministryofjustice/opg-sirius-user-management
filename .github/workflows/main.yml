@@ -1,7 +1,7 @@
 name: Main Workflow
 
 on:
-  push:
+  pull_request:
     branches:
       - main
 
@@ -30,5 +30,5 @@ jobs:
       with:
         appname: 'opg-sirius-user-management'
         filepath: './package.zip'
-        vid: '${{ secrets.VERACODE_API_ID }}'
-        vkey: '${{ secrets.VERACODE_API_KEY }}'
+        vid: '${{ secrets.CYBERSECURITY_VERACODE_API_ID }}'
+        vkey: '${{ secrets.CYBERSECURITY_VERACODE_API_KEY }}'
