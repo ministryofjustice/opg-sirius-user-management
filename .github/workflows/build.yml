@@ -291,7 +291,7 @@ jobs:
 
       - name: Push Tag to Parameter Store
         run: |
-          aws ssm put-parameter --name "opg-sirius-user-management-latest-green-build" --type "String" --value "${{ needs.build.outputs.tag}}" --overwrite --region=eu-west-1
+          aws ssm put-parameter --name "opg-sirius-user-management-latest-green-build" --type "String" --value "${{ needs.push.outputs.tag}}" --overwrite --region=eu-west-1
 
       - name: Trigger Dev Deploy
         shell: bash
