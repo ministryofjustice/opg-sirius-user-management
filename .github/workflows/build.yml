@@ -25,12 +25,10 @@ jobs:
           key: ${{ runner.os }}-images-$GITHUB_RUN_ID-$GITHUB_RUN_NUMBER
       - name: Build Images
         run: |
-          docker-compose -f docker/docker-compose.ci.yml build --parallel
+          docker-compose -f docker/docker-compose.ci.yml build --parallel app pact-stub
           mkdir -p /tmp/images
           docker save -o /tmp/images/app.tar docker_app:latest
           docker save -o /tmp/images/pact-stub.tar docker_pact-stub:latest
-          docker save -o /tmp/images/puppeteer.tar docker_puppeteer:latest
-          docker save -o /tmp/images/cypress.tar docker_cypress:latest
 
   test:
     name: Test User Management
@@ -142,7 +140,6 @@ jobs:
         run: |
           docker load -i /tmp/images/app.tar
           docker load -i /tmp/images/pact-stub.tar
-          docker load -i /tmp/images/puppeteer.tar
 
       - name: Run pa11y
         run: |
@@ -180,7 +177,6 @@ jobs:
         run: |
           docker load -i /tmp/images/app.tar
           docker load -i /tmp/images/pact-stub.tar
-          docker load -i /tmp/images/cypress.tar
 
       - name: Run cypress
         run: |
