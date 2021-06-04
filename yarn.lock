@@ -2736,10 +2736,10 @@ globby@^11.0.1:
     merge2 "^1.3.0"
     slash "^3.0.0"
 
-govuk-frontend@^3.9.0:
-  version "3.10.2"
-  resolved "https://registry.yarnpkg.com/govuk-frontend/-/govuk-frontend-3.10.2.tgz#6589401e4adad1ab1dc340a18057ec88c9435a84"
-  integrity sha512-MpMymgLsKoMw40MggZ0XLCAj1FY5N2s8Pf3aQR+k0cZOsegjLsnejxNfEB9qEl9jcma2fiiVcvsEZ+Ipo+Oo2g==
+govuk-frontend@^3.12.0:
+  version "3.12.0"
+  resolved "https://registry.yarnpkg.com/govuk-frontend/-/govuk-frontend-3.12.0.tgz#55d7057ed8f480a3f83ffeae54b68e0fc81607a3"
+  integrity sha512-+mM8BqEUqsBVSV/ud0dEhE8OmMdhkK53eEUp5YyPN+y3mwcdRnwwP2A2B5qFdFi6E6j/2AYuCG8l5kXD+JXNxA==
 
 graceful-fs@^4.1.11, graceful-fs@^4.1.15, graceful-fs@^4.1.2, graceful-fs@^4.1.6, graceful-fs@^4.2.0:
   version "4.2.4"
