@@ -30,6 +30,7 @@ type Client interface {
 	ResendConfirmationClient
 	UnlockUserClient
 	ViewTeamClient
+	RandomReviewsClient
 }
 
 type Template interface {
@@ -82,6 +83,10 @@ func New(logger Logger, client Client, templates map[string]*template.Template, 
 	mux.Handle("/my-details/edit",
 		wrap(
 			editMyDetails(client, templates["edit-my-details.gotmpl"])))
+
+    mux.Handle("/random-reviews",
+        wrap(
+            randomReviews(client, templates["random-reviews.gotmpl"])))
 
 	mux.Handle("/change-password",
 		wrap(
