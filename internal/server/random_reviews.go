@@ -18,6 +18,10 @@ type randomReviewsVars struct {
 
 func randomReviews(client RandomReviewsClient, tmpl Template) Handler {
 	return func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error {
+		if !perm.HasPermission("v1-random-review-settings", http.MethodGet) {
+    		return StatusError(http.StatusForbidden)
+    	}
+
 		if r.Method != http.MethodGet {
 			return StatusError(http.StatusMethodNotAllowed)
 		}
