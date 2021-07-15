@@ -1,6 +1,7 @@
 package server
 
 import (
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -23,6 +24,10 @@ func (m *mockRandomReviewsClient) RandomReviews(ctx sirius.Context) (sirius.Rand
 	return m.data, m.err
 }
 
+func (m *mockRandomReviewsClient) requiredPermissions() sirius.PermissionSet {
+	return sirius.PermissionSet{"v1-random-review-settings": sirius.PermissionGroup{Permissions: []string{"get"}}}
+}
+
 func TestGetRandomReviews(t *testing.T) {
 	assert := assert.New(t)
 
@@ -37,8 +42,7 @@ func TestGetRandomReviews(t *testing.T) {
 	r, _ := http.NewRequest("GET", "/path", nil)
 
 	handler := randomReviews(client, template)
-	err := handler(sirius.PermissionSet{}, w, r)
-
+	err := handler(client.requiredPermissions(), w, r)
 	assert.Nil(err)
 
 	resp := w.Result()
@@ -47,88 +51,60 @@ func TestGetRandomReviews(t *testing.T) {
 	assert.Equal(1, client.count)
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
-	assert.Equal(myDetailsVars{
+	assert.Equal(randomReviewsVars{
 		Path:               "/path",
 		LayPercentage:      20,
 		ReviewCycle:        3,
 	}, template.lastVars)
 }
-//
-// func TestGetMyDetailsUsesPermission(t *testing.T) {
-// 	assert := assert.New(t)
-//
-// 	data := sirius.MyDetails{
-// 		ID:          123,
-// 		Firstname:   "John",
-// 		Surname:     "Doe",
-// 		Email:       "john@doe.com",
-// 		PhoneNumber: "123",
-// 		Roles:       []string{"A", "COP User", "B"},
-// 		Teams: []sirius.MyDetailsTeam{
-// 			{DisplayName: "A Team"},
-// 		},
-// 	}
-// 	client := &mockMyDetailsClient{data: data}
-// 	template := &mockTemplate{}
-//
-// 	w := httptest.NewRecorder()
-// 	r, _ := http.NewRequest("GET", "/path", nil)
-//
-// 	handler := myDetails(client, template)
-// 	err := handler(sirius.PermissionSet{"v1-users-updatetelephonenumber": sirius.PermissionGroup{Permissions: []string{"put"}}}, w, r)
-//
-// 	assert.Nil(err)
-//
-// 	resp := w.Result()
-// 	assert.Equal(http.StatusOK, resp.StatusCode)
-// 	assert.Equal(getContext(r), client.lastCtx)
-//
-// 	assert.Equal(1, template.count)
-// 	assert.Equal("page", template.lastName)
-// 	assert.Equal(myDetailsVars{
-// 		Path:               "/path",
-// 		ID:                 123,
-// 		Firstname:          "John",
-// 		Surname:            "Doe",
-// 		Email:              "john@doe.com",
-// 		PhoneNumber:        "123",
-// 		Organisation:       "COP User",
-// 		Roles:              []string{"A", "B"},
-// 		Teams:              []string{"A Team"},
-// 		CanEditPhoneNumber: true,
-// 	}, template.lastVars)
-// }
-//
-// func TestGetMyDetailsUnauthenticated(t *testing.T) {
-// 	assert := assert.New(t)
-//
-// 	client := &mockMyDetailsClient{err: sirius.ErrUnauthorized}
-// 	template := &mockTemplate{}
-//
-// 	w := httptest.NewRecorder()
-// 	r, _ := http.NewRequest("GET", "", nil)
-//
-// 	handler := myDetails(client, template)
-// 	err := handler(sirius.PermissionSet{}, w, r)
-//
-// 	assert.Equal(sirius.ErrUnauthorized, err)
-//
-// 	assert.Equal(0, template.count)
-// }
-//
-// func TestGetMyDetailsSiriusErrors(t *testing.T) {
-// 	assert := assert.New(t)
-//
-// 	client := &mockMyDetailsClient{err: errors.New("err")}
-// 	template := &mockTemplate{}
-//
-// 	w := httptest.NewRecorder()
-// 	r, _ := http.NewRequest("GET", "", nil)
-//
-// 	handler := myDetails(client, template)
-// 	err := handler(sirius.PermissionSet{}, w, r)
-//
-// 	assert.Equal("err", err.Error())
-//
-// 	assert.Equal(0, template.count)
-// }
+
+func TestGetRandomReviewsUnauthenticated(t *testing.T) {
+	assert := assert.New(t)
+
+	client := &mockRandomReviewsClient{err: StatusError(http.StatusForbidden)}
+	template := &mockTemplate{}
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("GET", "", nil)
+
+	handler := randomReviews(client, template)
+	err := handler(sirius.PermissionSet{}, w, r)
+
+	assert.Equal(StatusError(http.StatusForbidden), err)
+
+	assert.Equal(0, template.count)
+}
+
+func TestGetRandomReviewsMethodNotAllowed(t *testing.T) {
+	assert := assert.New(t)
+
+	client := &mockRandomReviewsClient{err: StatusError(http.StatusMethodNotAllowed)}
+	template := &mockTemplate{}
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("POST", "", nil)
+
+	handler := randomReviews(client, template)
+	err := handler(client.requiredPermissions(), w, r)
+
+	assert.Equal(StatusError(http.StatusMethodNotAllowed), err)
+
+	assert.Equal(0, template.count)
+}
+
+func TestGetRandomReviewsSiriusErrors(t *testing.T) {
+	assert := assert.New(t)
+
+	client := &mockRandomReviewsClient{err: errors.New("err")}
+	template := &mockTemplate{}
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("GET", "", nil)
+
+	handler := randomReviews(client, template)
+	err := handler(client.requiredPermissions(), w, r)
+
+	assert.Equal("err", err.Error())
+
+	assert.Equal(0, template.count)
+}
