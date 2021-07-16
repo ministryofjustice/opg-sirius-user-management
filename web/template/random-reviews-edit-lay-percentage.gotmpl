@@ -4,7 +4,7 @@
   <a class="govuk-back-link" href="{{ prefix "/random-reviews" }}">Back</a>
 {{ end }}
 
-{{ define "title" }}Change your phone number{{ end }}
+{{ define "title" }}Lay cases for random review{{ end }}
 
 {{ define "main" }}
   <div class="govuk-grid-row">
@@ -12,7 +12,7 @@
       {{ template "error-summary" .Errors }}
 
       {{ if .Success }}
-        {{ template "success-banner" "You have successfully updated the review cycle." }}
+        {{ template "success-banner" "You have successfully updated the lay percentage." }}
       {{ end }}
 
       <h1 class="govuk-heading-xl">Lay cases for random review</h1>
@@ -20,15 +20,15 @@
       <form class="form" method="post">
         <input type="hidden" name="xsrfToken" value="{{ .XSRFToken }}" />
 
-        <div class="govuk-form-group {{ if .Errors.reviewCycle }}govuk-form-group--error{{ end }}">
+        <div class="govuk-form-group {{ if .Errors.layPercentage }}govuk-form-group--error{{ end }}">
 
-          {{ range .Errors.reviewCycle }}
+          {{ range .Errors.layPercentage }}
             <span id="name-error" class="govuk-error-message">
               <span class="govuk-visually-hidden">Error:</span> {{ . }}
             </span>
           {{ end }}
 
-          <input class="govuk-input govuk-!-width-two-thirds" id="f-reviewcycle" name="reviewcycle" type="text" value="{{ .reviewCycle}}">
+          <input class="govuk-input govuk-!-width-two-thirds" id="f-layPercentage" name="layPercentage" type="number" value="{{ .LayPercentage}}">
         </div>
 
         <button type="submit" class="govuk-button" data-module="govuk-button">
