@@ -53,6 +53,9 @@ func TestPermissions(t *testing.T) {
 							"v1-teams": map[string]interface{}{
 								"permissions": dsl.EachLike("POST", 1),
 							},
+                            "v1-random-review-settings": map[string]interface{}{
+                                "permissions": dsl.EachLike("POST", 1),
+                            },
 						}),
 					})
 			},
@@ -63,6 +66,7 @@ func TestPermissions(t *testing.T) {
 			expectedResponse: PermissionSet{
 				"v1-users": PermissionGroup{Permissions: []string{"PATCH"}},
 				"v1-teams": PermissionGroup{Permissions: []string{"POST"}},
+				"v1-random-review-settings": PermissionGroup{Permissions: []string{"POST"}},
 			},
 		},
 		{
