@@ -12,7 +12,7 @@
       {{ template "error-summary" .Errors }}
 
       {{ if .Success }}
-        {{ template "success-banner" "You have successfully edited your details." }}
+        {{ template "success-banner" "You have successfully updated the review cycle." }}
       {{ end }}
 
       <h1 class="govuk-heading-xl">Lay cases for random review</h1>
@@ -20,23 +20,23 @@
       <form class="form" method="post">
         <input type="hidden" name="xsrfToken" value="{{ .XSRFToken }}" />
 
-        <div class="govuk-form-group {{ if .Errors.phoneNumber }}govuk-form-group--error{{ end }}">
-          <label class="govuk-label" for="f-phonenumber">
-            Telephone
-          </label>
+        <div class="govuk-form-group {{ if .Errors.reviewCycle }}govuk-form-group--error{{ end }}">
 
-          {{ range .Errors.phoneNumber }}
+          {{ range .Errors.reviewCycle }}
             <span id="name-error" class="govuk-error-message">
               <span class="govuk-visually-hidden">Error:</span> {{ . }}
             </span>
           {{ end }}
 
-          <input class="govuk-input govuk-!-width-two-thirds" id="f-phonenumber" name="phonenumber" type="text" value="{{ .PhoneNumber }}">
+          <input class="govuk-input govuk-!-width-two-thirds" id="f-reviewcycle" name="reviewcycle" type="text" value="{{ .reviewCycle}}">
         </div>
 
         <button type="submit" class="govuk-button" data-module="govuk-button">
           Save changes
         </button>
+        <a class="govuk-link" href="{{ prefix "/random-reviews" }}">
+            Cancel
+        </a>
       </form>
     </div>
   </div>
