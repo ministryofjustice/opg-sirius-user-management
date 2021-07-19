@@ -40,6 +40,13 @@ SIRIUS_PUBLIC_URL=http://localhost:8080 SIRIUS_URL=http://localhost:8080 PORT=88
 
 ### Testing
 
+Make sure that you have downloaded `pact` onto your computer before running the test.
+
+```
+brew tap pact-foundation/pact-ruby-standalone
+brew install pact-ruby-standalone
+```
+
 ```
 go test ./...
 ```
