@@ -1,7 +1,7 @@
 package server
 
 import (
-	"fmt"
+    "fmt"
 	"strconv"
 	"net/http"
 
@@ -9,7 +9,7 @@ import (
 )
 
 type EditLayPercentageClient interface {
-	EditLayPercentage(ctx sirius.Context, layPercentage string) (error)
+	EditLayPercentage(ctx sirius.Context, layPercentage string, reviewCycle int) (error)
 	RandomReviews(sirius.Context) (sirius.RandomReviews, error)
 }
 
@@ -46,10 +46,14 @@ func editLayPercentage(client EditLayPercentageClient, tmpl Template) Handler {
             return tmpl.ExecuteTemplate(w, "page", vars)
 
 		case http.MethodPost:
-					fmt.Print("MethodPost")
-            layPercentage := r.PostFormValue("layPercentage")
 
-			err := client.EditLayPercentage(ctx, layPercentage)
+		    randomReviewsCycle, _ := client.RandomReviews(ctx)
+
+            layPercentage := r.PostFormValue("layPercentage")
+            reviewCycle := randomReviewsCycle.ReviewCycle
+
+
+			err := client.EditLayPercentage(ctx, layPercentage, reviewCycle)
 
 			if verr, ok := err.(sirius.ValidationError); ok {
 				vars := editLayPercentageVars{
@@ -65,13 +69,9 @@ func editLayPercentage(client EditLayPercentageClient, tmpl Template) Handler {
 				return err
 			}
 
-			fmt.Print("hehre")
-			fmt.Print(err)
-
-			return RedirectError(fmt.Sprintf("/random-reviews/edit/lay-percentage"))
+			return RedirectSuccess(fmt.Sprintf("/random-reviews"))
 
 		default:
-		fmt.Print("StatusError")
 			return StatusError(http.StatusMethodNotAllowed)
 		}
 	}
