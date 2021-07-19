@@ -135,6 +135,12 @@ func (e RedirectError) To() string {
 	return string(e)
 }
 
+type RedirectSuccess string
+
+func (s RedirectSuccess) To() string {
+	return string(s)
+}
+
 type StatusError int
 
 func (e StatusError) Error() string {
