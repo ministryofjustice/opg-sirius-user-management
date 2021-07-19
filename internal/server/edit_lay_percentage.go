@@ -39,12 +39,14 @@ func editLayPercentage(client EditLayPercentageClient, tmpl Template) Handler {
 
             vars := editLayPercentageVars{
                 Path:               r.URL.Path,
+                XSRFToken:          ctx.XSRFToken,
                 LayPercentage:      strconv.Itoa(randomReviews.LayPercentage),
             }
 
             return tmpl.ExecuteTemplate(w, "page", vars)
 
 		case http.MethodPost:
+					fmt.Print("MethodPost")
             layPercentage := r.PostFormValue("layPercentage")
 
 			err := client.EditLayPercentage(ctx, layPercentage)
@@ -69,6 +71,7 @@ func editLayPercentage(client EditLayPercentageClient, tmpl Template) Handler {
 			return RedirectError(fmt.Sprintf("/random-reviews/edit/lay-percentage"))
 
 		default:
+		fmt.Print("StatusError")
 			return StatusError(http.StatusMethodNotAllowed)
 		}
 	}
