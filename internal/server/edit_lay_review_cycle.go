@@ -8,12 +8,12 @@ import (
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
 )
 
-type EditLayPercentageClient interface {
-	EditLayPercentage(ctx sirius.Context, layPercentage string, reviewCycle int) (error)
+type EditLayReviewCycleClient interface {
+	EditLayReviewCycle(ctx sirius.Context, reviewCycle string, layPercentage int) (error)
 	RandomReviews(sirius.Context) (sirius.RandomReviews, error)
 }
 
-type editLayPercentageVars struct {
+type editLayReviewCycleVars struct {
 	Path                string
 	XSRFToken           string
 	LayPercentage       string
@@ -22,7 +22,7 @@ type editLayPercentageVars struct {
 	Errors              sirius.ValidationErrors
 }
 
-func editLayPercentage(client EditLayPercentageClient, tmpl Template) Handler {
+func editLayReviewCycle(client EditLayReviewCycleClient, tmpl Template) Handler {
 	return func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error{
 		if !perm.HasPermission("v1-random-review-settings", http.MethodPost) {
 			return StatusError(http.StatusForbidden)
@@ -40,7 +40,7 @@ func editLayPercentage(client EditLayPercentageClient, tmpl Template) Handler {
             vars := editLayPercentageVars{
                 Path:               r.URL.Path,
                 XSRFToken:          ctx.XSRFToken,
-                LayPercentage:      strconv.Itoa(randomReviews.LayPercentage),
+                ReviewCycle:        strconv.Itoa(randomReviews.ReviewCycle),
             }
 
             return tmpl.ExecuteTemplate(w, "page", vars)
@@ -49,16 +49,16 @@ func editLayPercentage(client EditLayPercentageClient, tmpl Template) Handler {
 
 		    randomReviewsCycle, _ := client.RandomReviews(ctx)
 
-            layPercentage := r.PostFormValue("layPercentage")
-            reviewCycle := randomReviewsCycle.ReviewCycle
+            reviewCycle := r.PostFormValue("layReviewCycle")
+            layPercentage := randomReviewsCycle.LayPercentage
 
-			err := client.EditLayPercentage(ctx, layPercentage, reviewCycle)
+			err := client.EditLayReviewCycle(ctx, reviewCycle, layPercentage)
 
 			if verr, ok := err.(sirius.ValidationError); ok {
-				vars := editLayPercentageVars{
+				vars := editLayReviewCycleVars{
 					Path:      r.URL.Path,
 					XSRFToken: ctx.XSRFToken,
-					LayPercentage: layPercentage,
+					ReviewCycle: reviewCycle,
 					Errors:    verr.Errors,
 				}
 
