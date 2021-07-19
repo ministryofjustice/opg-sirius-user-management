@@ -9,7 +9,7 @@ import (
 )
 
 type EditLayPercentageClient interface {
-	EditLayPercentage(ctx sirius.Context, layPercentage, reviewCycle string) (error)
+	EditLayPercentage(ctx sirius.Context, layPercentage string) (error)
 	RandomReviews(sirius.Context) (sirius.RandomReviews, error)
 }
 
@@ -45,12 +45,9 @@ func editLayPercentage(client EditLayPercentageClient, tmpl Template) Handler {
             return tmpl.ExecuteTemplate(w, "page", vars)
 
 		case http.MethodPost:
-			var (
-				layPercentage = r.PostFormValue("layPercentage"),
-				reviewCycle = strconv.Itoa(randomReviews.reviewCycle)
-			)
+            layPercentage := r.PostFormValue("layPercentage")
 
-			err := client.EditLayPercentage(ctx, layPercentage, reviewCycle)
+			err := client.EditLayPercentage(ctx, layPercentage)
 
 			if verr, ok := err.(sirius.ValidationError); ok {
 				vars := editLayPercentageVars{
@@ -65,6 +62,9 @@ func editLayPercentage(client EditLayPercentageClient, tmpl Template) Handler {
 			} else if err != nil {
 				return err
 			}
+
+			fmt.Print("hehre")
+			fmt.Print(err)
 
 			return RedirectError(fmt.Sprintf("/random-reviews/edit/lay-percentage"))
 
