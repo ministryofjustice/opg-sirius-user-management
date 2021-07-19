@@ -4,21 +4,26 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/http"
+	"fmt"
+	"strconv"
 )
 
 type editLayPercentageRequest struct {
-	LayPercentage string   `json:"layPercentage"`
+	LayPercentage int   `json:"layPercentage"`
+	ReviewCycle int   `json:"reviewCycle"`
 }
 
 func (c *Client) EditLayPercentage(ctx Context, layPercentage string) (error) {
 	var body bytes.Buffer
+	layPercentageNumber, _ := strconv.Atoi(layPercentage)
 	err := json.NewEncoder(&body).Encode(editLayPercentageRequest{
-		LayPercentage:      layPercentage,
+		LayPercentage:      layPercentageNumber,
+		ReviewCycle: 1,
 	})
 	if err != nil {
 		return err
 	}
-
+    fmt.Print(&body)
 	req, err := c.newRequest(ctx, http.MethodPost, "/api/v1/random-review-settings", &body)
 	if err != nil {
 		return err
