@@ -1,9 +1,9 @@
 package server
 
 import (
-    "fmt"
-	"strconv"
+	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
 )
@@ -23,7 +23,7 @@ type editLayPercentageVars struct {
 }
 
 func editLayPercentage(client EditLayPercentageClient, tmpl Template) Handler {
-	return func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error {
+	return func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error{
 		if !perm.HasPermission("v1-random-review-settings", http.MethodPost) {
 			return StatusError(http.StatusForbidden)
 		}
@@ -69,7 +69,7 @@ func editLayPercentage(client EditLayPercentageClient, tmpl Template) Handler {
 				return err
 			}
 
-			return RedirectSuccess(fmt.Sprintf("/random-reviews"))
+			return Redirect(fmt.Sprintf("/random-reviews"))
 
 		default:
 			return StatusError(http.StatusMethodNotAllowed)

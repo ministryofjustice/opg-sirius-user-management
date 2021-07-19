@@ -125,20 +125,14 @@ func New(logger Logger, client Client, templates map[string]*template.Template, 
 	return http.StripPrefix(prefix, mux)
 }
 
-type RedirectError string
+type Redirect string
 
-func (e RedirectError) Error() string {
+func (e Redirect) Error() string {
 	return "redirect to " + string(e)
 }
 
-func (e RedirectError) To() string {
+func (e Redirect) To() string {
 	return string(e)
-}
-
-type RedirectSuccess string
-
-func (s RedirectSuccess) To() string {
-	return string(s)
 }
 
 type StatusError int
@@ -182,7 +176,7 @@ func errorHandler(logger Logger, client ErrorHandlerClient, tmplError Template, 
 					return
 				}
 
-				if redirect, ok := err.(RedirectError); ok {
+				if redirect, ok := err.(Redirect); ok {
 					http.Redirect(w, r, prefix+redirect.To(), http.StatusFound)
 					return
 				}

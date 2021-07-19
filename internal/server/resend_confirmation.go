@@ -24,7 +24,7 @@ func resendConfirmation(client ResendConfirmationClient, tmpl Template) Handler 
 
 		switch r.Method {
 		case http.MethodGet:
-			return RedirectError("/users")
+			return Redirect("/users")
 
 		case http.MethodPost:
 			vars := resendConfirmationVars{

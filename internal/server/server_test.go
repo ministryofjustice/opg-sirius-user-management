@@ -141,7 +141,7 @@ func TestErrorHandlerRedirect(t *testing.T) {
 
 	wrap := errorHandler(nil, client, tmplError, "/prefix", "http://sirius")
 	handler := wrap(func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error {
-		return RedirectError("/here")
+		return Redirect("/here")
 	})
 
 	w := httptest.NewRecorder()
