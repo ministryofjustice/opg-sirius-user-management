@@ -35,13 +35,15 @@ func (c *Client) EditLayPercentage(ctx Context, layPercentage string) (error) {
 		return ErrUnauthorized
 	}
 
-	if resp.StatusCode != http.StatusCreated {
+	if resp.StatusCode != http.StatusOK {
 		var v struct {
 			ValidationErrors ValidationErrors `json:"validation_errors"`
 		}
 
 		if err := json.NewDecoder(resp.Body).Decode(&v); err == nil {
-			return ValidationError{Errors: v.ValidationErrors}
+			return &ValidationError{
+				Errors: v.ValidationErrors,
+			}
 		}
 
 		return newStatusError(resp)
@@ -49,3 +51,4 @@ func (c *Client) EditLayPercentage(ctx Context, layPercentage string) (error) {
 
 	return nil
 }
+
