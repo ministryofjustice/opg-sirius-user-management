@@ -60,7 +60,7 @@ func TestLayPercentageClient(t *testing.T) {
 	r, _ := http.NewRequest("GET", "/path", nil)
 
 	handler := editLayPercentage(client, template)
-	err := handler(sirius.PermissionSet{}, w, r)
+	err := handler(client.requiredPermissions(), w, r)
 
 	assert.Nil(err)
 
