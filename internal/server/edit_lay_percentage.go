@@ -1,7 +1,7 @@
 package server
 
 import (
-	"fmt"
+    "fmt"
 	"net/http"
 	"strconv"
 
@@ -24,11 +24,9 @@ type editLayPercentageVars struct {
 
 func editLayPercentage(client EditLayPercentageClient, tmpl Template) Handler {
 	return func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error{
-	fmt.Print("one")
 		if !perm.HasPermission("v1-random-review-settings", http.MethodPost) {
             return StatusError(http.StatusForbidden)
 		}
-	fmt.Print("two")
 
 		ctx := getContext(r)
 
