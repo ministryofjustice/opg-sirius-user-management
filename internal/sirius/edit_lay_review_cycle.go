@@ -16,7 +16,7 @@ func (c *Client) EditLayReviewCycle(ctx Context, reviewCycle string, layPercenta
 	var body bytes.Buffer
 	reviewCycleNumber, _ := strconv.Atoi(reviewCycle)
 
-	err := json.NewEncoder(&body).Encode(editLayPercentageRequest{
+	err := json.NewEncoder(&body).Encode(editLayReviewCycleRequest{
         ReviewCycle: reviewCycleNumber,
 		LayPercentage:      layPercentage,
 	})
