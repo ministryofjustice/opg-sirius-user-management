@@ -9,8 +9,8 @@ import (
 )
 
 type EditLayPercentageClient interface {
-	EditLayPercentage(ctx sirius.Context, layPercentage string, reviewCycle int) (error)
 	RandomReviews(sirius.Context) (sirius.RandomReviews, error)
+	EditLayPercentage(ctx sirius.Context, layPercentage string, reviewCycle int) (error)
 }
 
 type editLayPercentageVars struct {
@@ -24,9 +24,11 @@ type editLayPercentageVars struct {
 
 func editLayPercentage(client EditLayPercentageClient, tmpl Template) Handler {
 	return func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error{
+	fmt.Print("one")
 		if !perm.HasPermission("v1-random-review-settings", http.MethodPost) {
-			return StatusError(http.StatusForbidden)
+            return StatusError(http.StatusForbidden)
 		}
+	fmt.Print("two")
 
 		ctx := getContext(r)
 
