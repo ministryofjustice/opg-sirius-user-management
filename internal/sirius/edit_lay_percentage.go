@@ -4,20 +4,19 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/http"
-	"strconv"
 )
 
 type editLayPercentageRequest struct {
-	LayPercentage int   `json:"layPercentage"`
+	LayPercentage string   `json:"layPercentage"`
 	ReviewCycle int   `json:"reviewCycle"`
 }
 
 func (c *Client) EditLayPercentage(ctx Context, layPercentage string, reviewCycle int) (error) {
 	var body bytes.Buffer
-	layPercentageNumber, _ := strconv.Atoi(layPercentage)
+	//layPercentageNumber, _ := strconv.Atoi(layPercentage)
 
 	err := json.NewEncoder(&body).Encode(editLayPercentageRequest{
-		LayPercentage:      layPercentageNumber,
+		LayPercentage:      layPercentage,
 		ReviewCycle: reviewCycle,
 	})
 	if err != nil {
@@ -31,6 +30,7 @@ func (c *Client) EditLayPercentage(ctx Context, layPercentage string, reviewCycl
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := c.http.Do(req)
+
 	if err != nil {
 		return err
 	}
@@ -42,11 +42,13 @@ func (c *Client) EditLayPercentage(ctx Context, layPercentage string, reviewCycl
 
 	if resp.StatusCode != http.StatusOK {
 		var v struct {
+			Detail           string           `json:"detail"`
 			ValidationErrors ValidationErrors `json:"validation_errors"`
 		}
 
 		if err := json.NewDecoder(resp.Body).Decode(&v); err == nil {
 			return &ValidationError{
+				Message: v.Detail,
 				Errors: v.ValidationErrors,
 			}
 		}

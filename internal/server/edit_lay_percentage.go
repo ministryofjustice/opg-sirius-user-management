@@ -54,21 +54,22 @@ func editLayPercentage(client EditLayPercentageClient, tmpl Template) Handler {
 
 			err := client.EditLayPercentage(ctx, layPercentage, reviewCycle)
 
-			if verr, ok := err.(sirius.ValidationError); ok {
+			if verr, ok := err.(*sirius.ValidationError); ok {
+				fmt.Println("Errors")
+				fmt.Println(verr.Errors["layPercentage"]["notDigits"])
+				fmt.Println(verr.Errors["layPercentage"]["notBetween"])
 				vars := editLayPercentageVars{
-					Path:      r.URL.Path,
-					XSRFToken: ctx.XSRFToken,
 					LayPercentage: layPercentage,
 					Errors:    verr.Errors,
 				}
-
 				w.WriteHeader(http.StatusBadRequest)
 				return tmpl.ExecuteTemplate(w, "page", vars)
 			} else if err != nil {
 				return err
+			} else {
+				return Redirect(fmt.Sprintf("/random-reviews"))
 			}
 
-			return Redirect(fmt.Sprintf("/random-reviews"))
 
 		default:
 			return StatusError(http.StatusMethodNotAllowed)
