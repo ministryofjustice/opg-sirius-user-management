@@ -46,7 +46,6 @@ func editLayPercentage(client EditLayPercentageClient, tmpl Template) Handler {
             return tmpl.ExecuteTemplate(w, "page", vars)
 
 		case http.MethodPost:
-
 		    randomReviewsCycle, _ := client.RandomReviews(ctx)
 
             layPercentage := r.PostFormValue("layPercentage")
@@ -55,9 +54,6 @@ func editLayPercentage(client EditLayPercentageClient, tmpl Template) Handler {
 			err := client.EditLayPercentage(ctx, layPercentage, reviewCycle)
 
 			if verr, ok := err.(*sirius.ValidationError); ok {
-				fmt.Println("Errors")
-				fmt.Println(verr.Errors["layPercentage"]["notDigits"])
-				fmt.Println(verr.Errors["layPercentage"]["notBetween"])
 				vars := editLayPercentageVars{
 					LayPercentage: layPercentage,
 					Errors:    verr.Errors,
