@@ -1,6 +1,7 @@
 package server
 
 import (
+    "strings"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -45,7 +46,7 @@ func (m *mockEditLayPercentageClient) requiredPermissions() sirius.PermissionSet
 	return sirius.PermissionSet{"v1-random-review-settings": sirius.PermissionGroup{Permissions: []string{"post"}}}
 }
 
-func TestLayPercentageClient(t *testing.T) {
+func TestLayPercentageClientGetRequest(t *testing.T) {
 	assert := assert.New(t)
 
     data := sirius.RandomReviews{
@@ -74,4 +75,33 @@ func TestLayPercentageClient(t *testing.T) {
         Path:        "/path",
         LayPercentage: "10",
     }, template.lastVars)
+}
+
+func TestLayPercentageClientPostRequest(t *testing.T) {
+	assert := assert.New(t)
+
+    data := sirius.RandomReviews{
+     	LayPercentage: 10,
+     	ReviewCycle: 1,
+    }
+
+	client := &mockEditLayPercentageClient{data: data}
+	template := &mockTemplate{}
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("POST", "/path", strings.NewReader("layPercentage=10&reviewCycle=1"))
+    r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	handler := editLayPercentage(client, template)
+
+	err := handler(client.requiredPermissions(), w, r)
+	assert.Equal(Redirect("/random-reviews"), err)
+
+	resp := w.Result()
+	assert.Equal(http.StatusOK, resp.StatusCode)
+	assert.Equal(getContext(r), client.lastCtx)
+
+    assert.Equal(0, template.count)
+    assert.Equal(10, client.data.LayPercentage)
+    assert.Equal(1, client.data.ReviewCycle)
 }

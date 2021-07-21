@@ -9,7 +9,7 @@ import (
 )
 
 type EditLayReviewCycleClient interface {
-	EditLayReviewCycle(ctx sirius.Context, reviewCycle string, layPercentage int) (error)
+	EditLayReviewCycle(ctx sirius.Context, reviewCycle string, layPercentage string) (error)
 	RandomReviews(sirius.Context) (sirius.RandomReviews, error)
 }
 
@@ -37,7 +37,7 @@ func editLayReviewCycle(client EditLayReviewCycleClient, tmpl Template) Handler 
                 return err
             }
 
-            vars := editLayPercentageVars{
+            vars := editLayReviewCycleVars{
                 Path:               r.URL.Path,
                 XSRFToken:          ctx.XSRFToken,
                 ReviewCycle:        strconv.Itoa(randomReviews.ReviewCycle),
@@ -49,7 +49,7 @@ func editLayReviewCycle(client EditLayReviewCycleClient, tmpl Template) Handler 
 		    randomReviewsCycle, _ := client.RandomReviews(ctx)
 
             reviewCycle := r.PostFormValue("layReviewCycle")
-            layPercentage := randomReviewsCycle.LayPercentage
+            layPercentage := strconv.Itoa(randomReviewsCycle.LayPercentage)
 
 			err := client.EditLayReviewCycle(ctx, reviewCycle, layPercentage)
 
@@ -63,10 +63,9 @@ func editLayReviewCycle(client EditLayReviewCycleClient, tmpl Template) Handler 
 				return tmpl.ExecuteTemplate(w, "page", vars)
 			} else if err != nil {
 				return err
+			} else {
+			    return Redirect(fmt.Sprintf("/random-reviews"))
 			}
-
-			return Redirect(fmt.Sprintf("/random-reviews"))
-
 		default:
 			return StatusError(http.StatusMethodNotAllowed)
 		}
