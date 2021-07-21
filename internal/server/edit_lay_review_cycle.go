@@ -65,9 +65,9 @@ func editLayReviewCycle(client EditLayReviewCycleClient, tmpl Template) Handler 
 				return tmpl.ExecuteTemplate(w, "page", vars)
 			} else if err != nil {
 				return err
-			} else {
-			    return Redirect(fmt.Sprintf("/random-reviews"))
 			}
+			return Redirect(fmt.Sprintf("/random-reviews"))
+
 		default:
 			return StatusError(http.StatusMethodNotAllowed)
 		}
