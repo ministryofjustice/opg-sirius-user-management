@@ -20,6 +20,7 @@ type editLayReviewCycleVars struct {
 	ReviewCycle         string
 	Success             bool
 	Errors              sirius.ValidationErrors
+	Error               string
 }
 
 func editLayReviewCycle(client EditLayReviewCycleClient, tmpl Template) Handler {
@@ -55,8 +56,9 @@ func editLayReviewCycle(client EditLayReviewCycleClient, tmpl Template) Handler 
 
 			if verr, ok := err.(sirius.ValidationError); ok {
 				vars := editLayReviewCycleVars{
-					ReviewCycle: reviewCycle,
-					Errors:    verr.Errors,
+					ReviewCycle:    reviewCycle,
+					Errors:         verr.Errors,
+					Error:          verr.Message,
 				}
 
 				w.WriteHeader(http.StatusBadRequest)
