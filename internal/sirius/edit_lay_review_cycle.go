@@ -40,11 +40,13 @@ func (c *Client) EditLayReviewCycle(ctx Context, reviewCycle string, layPercenta
 
 	if resp.StatusCode != http.StatusOK {
 		var v struct {
+		    Detail           string           `json:"detail"`
 			ValidationErrors ValidationErrors `json:"validation_errors"`
 		}
 
 		if err := json.NewDecoder(resp.Body).Decode(&v); err == nil {
 			return ValidationError{
+			    Message: v.Detail,
 				Errors: v.ValidationErrors,
 			}
 		}

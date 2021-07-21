@@ -20,6 +20,7 @@ type editLayPercentageVars struct {
 	ReviewCycle         string
 	Success             bool
 	Errors              sirius.ValidationErrors
+	Error               string
 }
 
 func editLayPercentage(client EditLayPercentageClient, tmpl Template) Handler {
@@ -46,6 +47,7 @@ func editLayPercentage(client EditLayPercentageClient, tmpl Template) Handler {
             return tmpl.ExecuteTemplate(w, "page", vars)
 
 		case http.MethodPost:
+
 		    randomReviewsCycle, _ := client.RandomReviews(ctx)
 
             layPercentage := r.PostFormValue("layPercentage")
@@ -55,9 +57,11 @@ func editLayPercentage(client EditLayPercentageClient, tmpl Template) Handler {
 
 			if verr, ok := err.(sirius.ValidationError); ok {
 				vars := editLayPercentageVars{
-					LayPercentage: layPercentage,
-					Errors:    verr.Errors,
+					LayPercentage:  layPercentage,
+					Errors:         verr.Errors,
+					Error:          verr.Message,
 				}
+
 				w.WriteHeader(http.StatusBadRequest)
 				return tmpl.ExecuteTemplate(w, "page", vars)
 			} else if err != nil {
