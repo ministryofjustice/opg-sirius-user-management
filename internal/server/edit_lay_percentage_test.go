@@ -16,7 +16,6 @@ type mockEditLayPercentageClient struct {
 	lastCtx           sirius.Context
     lastRequest       string
 	err               error
-	errSave           error
 	data              sirius.RandomReviews
 	lastArguments struct {
         LayPercentage   string
@@ -39,14 +38,14 @@ func (m *mockEditLayPercentageClient) EditLayPercentage(ctx sirius.Context, layP
     m.lastArguments.LayPercentage = layPercentage
     m.lastArguments.ReviewCycle = reviewCycle
 
-	return m.errSave
+	return m.err
 }
 
 func (m *mockEditLayPercentageClient) requiredPermissions() sirius.PermissionSet {
 	return sirius.PermissionSet{"v1-random-review-settings": sirius.PermissionGroup{Permissions: []string{"post"}}}
 }
 
-func TestLayPercentageClientGetRequest(t *testing.T) {
+func TestGetLayPercentage(t *testing.T) {
 	assert := assert.New(t)
 
     data := sirius.RandomReviews{
@@ -77,7 +76,7 @@ func TestLayPercentageClientGetRequest(t *testing.T) {
     }, template.lastVars)
 }
 
-func TestLayPercentageClientPostRequest(t *testing.T) {
+func TestPostLayPercentage(t *testing.T) {
 	assert := assert.New(t)
 
     data := sirius.RandomReviews{
@@ -89,7 +88,7 @@ func TestLayPercentageClientPostRequest(t *testing.T) {
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
-	r, _ := http.NewRequest("POST", "/path", strings.NewReader("layPercentage=10&reviewCycle=1"))
+	r, _ := http.NewRequest("POST", "/path", strings.NewReader("layPercentage=10"))
     r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
 	handler := editLayPercentage(client, template)
@@ -104,4 +103,46 @@ func TestLayPercentageClientPostRequest(t *testing.T) {
     assert.Equal(0, template.count)
     assert.Equal(10, client.data.LayPercentage)
     assert.Equal(1, client.data.ReviewCycle)
+}
+
+func TestPostLayPercentageValidationError(t *testing.T) {
+
+	assert := assert.New(t)
+
+	data := sirius.RandomReviews{
+		LayPercentage: 10,
+		ReviewCycle: 1,
+	}
+
+	errors := sirius.ValidationErrors{
+		"x": {
+			"y": "z",
+		},
+	}
+
+	client := &mockEditLayPercentageClient{data: data}
+	client.err = sirius.ValidationError{
+		Errors: errors,
+	}
+
+	template := &mockTemplate{}
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("POST", "/path", strings.NewReader("layPercentage=test"))
+	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	handler := editLayPercentage(client, template)
+
+	err := handler(client.requiredPermissions(), w, r)
+	assert.Nil(err)
+
+	resp := w.Result()
+	assert.Equal(http.StatusBadRequest, resp.StatusCode)
+	assert.Equal(1, template.count)
+	assert.Equal("page", template.lastName)
+	assert.Equal(editLayPercentageVars{
+		LayPercentage: "test",
+		Errors: errors,
+	}, template.lastVars)
+
 }

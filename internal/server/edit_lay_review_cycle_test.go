@@ -3,6 +3,7 @@ package server
 import (
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
@@ -15,7 +16,6 @@ type mockEditLayReviewCycleClient struct {
 	lastCtx           sirius.Context
     lastRequest       string
 	err               error
-	errSave           error
 	data              sirius.RandomReviews
 	lastArguments struct {
         LayPercentage   string
@@ -38,14 +38,14 @@ func (m *mockEditLayReviewCycleClient) EditLayReviewCycle(ctx sirius.Context, la
     m.lastArguments.LayPercentage = layPercentage
     m.lastArguments.ReviewCycle = reviewCycle
 
-	return m.errSave
+	return m.err
 }
 
 func (m *mockEditLayReviewCycleClient) requiredPermissions() sirius.PermissionSet {
 	return sirius.PermissionSet{"v1-random-review-settings": sirius.PermissionGroup{Permissions: []string{"post"}}}
 }
 
-func TestLayReviewCycleClient(t *testing.T) {
+func TestGetLayReviewCycle(t *testing.T) {
 	assert := assert.New(t)
 
     data := sirius.RandomReviews{
@@ -74,4 +74,75 @@ func TestLayReviewCycleClient(t *testing.T) {
         Path:        "/path",
         ReviewCycle: "1",
     }, template.lastVars)
+}
+
+func TestPostLayReviewCycle(t *testing.T) {
+	assert := assert.New(t)
+
+	data := sirius.RandomReviews{
+		LayPercentage: 10,
+		ReviewCycle: 1,
+	}
+
+	client := &mockEditLayReviewCycleClient{data: data}
+	template := &mockTemplate{}
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("POST", "/path", strings.NewReader("layReviewCycle=1"))
+	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	handler := editLayReviewCycle(client, template)
+
+	err := handler(client.requiredPermissions(), w, r)
+	assert.Equal(Redirect("/random-reviews"), err)
+
+	resp := w.Result()
+	assert.Equal(http.StatusOK, resp.StatusCode)
+	assert.Equal(getContext(r), client.lastCtx)
+
+	assert.Equal(0, template.count)
+	assert.Equal(1, client.data.ReviewCycle)
+	assert.Equal(10, client.data.LayPercentage)
+}
+
+func TestPostLayReviewCycleValidationError(t *testing.T) {
+
+	assert := assert.New(t)
+
+	data := sirius.RandomReviews{
+		LayPercentage: 10,
+		ReviewCycle: 1,
+	}
+
+	errors := sirius.ValidationErrors{
+		"x": {
+			"y": "z",
+		},
+	}
+
+	client := &mockEditLayReviewCycleClient{data: data}
+	client.err = sirius.ValidationError{
+		Errors: errors,
+	}
+
+	template := &mockTemplate{}
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("POST", "/path", strings.NewReader("layReviewCycle=test"))
+	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	handler := editLayReviewCycle(client, template)
+
+	err := handler(client.requiredPermissions(), w, r)
+	assert.Nil(err)
+
+	resp := w.Result()
+	assert.Equal(http.StatusBadRequest, resp.StatusCode)
+	assert.Equal(1, template.count)
+	assert.Equal("page", template.lastName)
+	assert.Equal(editLayReviewCycleVars{
+		ReviewCycle: "test",
+		Errors: errors,
+	}, template.lastVars)
+
 }
