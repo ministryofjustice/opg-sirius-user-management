@@ -44,7 +44,7 @@ func (c *Client) EditLayReviewCycle(ctx Context, reviewCycle string, layPercenta
 		}
 
 		if err := json.NewDecoder(resp.Body).Decode(&v); err == nil {
-			return &ValidationError{
+			return ValidationError{
 				Errors: v.ValidationErrors,
 			}
 		}
