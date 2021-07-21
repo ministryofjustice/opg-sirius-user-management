@@ -1,9 +1,9 @@
 package server
 
 import (
-    "strings"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
@@ -20,7 +20,7 @@ type mockEditLayPercentageClient struct {
 	data              sirius.RandomReviews
 	lastArguments struct {
         LayPercentage   string
-        ReviewCycle     int
+        ReviewCycle     string
 	}
 }
 
@@ -32,7 +32,7 @@ func (m *mockEditLayPercentageClient) RandomReviews(ctx sirius.Context) (sirius.
 	return m.data,  m.err
 }
 
-func (m *mockEditLayPercentageClient) EditLayPercentage(ctx sirius.Context, layPercentage string, reviewCycle int) (error) {
+func (m *mockEditLayPercentageClient) EditLayPercentage(ctx sirius.Context, layPercentage string, reviewCycle string) (error) {
     m.saveCount += 1
 	m.lastCtx = ctx
 	m.lastRequest = "EditLayPercentage"

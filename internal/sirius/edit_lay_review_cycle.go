@@ -4,20 +4,18 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/http"
-	"strconv"
 )
 
 type editLayReviewCycleRequest struct {
-	ReviewCycle int   `json:"reviewCycle"`
-	LayPercentage int   `json:"layPercentage"`
+	ReviewCycle string   `json:"reviewCycle"`
+	LayPercentage string   `json:"layPercentage"`
 }
 
-func (c *Client) EditLayReviewCycle(ctx Context, reviewCycle string, layPercentage int) (error) {
+func (c *Client) EditLayReviewCycle(ctx Context, reviewCycle string, layPercentage string) (error) {
 	var body bytes.Buffer
-	reviewCycleNumber, _ := strconv.Atoi(reviewCycle)
 
 	err := json.NewEncoder(&body).Encode(editLayReviewCycleRequest{
-        ReviewCycle: reviewCycleNumber,
+        ReviewCycle: reviewCycle,
 		LayPercentage:      layPercentage,
 	})
 	if err != nil {
