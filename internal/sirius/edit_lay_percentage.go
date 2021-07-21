@@ -8,12 +8,11 @@ import (
 
 type editLayPercentageRequest struct {
 	LayPercentage string   `json:"layPercentage"`
-	ReviewCycle int   `json:"reviewCycle"`
+	ReviewCycle string   `json:"reviewCycle"`
 }
 
-func (c *Client) EditLayPercentage(ctx Context, layPercentage string, reviewCycle int) (error) {
+func (c *Client) EditLayPercentage(ctx Context, layPercentage string, reviewCycle string) (error) {
 	var body bytes.Buffer
-	//layPercentageNumber, _ := strconv.Atoi(layPercentage)
 
 	err := json.NewEncoder(&body).Encode(editLayPercentageRequest{
 		LayPercentage:      layPercentage,
