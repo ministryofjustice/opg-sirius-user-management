@@ -53,7 +53,7 @@ func editLayReviewCycle(client EditLayReviewCycleClient, tmpl Template) Handler 
 
 			err := client.EditLayReviewCycle(ctx, reviewCycle, layPercentage)
 
-			if verr, ok := err.(*sirius.ValidationError); ok {
+			if verr, ok := err.(sirius.ValidationError); ok {
 				vars := editLayReviewCycleVars{
 					ReviewCycle: reviewCycle,
 					Errors:    verr.Errors,

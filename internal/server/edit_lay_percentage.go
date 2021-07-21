@@ -53,7 +53,7 @@ func editLayPercentage(client EditLayPercentageClient, tmpl Template) Handler {
 
 			err := client.EditLayPercentage(ctx, layPercentage, reviewCycle)
 
-			if verr, ok := err.(*sirius.ValidationError); ok {
+			if verr, ok := err.(sirius.ValidationError); ok {
 				vars := editLayPercentageVars{
 					LayPercentage: layPercentage,
 					Errors:    verr.Errors,
