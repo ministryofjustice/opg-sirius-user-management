@@ -46,7 +46,6 @@ func editLayReviewCycle(client EditLayReviewCycleClient, tmpl Template) Handler 
             return tmpl.ExecuteTemplate(w, "page", vars)
 
 		case http.MethodPost:
-
 		    randomReviewsCycle, _ := client.RandomReviews(ctx)
 
             reviewCycle := r.PostFormValue("layReviewCycle")
@@ -54,10 +53,8 @@ func editLayReviewCycle(client EditLayReviewCycleClient, tmpl Template) Handler 
 
 			err := client.EditLayReviewCycle(ctx, reviewCycle, layPercentage)
 
-			if verr, ok := err.(sirius.ValidationError); ok {
+			if verr, ok := err.(*sirius.ValidationError); ok {
 				vars := editLayReviewCycleVars{
-					Path:      r.URL.Path,
-					XSRFToken: ctx.XSRFToken,
 					ReviewCycle: reviewCycle,
 					Errors:    verr.Errors,
 				}
