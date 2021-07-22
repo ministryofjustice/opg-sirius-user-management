@@ -1,12 +1,8 @@
 describe("Random Reviews", () => {
     beforeEach(() => {
-        cy.visit("/random-reviews", {
-            headers: {
-                Cookie: "XSRF-TOKEN=abcde; Other=other",
-                "OPG-Bypass-Membrane": "1",
-                "X-XSRF-TOKEN": "abcde",
-            },
-        });
+        cy.setCookie("Other", "other");
+        cy.setCookie("XSRF-TOKEN", "abcde");
+        cy.visit("/random-reviews");
     });
 
     it("shows all random reviews", () => {
