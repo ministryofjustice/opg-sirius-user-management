@@ -31,6 +31,11 @@ func editLayReviewCycle(client EditLayReviewCycleClient, tmpl Template) Handler 
 
 		ctx := getContext(r)
 
+		vars := editLayReviewCycleVars{
+			Path:               r.URL.Path,
+			XSRFToken:          ctx.XSRFToken,
+		}
+
 		switch r.Method {
 		case http.MethodGet:
             randomReviews, err := client.RandomReviews(ctx)
@@ -38,11 +43,7 @@ func editLayReviewCycle(client EditLayReviewCycleClient, tmpl Template) Handler 
                 return err
             }
 
-            vars := editLayReviewCycleVars{
-                Path:               r.URL.Path,
-                XSRFToken:          ctx.XSRFToken,
-                ReviewCycle:        strconv.Itoa(randomReviews.ReviewCycle),
-            }
+            vars.ReviewCycle = strconv.Itoa(randomReviews.ReviewCycle)
 
             return tmpl.ExecuteTemplate(w, "page", vars)
 
@@ -55,11 +56,9 @@ func editLayReviewCycle(client EditLayReviewCycleClient, tmpl Template) Handler 
 			err := client.EditLayReviewCycle(ctx, reviewCycle, layPercentage)
 
 			if verr, ok := err.(sirius.ValidationError); ok {
-				vars := editLayReviewCycleVars{
-					ReviewCycle:    reviewCycle,
-					Errors:         verr.Errors,
-					Error:          verr.Message,
-				}
+				vars.ReviewCycle = reviewCycle
+				vars.Errors = verr.Errors
+				vars.Error = verr.Message
 
 				w.WriteHeader(http.StatusBadRequest)
 				return tmpl.ExecuteTemplate(w, "page", vars)

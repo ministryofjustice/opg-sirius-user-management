@@ -31,6 +31,11 @@ func editLayPercentage(client EditLayPercentageClient, tmpl Template) Handler {
 
 		ctx := getContext(r)
 
+		vars := editLayPercentageVars{
+			Path:               r.URL.Path,
+			XSRFToken:          ctx.XSRFToken,
+		}
+
 		switch r.Method {
 		case http.MethodGet:
             randomReviews, err := client.RandomReviews(ctx)
@@ -38,11 +43,7 @@ func editLayPercentage(client EditLayPercentageClient, tmpl Template) Handler {
                 return err
             }
 
-            vars := editLayPercentageVars{
-                Path:               r.URL.Path,
-                XSRFToken:          ctx.XSRFToken,
-                LayPercentage:      strconv.Itoa(randomReviews.LayPercentage),
-            }
+            vars.LayPercentage = strconv.Itoa(randomReviews.LayPercentage)
 
             return tmpl.ExecuteTemplate(w, "page", vars)
 
@@ -56,12 +57,9 @@ func editLayPercentage(client EditLayPercentageClient, tmpl Template) Handler {
 			err := client.EditLayPercentage(ctx, layPercentage, reviewCycle)
 
 			if verr, ok := err.(sirius.ValidationError); ok {
-				vars := editLayPercentageVars{
-					LayPercentage:  layPercentage,
-					Errors:         verr.Errors,
-					Error:          verr.Message,
-				}
-
+				vars.LayPercentage = layPercentage
+				vars.Errors = verr.Errors
+				vars.Error = verr.Message
 				w.WriteHeader(http.StatusBadRequest)
 				return tmpl.ExecuteTemplate(w, "page", vars)
 			} else if err != nil {
