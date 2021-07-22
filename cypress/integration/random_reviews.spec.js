@@ -26,10 +26,10 @@ describe("Random Reviews", () => {
     });
 
     it("allows me to change the lay percentage", () => {
-        cy.contains("#layPercentageChange", "Change");
+        cy.contains("#hook-layPercentageChange", "Change");
     });
 
     it("allows me to change the review cycle", () => {
-        cy.contains("#layReviewCycleChange", "Change");
+        cy.contains("#hook-layReviewCycleChange", "Change");
     });
 });

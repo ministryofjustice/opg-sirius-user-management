@@ -15,7 +15,7 @@
           <dd class="govuk-summary-list__value">{{ .LayPercentage }}</dd>
           <dd class="govuk-summary-list__actions">
             {{ if true }}
-              <a class="govuk-link" id="layPercentageChange" href="{{ prefix "/random-reviews/edit/lay-percentage" }}">
+              <a class="govuk-link" id="hook-layPercentageChange" href="{{ prefix "/random-reviews/edit/lay-percentage" }}">
                 Change<span class="govuk-visually-hidden"> lay</span>
               </a>
             {{ end }}
@@ -27,7 +27,7 @@
           <dd class="govuk-summary-list__value">{{ .ReviewCycle }}</dd>
           <dd class="govuk-summary-list__actions">
             {{ if true }}
-              <a class="govuk-link" id="layReviewCycleChange" href="{{ prefix "/random-reviews/edit/lay-review-cycle" }}">
+              <a class="govuk-link" id="hook-layReviewCycleChange" href="{{ prefix "/random-reviews/edit/lay-review-cycle" }}">
                 Change<span class="govuk-visually-hidden"> review cycle</span>
               </a>
             {{ end }}
