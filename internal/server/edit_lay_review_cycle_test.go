@@ -141,6 +141,7 @@ func TestPostLayReviewCycleValidationError(t *testing.T) {
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
 	assert.Equal(editLayReviewCycleVars{
+	    Path: "/path",
 		ReviewCycle: "test",
 		Errors: errors,
 	}, template.lastVars)
