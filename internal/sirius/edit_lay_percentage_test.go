@@ -33,66 +33,6 @@ func TestEditLayPercentage(t *testing.T) {
 		cookies                 []*http.Cookie
 		expectedError 			error
 	}{
-		//{
-		//	name: "OK",
-		//	layPercentage: "20",
-		//	reviewCycle: "3",
-		//	setup: func() {
-		//		pact.
-		//			AddInteraction().
-		//			Given("User exists").
-		//			UponReceiving("A request to edit the lay percentage").
-		//			WithRequest(dsl.Request{
-		//				Method: http.MethodPost,
-		//				Path:   dsl.String("/api/v1/random-review-settings"),
-		//				Headers: dsl.MapMatcher{
-		//					"Content-type":        dsl.String("application/json"),
-		//					"X-XSRF-TOKEN":        dsl.String("abcde"),
-		//					"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
-		//					"OPG-Bypass-Membrane": dsl.String("1"),
-		//				},
-		//				Body: map[string]interface{}{
-		//					"layPercentage": "20",
-		//					"reviewCycle": "3",
-		//				},
-		//			}).
-		//			WillRespondWith(dsl.Response{
-		//				Status: http.StatusOK,
-		//			})
-		//	},
-		//	cookies: []*http.Cookie{
-		//		{Name: "XSRF-TOKEN", Value: "abcde"},
-		//		{Name: "Other", Value: "other"},
-		//	},
-		//	expectedError: nil,
-		//},
-
-		{
-			name: "Unauthorized",
-			layPercentage: "20",
-			reviewCycle: "3",
-			setup: func() {
-				pact.
-					AddInteraction().
-					Given("User exists").
-					UponReceiving("A request to get lay percentage without cookies").
-					WithRequest(dsl.Request{
-						Method: http.MethodPost,
-						Path:   dsl.String("/api/v1/random-review-settings"),
-						Headers: dsl.MapMatcher{
-							"OPG-Bypass-Membrane": dsl.String("1"),
-						},
-						Body: map[string]interface{}{
-							"layPercentage": "20",
-							"reviewCycle": "3",
-						},
-					}).
-					WillRespondWith(dsl.Response{
-						Status: http.StatusUnauthorized,
-					})
-			},
-			expectedError: ErrUnauthorized,
-		},
 		{
 			name: "Validation errors",
 			layPercentage: "200",
@@ -128,6 +68,65 @@ func TestEditLayPercentage(t *testing.T) {
 			expectedError: ValidationError{
 				Message: "Enter a percentage between 0 and 100 for lay cases",
 			},
+		},
+		{
+			name: "OK",
+			layPercentage: "20",
+			reviewCycle: "3",
+			setup: func() {
+				pact.
+					AddInteraction().
+					Given("User exists").
+					UponReceiving("A request to edit the lay percentage").
+					WithRequest(dsl.Request{
+						Method: http.MethodPost,
+						Path:   dsl.String("/api/v1/random-review-settings"),
+						Headers: dsl.MapMatcher{
+							"Content-type":        dsl.String("application/json"),
+							"X-XSRF-TOKEN":        dsl.String("abcde"),
+							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
+							"OPG-Bypass-Membrane": dsl.String("1"),
+						},
+						Body: map[string]interface{}{
+							"layPercentage": "20",
+							"reviewCycle": "3",
+						},
+					}).
+					WillRespondWith(dsl.Response{
+						Status: http.StatusOK,
+					})
+			},
+			cookies: []*http.Cookie{
+				{Name: "XSRF-TOKEN", Value: "abcde"},
+				{Name: "Other", Value: "other"},
+			},
+			expectedError: nil,
+		},
+		{
+			name: "Unauthorized",
+			layPercentage: "20",
+			reviewCycle: "3",
+			setup: func() {
+				pact.
+					AddInteraction().
+					Given("User exists").
+					UponReceiving("A request to get lay percentage without cookies").
+					WithRequest(dsl.Request{
+						Method: http.MethodPost,
+						Path:   dsl.String("/api/v1/random-review-settings"),
+						Headers: dsl.MapMatcher{
+							"OPG-Bypass-Membrane": dsl.String("1"),
+						},
+						Body: map[string]interface{}{
+							"layPercentage": "20",
+							"reviewCycle": "3",
+						},
+					}).
+					WillRespondWith(dsl.Response{
+						Status: http.StatusUnauthorized,
+					})
+			},
+			expectedError: ErrUnauthorized,
 		},
 	}
 
