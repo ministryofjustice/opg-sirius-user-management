@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-type editLayPercentageRequest struct {
+type EditLayPercentageRequest struct {
 	LayPercentage string   `json:"layPercentage"`
 	ReviewCycle string   `json:"reviewCycle"`
 }
@@ -14,7 +14,7 @@ type editLayPercentageRequest struct {
 func (c *Client) EditLayPercentage(ctx Context, layPercentage string, reviewCycle string) (error) {
 	var body bytes.Buffer
 
-	err := json.NewEncoder(&body).Encode(editLayPercentageRequest{
+	err := json.NewEncoder(&body).Encode(EditLayPercentageRequest{
 		LayPercentage:      layPercentage,
 		ReviewCycle: reviewCycle,
 	})
