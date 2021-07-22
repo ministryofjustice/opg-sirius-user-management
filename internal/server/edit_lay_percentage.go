@@ -18,7 +18,6 @@ type editLayPercentageVars struct {
 	XSRFToken           string
 	LayPercentage       string
 	ReviewCycle         string
-	Success             bool
 	Errors              sirius.ValidationErrors
 	Error               string
 }
