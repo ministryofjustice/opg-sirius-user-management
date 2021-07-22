@@ -141,6 +141,7 @@ func TestPostLayPercentageValidationError(t *testing.T) {
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
 	assert.Equal(editLayPercentageVars{
+	    Path: "/path",
 		LayPercentage: "test",
 		Errors: errors,
 	}, template.lastVars)
