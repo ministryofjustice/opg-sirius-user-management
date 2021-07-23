@@ -12,7 +12,7 @@
 
         <div class="govuk-summary-list__row">
           <dt class="govuk-summary-list__key">Lay</dt>
-          <dd class="govuk-summary-list__value">{{ .LayPercentage }}</dd>
+          <dd class="govuk-summary-list__value">{{ .LayPercentage }} %</dd>
           <dd class="govuk-summary-list__actions">
             {{ if true }}
               <a class="govuk-link" id="hook-layPercentageChange" href="{{ prefix "/random-reviews/edit/lay-percentage" }}">
@@ -24,7 +24,7 @@
 
         <div class="govuk-summary-list__row">
           <dt class="govuk-summary-list__key">Review cycle</dt>
-          <dd class="govuk-summary-list__value">{{ .ReviewCycle }}</dd>
+          <dd class="govuk-summary-list__value">{{ .ReviewCycle }} year(s)</dd>
           <dd class="govuk-summary-list__actions">
             {{ if true }}
               <a class="govuk-link" id="hook-layReviewCycleChange" href="{{ prefix "/random-reviews/edit/lay-review-cycle" }}">
