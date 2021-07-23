@@ -11,9 +11,9 @@ describe("Random Reviews", () => {
             ["Review cycle", 3]
         ];
 
-        cy.get(".govuk-summary-list__row").each(($el, index) => {
+        cy.get(".hook-layPercentageRow").each(($el, index) => {
             cy.wrap($el).within(() => {
-                cy.get(".govuk-summary-list__key").should(
+                cy.get(".hook-layPercentageKey").should(
                     "have.text",
                     expected[index][0]
                 );
