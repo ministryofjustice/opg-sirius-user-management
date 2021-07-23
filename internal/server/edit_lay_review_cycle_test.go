@@ -31,10 +31,10 @@ func (m *mockEditLayReviewCycleClient) RandomReviews(ctx sirius.Context) (sirius
 	return m.data,  m.err
 }
 
-func (m *mockEditLayReviewCycleClient) EditLayReviewCycle(ctx sirius.Context, layPercentage string, reviewCycle string) (error) {
+func (m *mockEditLayReviewCycleClient) EditLayPercentageReviewCycle(ctx sirius.Context, layPercentage string, reviewCycle string) (error) {
     m.saveCount += 1
 	m.lastCtx = ctx
-	m.lastRequest = "EditLayReviewCycle"
+	m.lastRequest = "EditLayPercentageReviewCycle"
     m.lastArguments.LayPercentage = layPercentage
     m.lastArguments.ReviewCycle = reviewCycle
 
