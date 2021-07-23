@@ -15,7 +15,7 @@ func (c *Client) EditLayReviewCycle(ctx Context, reviewCycle string, layPercenta
 	var body bytes.Buffer
 
 	err := json.NewEncoder(&body).Encode(editLayReviewCycleRequest{
-        ReviewCycle: reviewCycle,
+        ReviewCycle:        reviewCycle,
 		LayPercentage:      layPercentage,
 	})
 	if err != nil {
