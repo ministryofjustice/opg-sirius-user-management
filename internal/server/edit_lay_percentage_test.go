@@ -1,6 +1,7 @@
 package server
 
 import (
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -146,4 +147,64 @@ func TestPostLayPercentageValidationError(t *testing.T) {
 		Errors: errors,
 	}, template.lastVars)
 
+}
+
+func TestPostEditLayPercentageNoPermission(t *testing.T) {
+	assert := assert.New(t)
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("POST", "/path", nil)
+
+	err := editLayPercentage(nil, nil)(sirius.PermissionSet{}, w, r)
+	assert.Equal(StatusError(http.StatusForbidden), err)
+}
+
+func TestGetRandomReviewError(t *testing.T) {
+	assert := assert.New(t)
+
+	expectedError := errors.New("oops")
+
+	client := &mockEditLayPercentageClient{}
+	client.err = expectedError
+	template := &mockTemplate{}
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("GET", "/random-review-settings", nil)
+
+	err := editLayPercentage(client, template)(client.requiredPermissions(), w, r)
+	assert.Equal(expectedError, err)
+
+	assert.Equal(1, client.count)
+	assert.Equal(0, template.count)
+}
+
+func TestPostEditLayPercentageError(t *testing.T) {
+	assert := assert.New(t)
+
+	expectedError := errors.New("oops")
+
+	client := &mockEditLayPercentageClient{}
+	client.err = expectedError
+	template := &mockTemplate{}
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("POST", "/path", strings.NewReader("layPercentage=test"))
+	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	err := editLayPercentage(client, template)(client.requiredPermissions(), w, r)
+	assert.Equal(expectedError, err)
+
+	assert.Equal(1, client.count)
+	assert.Equal(0, template.count)
+}
+
+func TestPutEditLayPercentageError(t *testing.T) {
+	assert := assert.New(t)
+
+	client := &mockEditLayPercentageClient{}
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("PUT", "/random-review-settings", nil)
+
+	err := editLayPercentage(nil, nil)(client.requiredPermissions(), w, r)
+	assert.Equal(StatusError(http.StatusMethodNotAllowed), err)
 }
