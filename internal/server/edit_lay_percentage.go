@@ -1,7 +1,6 @@
 package server
 
 import (
-    "fmt"
 	"net/http"
 	"strconv"
 
@@ -65,7 +64,7 @@ func editLayPercentage(client EditLayPercentageClient, tmpl Template) Handler {
 				return err
 			}
 
-            return Redirect(fmt.Sprintf("/random-reviews"))
+            return Redirect("/random-reviews")
 
 		default:
 			return StatusError(http.StatusMethodNotAllowed)
