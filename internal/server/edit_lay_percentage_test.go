@@ -24,6 +24,9 @@ type mockEditLayPercentageClient struct {
 	}
 }
 
+const constantType = "Content-Type"
+const applicationHeader = "application/x-www-form-urlencoded"
+
 func (m *mockEditLayPercentageClient) RandomReviews(ctx sirius.Context) (sirius.RandomReviews, error) {
 	m.count += 1
 	m.lastCtx = ctx
@@ -90,7 +93,7 @@ func TestPostLayPercentage(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", strings.NewReader("layPercentage=10"))
-    r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+    r.Header.Add(constantType, applicationHeader)
 
 	handler := editLayPercentage(client, template)
 
@@ -130,7 +133,7 @@ func TestPostLayPercentageValidationError(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", strings.NewReader("layPercentage=test"))
-	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	r.Header.Add(constantType, applicationHeader)
 
 	handler := editLayPercentage(client, template)
 
@@ -189,7 +192,7 @@ func TestPostEditLayPercentageError(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", strings.NewReader("layPercentage=test"))
-	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	r.Header.Add(constantType, applicationHeader)
 
 	err := editLayPercentage(client, template)(client.requiredPermissions(), w, r)
 	assert.Equal(expectedError, err)
