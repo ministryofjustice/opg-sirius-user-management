@@ -87,7 +87,7 @@ func addTeam(client AddTeamClient, tmpl Template) Handler {
 				return err
 			}
 
-			return RedirectError(fmt.Sprintf("/teams/%d", id))
+			return Redirect(fmt.Sprintf("/teams/%d", id))
 
 		default:
 			return StatusError(http.StatusMethodNotAllowed)

@@ -31,6 +31,9 @@
         "http://app:8888/teams",
         "http://app:8888/teams/delete/65",
         "http://app:8888/teams/edit/65",
-        "http://app:8888/teams/65"
+        "http://app:8888/teams/65",
+        "http://app:8888/random-reviews",
+        "http://app:8888/random-reviews/edit/lay-percentage",
+        "http://app:8888/random-reviews/edit/lay-review-cycle"
     ]
 }

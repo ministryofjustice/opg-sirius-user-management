@@ -38,7 +38,7 @@ func TestGetResendConfirmation(t *testing.T) {
 	r, _ := http.NewRequest("GET", "/path", nil)
 
 	err := resendConfirmation(nil, nil)(client.requiredPermissions(), w, r)
-	assert.Equal(RedirectError("/users"), err)
+	assert.Equal(Redirect("/users"), err)
 }
 
 func TestGetResendConfirmationNoPermission(t *testing.T) {
