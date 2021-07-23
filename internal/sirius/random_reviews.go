@@ -11,27 +11,27 @@ type RandomReviews struct {
 }
 
 func (c *Client) RandomReviews(ctx Context) (RandomReviews, error) {
-	var v RandomReviews
+	var d RandomReviews
 
 	req, err := c.newRequest(ctx, http.MethodGet, "/api/v1/random-review-settings", nil)
 	if err != nil {
-		return v, err
+		return d, err
 	}
 
 	resp, err := c.http.Do(req)
 	if err != nil {
-		return v, err
+		return d, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusUnauthorized {
-		return v, ErrUnauthorized
+		return d, ErrUnauthorized
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return v, newStatusError(resp)
+		return d, newStatusError(resp)
 	}
 
-	err = json.NewDecoder(resp.Body).Decode(&v)
-	return v, err
+	err = json.NewDecoder(resp.Body).Decode(&d)
+	return d, err
 }
