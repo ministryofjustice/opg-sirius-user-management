@@ -6,17 +6,17 @@ import (
 	"net/http"
 )
 
-type EditLayPercentageRequest struct {
-	LayPercentage string   `json:"layPercentage"`
+type editLayPercentageReviewCycleRequest struct {
 	ReviewCycle string   `json:"reviewCycle"`
+	LayPercentage string   `json:"layPercentage"`
 }
 
-func (c *Client) EditLayPercentage(ctx Context, layPercentage string, reviewCycle string) (error) {
+func (c *Client) EditLayPercentageReviewCycle(ctx Context, reviewCycle string, layPercentage string) (error) {
 	var body bytes.Buffer
 
-	err := json.NewEncoder(&body).Encode(EditLayPercentageRequest{
+	err := json.NewEncoder(&body).Encode(editLayPercentageReviewCycleRequest{
+        ReviewCycle:        reviewCycle,
 		LayPercentage:      layPercentage,
-		ReviewCycle: reviewCycle,
 	})
 	if err != nil {
 		return err
@@ -29,7 +29,6 @@ func (c *Client) EditLayPercentage(ctx Context, layPercentage string, reviewCycl
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := c.http.Do(req)
-
 	if err != nil {
 		return err
 	}
@@ -41,13 +40,13 @@ func (c *Client) EditLayPercentage(ctx Context, layPercentage string, reviewCycl
 
 	if resp.StatusCode != http.StatusOK {
 		var v struct {
-			Detail           string           `json:"detail"`
+		    Detail           string           `json:"detail"`
 			ValidationErrors ValidationErrors `json:"validation_errors"`
 		}
 
 		if err := json.NewDecoder(resp.Body).Decode(&v); err == nil {
 			return ValidationError{
-				Message: v.Detail,
+			    Message: v.Detail,
 				Errors: v.ValidationErrors,
 			}
 		}

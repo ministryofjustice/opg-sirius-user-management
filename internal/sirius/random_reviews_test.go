@@ -9,6 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const UrlRandomReview = "/api/v1/random-review-settings";
+
 func TestRandomReviews(t *testing.T) {
 	pact := &dsl.Pact{
 		Consumer:          "sirius-user-management",
@@ -36,7 +38,7 @@ func TestRandomReviews(t *testing.T) {
 					UponReceiving("A request to get random reviews").
 					WithRequest(dsl.Request{
 						Method: http.MethodGet,
-						Path:   dsl.String("/api/v1/random-review-settings"),
+						Path:   dsl.String(UrlRandomReview),
 						Headers: dsl.MapMatcher{
 							"X-XSRF-TOKEN":        dsl.String("abcde"),
 							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
@@ -71,7 +73,7 @@ func TestRandomReviews(t *testing.T) {
 					UponReceiving("A request to get random reviews without cookies").
 					WithRequest(dsl.Request{
 						Method: http.MethodGet,
-						Path:   dsl.String("/api/v1/random-review-settings"),
+						Path:   dsl.String(UrlRandomReview),
 						Headers: dsl.MapMatcher{
 							"OPG-Bypass-Membrane": dsl.String("1"),
 						},
@@ -109,7 +111,7 @@ func TestRandomReviewsStatusError(t *testing.T) {
 	_, err := client.RandomReviews(getContext(nil))
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
-		URL:    s.URL + "/api/v1/random-review-settings",
+		URL:    s.URL + UrlRandomReview,
 		Method: http.MethodGet,
 	}, err)
 }
