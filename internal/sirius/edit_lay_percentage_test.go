@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type editLayPercentageBadRequestReponse struct {
+type editLayPercentageBadRequestResponse struct {
 	Status           int    `json:"status" pact:"example=400"`
 	Detail           string `json:"detail" pact:"example=Enter a percentage between 0 and 100 for lay cases"`
 }
@@ -62,7 +62,7 @@ func TestEditLayPercentage(t *testing.T) {
 					WillRespondWith(dsl.Response{
 						Status: http.StatusBadRequest,
 						Headers: dsl.MapMatcher{"Content-Type": dsl.String("application/problem+json")},
-						Body: dsl.Match(editLayPercentageBadRequestReponse{}),
+						Body: dsl.Match(editLayPercentageBadRequestResponse{}),
 					})
 			},
 			cookies: []*http.Cookie{
@@ -141,7 +141,7 @@ func TestEditLayPercentage(t *testing.T) {
 			assert.Nil(t, pact.Verify(func() error {
 				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
 
-				err := client.EditLayPercentage(getContext(tc.cookies), tc.layPercentage, tc.reviewCycle)
+				err := client.EditLayPercentageReviewCycle(getContext(tc.cookies), tc.reviewCycle, tc.layPercentage)
 
 				assert.Equal(t, tc.expectedError, err)
 				return nil
@@ -156,7 +156,7 @@ func TestEditLayPercentageStatusError(t *testing.T) {
 
 	client, _ := NewClient(http.DefaultClient, s.URL)
 
-	err := client.EditLayPercentage(getContext(nil), "20", "3")
+	err := client.EditLayPercentageReviewCycle(getContext(nil), "3", "20")
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
 		URL:    s.URL + UrlRoute,
