@@ -17,7 +17,7 @@ describe("Random Reviews", () => {
                     "have.text",
                     expected[index][0]
                 );
-                cy.get(".govuk-summary-list__value").should(
+                cy.get(".hook-layPercentageValue").should(
                     "have.text",
                     expected[index][1]
                 );
