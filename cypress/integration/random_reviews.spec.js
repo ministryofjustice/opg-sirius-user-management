@@ -13,14 +13,8 @@ describe("Random Reviews", () => {
 
         cy.get(".hook-layPercentageRow").each(($el, index) => {
             cy.wrap($el).within(() => {
-                cy.get(".hook-layPercentageKey").should(
-                    "have.text",
-                    expected[index][0]
-                );
-                cy.get(".hook-layPercentageValue").should(
-                    "have.text",
-                    expected[index][1]
-                );
+                cy.get(".hook-layPercentageKey").contains(expected[index][0]);
+                cy.get(".hook-layPercentageValue").contains(expected[index][1]);
             });
         });
     });
