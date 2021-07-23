@@ -7,8 +7,8 @@ describe("Random Reviews", () => {
 
     it("shows all random reviews", () => {
         const expected = [
-            ["Lay", 20],
-            ["Review cycle", 3]
+            ["Lay", "20 %"],
+            ["Review cycle", "3 year(s)"]
         ];
 
         cy.get(".hook-layPercentageRow").each(($el, index) => {
