@@ -9,7 +9,7 @@ import (
 )
 
 type EditLayReviewCycleClient interface {
-	EditLayReviewCycle(ctx sirius.Context, reviewCycle string, layPercentage string) (error)
+	EditLayPercentageReviewCycle(ctx sirius.Context, reviewCycle string, layPercentage string) (error)
 	RandomReviews(sirius.Context) (sirius.RandomReviews, error)
 }
 
@@ -52,7 +52,7 @@ func editLayReviewCycle(client EditLayReviewCycleClient, tmpl Template) Handler 
             reviewCycle := r.PostFormValue("layReviewCycle")
             layPercentage := strconv.Itoa(randomReviewsCycle.LayPercentage)
 
-			err := client.EditLayReviewCycle(ctx, reviewCycle, layPercentage)
+			err := client.EditLayPercentageReviewCycle(ctx, reviewCycle, layPercentage)
 
 			if verr, ok := err.(sirius.ValidationError); ok {
 				vars.ReviewCycle = reviewCycle

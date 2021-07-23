@@ -14,6 +14,10 @@ type editLayPercentageBadRequestReponse struct {
 	Detail           string `json:"detail" pact:"example=Enter a percentage between 0 and 100 for lay cases"`
 }
 
+const UserExists = "User exists";
+const UrlRoute = "/api/v1/random-review-settings";
+const BypassMembrane = "OPG-Bypass-Membrane";
+
 func TestEditLayPercentage(t *testing.T) {
 	pact := &dsl.Pact{
 		Consumer:          "sirius-user-management",
@@ -40,15 +44,15 @@ func TestEditLayPercentage(t *testing.T) {
 			setup: func() {
 				pact.
 					AddInteraction().
-					Given("User exists").
+					Given(UserExists).
 					UponReceiving("A request to edit the lay percentage errors on validation").
 					WithRequest(dsl.Request{
 						Method: http.MethodPost,
-						Path:   dsl.String("/api/v1/random-review-settings"),
+						Path:   dsl.String(UrlRoute),
 						Headers: dsl.MapMatcher{
 							"X-XSRF-TOKEN":        dsl.String("abcde"),
 							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
-							"OPG-Bypass-Membrane": dsl.String("1"),
+							BypassMembrane: dsl.String("1"),
 						},
 						Body: map[string]interface{}{
 							"layPercentage": "200",
@@ -76,16 +80,16 @@ func TestEditLayPercentage(t *testing.T) {
 			setup: func() {
 				pact.
 					AddInteraction().
-					Given("User exists").
+					Given(UserExists).
 					UponReceiving("A request to edit the lay percentage").
 					WithRequest(dsl.Request{
 						Method: http.MethodPost,
-						Path:   dsl.String("/api/v1/random-review-settings"),
+						Path:   dsl.String(UrlRoute),
 						Headers: dsl.MapMatcher{
 							"Content-type":        dsl.String("application/json"),
 							"X-XSRF-TOKEN":        dsl.String("abcde"),
 							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
-							"OPG-Bypass-Membrane": dsl.String("1"),
+							BypassMembrane: dsl.String("1"),
 						},
 						Body: map[string]interface{}{
 							"layPercentage": "20",
@@ -109,13 +113,13 @@ func TestEditLayPercentage(t *testing.T) {
 			setup: func() {
 				pact.
 					AddInteraction().
-					Given("User exists").
+					Given(UserExists).
 					UponReceiving("A request to get lay percentage without cookies").
 					WithRequest(dsl.Request{
 						Method: http.MethodPost,
-						Path:   dsl.String("/api/v1/random-review-settings"),
+						Path:   dsl.String(UrlRoute),
 						Headers: dsl.MapMatcher{
-							"OPG-Bypass-Membrane": dsl.String("1"),
+							BypassMembrane: dsl.String("1"),
 						},
 						Body: map[string]interface{}{
 							"layPercentage": "20",
@@ -155,7 +159,7 @@ func TestEditLayPercentageStatusError(t *testing.T) {
 	err := client.EditLayPercentage(getContext(nil), "20", "3")
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
-		URL:    s.URL + "/api/v1/random-review-settings",
+		URL:    s.URL + UrlRoute,
 		Method: http.MethodPost,
 	}, err)
 }
