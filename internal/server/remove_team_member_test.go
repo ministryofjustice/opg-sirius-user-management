@@ -203,7 +203,7 @@ func TestConfirmPostRemoveTeamMember(t *testing.T) {
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
 	err := removeTeamMember(client, template)(client.requiredPermissions(), w, r)
-	assert.Equal(Redirect("/teams/123"), err)
+	assert.Equal(RedirectError("/teams/123"), err)
 
 	assert.Equal(1, client.team.count)
 	assert.Equal(1, client.editTeam.count)

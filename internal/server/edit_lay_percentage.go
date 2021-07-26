@@ -9,48 +9,48 @@ import (
 
 type EditLayPercentageClient interface {
 	RandomReviews(sirius.Context) (sirius.RandomReviews, error)
-	EditLayPercentageReviewCycle(ctx sirius.Context, layPercentage string, reviewCycle string) (error)
+	EditLayPercentageReviewCycle(ctx sirius.Context, layPercentage string, reviewCycle string) error
 }
 
 type editLayPercentageVars struct {
-	Path                string
-	XSRFToken           string
-	LayPercentage       string
-	ReviewCycle         string
-	Errors              sirius.ValidationErrors
-	Error               string
+	Path          string
+	XSRFToken     string
+	LayPercentage string
+	ReviewCycle   string
+	Errors        sirius.ValidationErrors
+	Error         string
 }
 
 func editLayPercentage(client EditLayPercentageClient, tmpl Template) Handler {
-	return func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error{
+	return func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error {
 		if !perm.HasPermission("v1-random-review-settings", http.MethodPost) {
-            return StatusError(http.StatusForbidden)
+			return StatusError(http.StatusForbidden)
 		}
 
 		ctx := getContext(r)
 
 		vars := editLayPercentageVars{
-			Path:               r.URL.Path,
-			XSRFToken:          ctx.XSRFToken,
+			Path:      r.URL.Path,
+			XSRFToken: ctx.XSRFToken,
 		}
 
 		switch r.Method {
 		case http.MethodGet:
-            randomReviews, err := client.RandomReviews(ctx)
-            if err != nil {
-                return err
-            }
+			randomReviews, err := client.RandomReviews(ctx)
+			if err != nil {
+				return err
+			}
 
-            vars.LayPercentage = strconv.Itoa(randomReviews.LayPercentage)
+			vars.LayPercentage = strconv.Itoa(randomReviews.LayPercentage)
 
-            return tmpl.ExecuteTemplate(w, "page", vars)
+			return tmpl.ExecuteTemplate(w, "page", vars)
 
 		case http.MethodPost:
 
-		    randomReviewsCycle, _ := client.RandomReviews(ctx)
+			randomReviewsCycle, _ := client.RandomReviews(ctx)
 
-            layPercentage := r.PostFormValue("layPercentage")
-            reviewCycle := strconv.Itoa(randomReviewsCycle.ReviewCycle)
+			layPercentage := r.PostFormValue("layPercentage")
+			reviewCycle := strconv.Itoa(randomReviewsCycle.ReviewCycle)
 
 			err := client.EditLayPercentageReviewCycle(ctx, reviewCycle, layPercentage)
 
@@ -64,7 +64,7 @@ func editLayPercentage(client EditLayPercentageClient, tmpl Template) Handler {
 				return err
 			}
 
-            return Redirect("/random-reviews")
+			return RedirectError("/random-reviews")
 
 		default:
 			return StatusError(http.StatusMethodNotAllowed)

@@ -138,7 +138,7 @@ func TestPostUnlockUser(t *testing.T) {
 	r, _ := http.NewRequest("POST", "/unlock-user/123", nil)
 
 	err := unlockUser(client, template)(client.requiredPermissions(), w, r)
-	assert.Equal(Redirect("/edit-user/123"), err)
+	assert.Equal(RedirectError("/edit-user/123"), err)
 
 	assert.Equal(1, client.editUser.count)
 	assert.Equal(getContext(r), client.editUser.lastCtx)

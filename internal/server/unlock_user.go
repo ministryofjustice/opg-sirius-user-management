@@ -64,7 +64,7 @@ func unlockUser(client UnlockUserClient, tmpl Template) Handler {
 			} else if err != nil {
 				return err
 			} else {
-				return Redirect(fmt.Sprintf("/edit-user/%d", user.ID))
+				return RedirectError(fmt.Sprintf("/edit-user/%d", user.ID))
 			}
 		}
 

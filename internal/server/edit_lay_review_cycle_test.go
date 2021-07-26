@@ -11,15 +11,15 @@ import (
 )
 
 type mockEditLayReviewCycleClient struct {
-	count             int
-	saveCount         int
-	lastCtx           sirius.Context
-    lastRequest       string
-	err               error
-	data              sirius.RandomReviews
+	count         int
+	saveCount     int
+	lastCtx       sirius.Context
+	lastRequest   string
+	err           error
+	data          sirius.RandomReviews
 	lastArguments struct {
-        LayPercentage   string
-        ReviewCycle     string
+		LayPercentage string
+		ReviewCycle   string
 	}
 }
 
@@ -28,15 +28,15 @@ func (m *mockEditLayReviewCycleClient) RandomReviews(ctx sirius.Context) (sirius
 	m.lastCtx = ctx
 	m.lastRequest = "RandomReviews"
 
-	return m.data,  m.err
+	return m.data, m.err
 }
 
-func (m *mockEditLayReviewCycleClient) EditLayPercentageReviewCycle(ctx sirius.Context, layPercentage string, reviewCycle string) (error) {
-    m.saveCount += 1
+func (m *mockEditLayReviewCycleClient) EditLayPercentageReviewCycle(ctx sirius.Context, layPercentage string, reviewCycle string) error {
+	m.saveCount += 1
 	m.lastCtx = ctx
 	m.lastRequest = "EditLayPercentageReviewCycle"
-    m.lastArguments.LayPercentage = layPercentage
-    m.lastArguments.ReviewCycle = reviewCycle
+	m.lastArguments.LayPercentage = layPercentage
+	m.lastArguments.ReviewCycle = reviewCycle
 
 	return m.err
 }
@@ -48,10 +48,10 @@ func (m *mockEditLayReviewCycleClient) requiredPermissions() sirius.PermissionSe
 func TestGetLayReviewCycle(t *testing.T) {
 	assert := assert.New(t)
 
-    data := sirius.RandomReviews{
-     	LayPercentage: 10,
-     	ReviewCycle: 1,
-    }
+	data := sirius.RandomReviews{
+		LayPercentage: 10,
+		ReviewCycle:   1,
+	}
 
 	client := &mockEditLayReviewCycleClient{data: data}
 	template := &mockTemplate{}
@@ -68,12 +68,12 @@ func TestGetLayReviewCycle(t *testing.T) {
 	assert.Equal(http.StatusOK, resp.StatusCode)
 	assert.Equal(getContext(r), client.lastCtx)
 
-    assert.Equal(1, template.count)
-    assert.Equal("page", template.lastName)
-    assert.Equal(editLayReviewCycleVars{
-        Path:        "/path",
-        ReviewCycle: "1",
-    }, template.lastVars)
+	assert.Equal(1, template.count)
+	assert.Equal("page", template.lastName)
+	assert.Equal(editLayReviewCycleVars{
+		Path:        "/path",
+		ReviewCycle: "1",
+	}, template.lastVars)
 }
 
 func TestPostLayReviewCycle(t *testing.T) {
@@ -81,7 +81,7 @@ func TestPostLayReviewCycle(t *testing.T) {
 
 	data := sirius.RandomReviews{
 		LayPercentage: 10,
-		ReviewCycle: 1,
+		ReviewCycle:   1,
 	}
 
 	client := &mockEditLayReviewCycleClient{data: data}
@@ -94,7 +94,7 @@ func TestPostLayReviewCycle(t *testing.T) {
 	handler := editLayReviewCycle(client, template)
 
 	err := handler(client.requiredPermissions(), w, r)
-	assert.Equal(Redirect("/random-reviews"), err)
+	assert.Equal(RedirectError("/random-reviews"), err)
 
 	resp := w.Result()
 	assert.Equal(http.StatusOK, resp.StatusCode)
@@ -111,7 +111,7 @@ func TestPostLayReviewCycleValidationError(t *testing.T) {
 
 	data := sirius.RandomReviews{
 		LayPercentage: 10,
-		ReviewCycle: 1,
+		ReviewCycle:   1,
 	}
 
 	errors := sirius.ValidationErrors{
@@ -141,9 +141,9 @@ func TestPostLayReviewCycleValidationError(t *testing.T) {
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
 	assert.Equal(editLayReviewCycleVars{
-	    Path: "/path",
+		Path:        "/path",
 		ReviewCycle: "test",
-		Errors: errors,
+		Errors:      errors,
 	}, template.lastVars)
 
 }

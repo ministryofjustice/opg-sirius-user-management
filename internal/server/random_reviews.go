@@ -11,16 +11,16 @@ type RandomReviewsClient interface {
 }
 
 type randomReviewsVars struct {
-	Path               string
-	LayPercentage      int
-	ReviewCycle        int
+	Path          string
+	LayPercentage int
+	ReviewCycle   int
 }
 
 func randomReviews(client RandomReviewsClient, tmpl Template) Handler {
 	return func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error {
 		if !perm.HasPermission("v1-random-review-settings", http.MethodGet) {
-    		return StatusError(http.StatusForbidden)
-    	}
+			return StatusError(http.StatusForbidden)
+		}
 
 		if r.Method != http.MethodGet {
 			return StatusError(http.StatusMethodNotAllowed)
@@ -34,9 +34,9 @@ func randomReviews(client RandomReviewsClient, tmpl Template) Handler {
 		}
 
 		vars := randomReviewsVars{
-			Path:               r.URL.Path,
-			LayPercentage:      randomReviews.LayPercentage,
-			ReviewCycle:        randomReviews.ReviewCycle,
+			Path:          r.URL.Path,
+			LayPercentage: randomReviews.LayPercentage,
+			ReviewCycle:   randomReviews.ReviewCycle,
 		}
 
 		return tmpl.ExecuteTemplate(w, "page", vars)

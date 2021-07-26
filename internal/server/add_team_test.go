@@ -125,7 +125,7 @@ func TestPostAddTeam(t *testing.T) {
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
 	err := addTeam(client, template)(client.requiredPermissions(), w, r)
-	assert.Equal(Redirect("/teams/123"), err)
+	assert.Equal(RedirectError("/teams/123"), err)
 
 	assert.Equal(1, client.addTeam.count)
 	assert.Equal(getContext(r), client.addTeam.lastCtx)
@@ -153,7 +153,7 @@ func TestPostAddTeamLpa(t *testing.T) {
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
 	err := addTeam(client, template)(client.requiredPermissions(), w, r)
-	assert.Equal(Redirect("/teams/123"), err)
+	assert.Equal(RedirectError("/teams/123"), err)
 
 	assert.Equal(1, client.addTeam.count)
 	assert.Equal(getContext(r), client.addTeam.lastCtx)

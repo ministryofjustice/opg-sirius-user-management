@@ -32,8 +32,8 @@ func TestGetRandomReviews(t *testing.T) {
 	assert := assert.New(t)
 
 	data := sirius.RandomReviews{
-		LayPercentage:  20,
-		ReviewCycle:    3,
+		LayPercentage: 20,
+		ReviewCycle:   3,
 	}
 	client := &mockRandomReviewsClient{data: data}
 	template := &mockTemplate{}
@@ -52,9 +52,9 @@ func TestGetRandomReviews(t *testing.T) {
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
 	assert.Equal(randomReviewsVars{
-		Path:               "/path",
-		LayPercentage:      20,
-		ReviewCycle:        3,
+		Path:          "/path",
+		LayPercentage: 20,
+		ReviewCycle:   3,
 	}, template.lastVars)
 }
 

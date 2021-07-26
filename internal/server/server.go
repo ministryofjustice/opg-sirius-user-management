@@ -86,17 +86,17 @@ func New(logger Logger, client Client, templates map[string]*template.Template, 
 		wrap(
 			editMyDetails(client, templates["edit-my-details.gotmpl"])))
 
-    mux.Handle("/random-reviews",
-        wrap(
-            randomReviews(client, templates["random-reviews.gotmpl"])))
+	mux.Handle("/random-reviews",
+		wrap(
+			randomReviews(client, templates["random-reviews.gotmpl"])))
 
-    mux.Handle("/random-reviews/edit/lay-percentage",
-        wrap(
-            editLayPercentage(client, templates["random-reviews-edit-lay-percentage.gotmpl"])))
+	mux.Handle("/random-reviews/edit/lay-percentage",
+		wrap(
+			editLayPercentage(client, templates["random-reviews-edit-lay-percentage.gotmpl"])))
 
-    mux.Handle("/random-reviews/edit/lay-review-cycle",
-        wrap(
-            editLayReviewCycle(client, templates["random-reviews-edit-lay-review-cycle.gotmpl"])))
+	mux.Handle("/random-reviews/edit/lay-review-cycle",
+		wrap(
+			editLayReviewCycle(client, templates["random-reviews-edit-lay-review-cycle.gotmpl"])))
 
 	mux.Handle("/change-password",
 		wrap(
@@ -130,13 +130,13 @@ func New(logger Logger, client Client, templates map[string]*template.Template, 
 	return http.StripPrefix(prefix, mux)
 }
 
-type Redirect string
+type RedirectError string
 
-func (e Redirect) Error() string {
+func (e RedirectError) Error() string {
 	return "redirect to " + string(e)
 }
 
-func (e Redirect) To() string {
+func (e RedirectError) To() string {
 	return string(e)
 }
 
@@ -181,7 +181,7 @@ func errorHandler(logger Logger, client ErrorHandlerClient, tmplError Template, 
 					return
 				}
 
-				if redirect, ok := err.(Redirect); ok {
+				if redirect, ok := err.(RedirectError); ok {
 					http.Redirect(w, r, prefix+redirect.To(), http.StatusFound)
 					return
 				}
