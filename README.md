@@ -50,6 +50,7 @@ Followed by:
 ```
 go test ./...
 ```
+
 This will run the Go unit tests. It relies on `pact` being available on your
 `$PATH`. The tests will produce a `./pacts` directory which is then used to
 provide a stub service for the Cypress tests.
@@ -61,6 +62,7 @@ yarn && yarn cypress
 
 Will start the application in a way that uses the stub service, then opens
 Cypress in the current project.
+
 
 ## Development
 
