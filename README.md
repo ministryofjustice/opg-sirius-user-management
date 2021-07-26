@@ -56,7 +56,7 @@ This will run the Go unit tests. It relies on `pact` being available on your
 provide a stub service for the Cypress tests.
 
 ```
-docker-compose -f docker/docker-compose.cypress.yml up -d --build --force-recreate
+docker-compose -f docker/docker-compose.cypress.yml up -d --build
 yarn && yarn cypress
 ```
 

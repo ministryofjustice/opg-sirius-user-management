@@ -4,9 +4,7 @@
   "license": "MIT",
   "scripts": {
     "build": "webpack",
-    "cypress": "cypress open",
-    "test-sirius": "cd internal/sirius && go test",
-    "test-server": "cd internal/server && go test"
+    "cypress": "cypress open"
   },
   "dependencies": {
     "@ministryofjustice/frontend": "0.2.5",
