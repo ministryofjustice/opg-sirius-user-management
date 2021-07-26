@@ -15,12 +15,12 @@ type EditUserClient interface {
 }
 
 type editUserVars struct {
-	Path              string
-	XSRFToken         string
-	Roles             []string
-	User              sirius.AuthUser
-	Success           bool
-	Errors            sirius.ValidationErrors
+	Path      string
+	XSRFToken string
+	Roles     []string
+	User      sirius.AuthUser
+	Success   bool
+	Errors    sirius.ValidationErrors
 }
 
 func editUser(client EditUserClient, tmpl Template) Handler {
@@ -42,9 +42,9 @@ func editUser(client EditUserClient, tmpl Template) Handler {
 		}
 
 		vars := editUserVars{
-			Path:              r.URL.Path,
-			XSRFToken:         ctx.XSRFToken,
-			Roles:             roles,
+			Path:      r.URL.Path,
+			XSRFToken: ctx.XSRFToken,
+			Roles:     roles,
 		}
 
 		switch r.Method {

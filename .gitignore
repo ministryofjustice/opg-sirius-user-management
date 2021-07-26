@@ -7,3 +7,4 @@ pacts/
 web/static
 # ignore JetBrains project files
 .idea
+.yarn-error.log

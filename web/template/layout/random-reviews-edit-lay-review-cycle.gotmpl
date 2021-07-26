@@ -1,0 +1,43 @@
+{{ template "page" . }}
+
+{{ define "backlink" }}
+  <a class="govuk-back-link" href="{{ prefix "/random-reviews" }}">Back</a>
+{{ end }}
+
+{{ define "title" }}Lay cases for random review{{ end }}
+
+{{ define "main" }}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {{ template "error-summary" .Errors }}
+
+      {{ if .Success }}
+        {{ template "success-banner" "You have successfully updated the lay percentage." }}
+      {{ end }}
+
+      <h1 class="govuk-heading-xl">Lay cases for random review</h1>
+
+      <form class="form" method="post">
+        <input type="hidden" name="xsrfToken" value="{{ .XSRFToken }}" />
+
+        <div class="govuk-form-group {{ if .Errors.layPercentage }}govuk-form-group--error{{ end }}">
+
+          {{ range .Errors.layPercentage }}
+            <span id="name-error" class="govuk-error-message">
+              <span class="govuk-visually-hidden">Error:</span> {{ . }}
+            </span>
+          {{ end }}
+
+          <input class="govuk-input govuk-!-width-two-thirds" id="f-layPercentage" name="layPercentage" type="number" value="{{ .LayPercentage}}">
+        </div>
+
+        <button type="submit" class="govuk-button" data-module="govuk-button">
+          Save changes
+        </button>
+        <a class="govuk-link" href="{{ prefix "/random-reviews" }}">
+            Cancel
+        </a>
+      </form>
+    </div>
+  </div>
+{{ end }}
