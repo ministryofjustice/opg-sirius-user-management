@@ -1,0 +1,39 @@
+{{ template "page" . }}
+
+{{ define "title" }}Random reviews{{ end }}
+
+{{ define "main" }}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-xl">Random reviews</h1>
+      <h2 class="govuk-heading-m">Cases for random review</h2>
+
+      <dl class="govuk-summary-list">
+
+        <div class="govuk-summary-list__row hook-layPercentageRow">
+          <dt class="govuk-summary-list__key hook-layPercentageKey">Lay</dt>
+          <dd class="govuk-summary-list__value hook-layPercentageValue">{{ .LayPercentage }} %</dd>
+          <dd class="govuk-summary-list__actions">
+            {{ if true }}
+              <a class="govuk-link" id="hook-layPercentageChange" href="{{ prefix "/random-reviews/edit/lay-percentage" }}">
+                Change<span class="govuk-visually-hidden"> lay</span>
+              </a>
+            {{ end }}
+          </dd>
+        </div>
+
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">Review cycle</dt>
+          <dd class="govuk-summary-list__value">{{ .ReviewCycle }} year(s)</dd>
+          <dd class="govuk-summary-list__actions">
+            {{ if true }}
+              <a class="govuk-link" id="hook-layReviewCycleChange" href="{{ prefix "/random-reviews/edit/lay-review-cycle" }}">
+                Change<span class="govuk-visually-hidden"> review cycle</span>
+              </a>
+            {{ end }}
+          </dd>
+        </div>
+      </dl>
+    </div>
+  </div>
+{{ end }}
