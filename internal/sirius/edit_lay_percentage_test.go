@@ -10,13 +10,13 @@ import (
 )
 
 type editLayPercentageBadRequestResponse struct {
-	Status           int    `json:"status" pact:"example=400"`
-	Detail           string `json:"detail" pact:"example=Enter a percentage between 0 and 100 for lay cases"`
+	Status int    `json:"status" pact:"example=400"`
+	Detail string `json:"detail" pact:"example=Enter a percentage between 0 and 100 for lay cases"`
 }
 
-const UserExists = "User exists";
-const UrlRoute = "/api/v1/random-review-settings";
-const BypassMembrane = "OPG-Bypass-Membrane";
+const UserExists = "User exists"
+const UrlRoute = "/api/v1/random-review-settings"
+const BypassMembrane = "OPG-Bypass-Membrane"
 
 func TestEditLayPercentage(t *testing.T) {
 	pact := &dsl.Pact{
@@ -30,17 +30,17 @@ func TestEditLayPercentage(t *testing.T) {
 	defer pact.Teardown()
 
 	testCases := []struct {
-		name                    string
-		layPercentage			string
-		reviewCycle				string
-		setup                   func()
-		cookies                 []*http.Cookie
-		expectedError 			error
+		name          string
+		layPercentage string
+		reviewCycle   string
+		setup         func()
+		cookies       []*http.Cookie
+		expectedError error
 	}{
 		{
-			name: "Validation errors",
+			name:          "Validation errors",
 			layPercentage: "200",
-			reviewCycle: "3",
+			reviewCycle:   "3",
 			setup: func() {
 				pact.
 					AddInteraction().
@@ -50,19 +50,19 @@ func TestEditLayPercentage(t *testing.T) {
 						Method: http.MethodPost,
 						Path:   dsl.String(UrlRoute),
 						Headers: dsl.MapMatcher{
-							"X-XSRF-TOKEN":        dsl.String("abcde"),
-							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
+							"X-XSRF-TOKEN": dsl.String("abcde"),
+							"Cookie":       dsl.String("XSRF-TOKEN=abcde; Other=other"),
 							BypassMembrane: dsl.String("1"),
 						},
 						Body: map[string]interface{}{
 							"layPercentage": "200",
-							"reviewCycle": "3",
+							"reviewCycle":   "3",
 						},
 					}).
 					WillRespondWith(dsl.Response{
-						Status: http.StatusBadRequest,
+						Status:  http.StatusBadRequest,
 						Headers: dsl.MapMatcher{"Content-Type": dsl.String("application/problem+json")},
-						Body: dsl.Match(editLayPercentageBadRequestResponse{}),
+						Body:    dsl.Match(editLayPercentageBadRequestResponse{}),
 					})
 			},
 			cookies: []*http.Cookie{
@@ -74,9 +74,9 @@ func TestEditLayPercentage(t *testing.T) {
 			},
 		},
 		{
-			name: "OK",
+			name:          "OK",
 			layPercentage: "20",
-			reviewCycle: "3",
+			reviewCycle:   "3",
 			setup: func() {
 				pact.
 					AddInteraction().
@@ -86,14 +86,14 @@ func TestEditLayPercentage(t *testing.T) {
 						Method: http.MethodPost,
 						Path:   dsl.String(UrlRoute),
 						Headers: dsl.MapMatcher{
-							"Content-type":        dsl.String("application/json"),
-							"X-XSRF-TOKEN":        dsl.String("abcde"),
-							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
+							"Content-type": dsl.String("application/json"),
+							"X-XSRF-TOKEN": dsl.String("abcde"),
+							"Cookie":       dsl.String("XSRF-TOKEN=abcde; Other=other"),
 							BypassMembrane: dsl.String("1"),
 						},
 						Body: map[string]interface{}{
 							"layPercentage": "20",
-							"reviewCycle": "3",
+							"reviewCycle":   "3",
 						},
 					}).
 					WillRespondWith(dsl.Response{
@@ -107,9 +107,9 @@ func TestEditLayPercentage(t *testing.T) {
 			expectedError: nil,
 		},
 		{
-			name: "Unauthorized",
+			name:          "Unauthorized",
 			layPercentage: "20",
-			reviewCycle: "3",
+			reviewCycle:   "3",
 			setup: func() {
 				pact.
 					AddInteraction().
@@ -123,7 +123,7 @@ func TestEditLayPercentage(t *testing.T) {
 						},
 						Body: map[string]interface{}{
 							"layPercentage": "20",
-							"reviewCycle": "3",
+							"reviewCycle":   "3",
 						},
 					}).
 					WillRespondWith(dsl.Response{

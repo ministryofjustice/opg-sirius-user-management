@@ -46,11 +46,10 @@ Make sure that you have downloaded `pact` onto your computer before running the 
 brew tap pact-foundation/pact-ruby-standalone
 brew install pact-ruby-standalone
 ```
-
+Followed by:
 ```
 go test ./...
 ```
-
 This will run the Go unit tests. It relies on `pact` being available on your
 `$PATH`. The tests will produce a `./pacts` directory which is then used to
 provide a stub service for the Cypress tests.

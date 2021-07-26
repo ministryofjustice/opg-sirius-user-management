@@ -7,16 +7,16 @@ import (
 )
 
 type editLayPercentageReviewCycleRequest struct {
-	ReviewCycle string   `json:"reviewCycle"`
-	LayPercentage string   `json:"layPercentage"`
+	ReviewCycle   string `json:"reviewCycle"`
+	LayPercentage string `json:"layPercentage"`
 }
 
-func (c *Client) EditLayPercentageReviewCycle(ctx Context, reviewCycle string, layPercentage string) (error) {
+func (c *Client) EditLayPercentageReviewCycle(ctx Context, reviewCycle string, layPercentage string) error {
 	var body bytes.Buffer
 
 	err := json.NewEncoder(&body).Encode(editLayPercentageReviewCycleRequest{
-        ReviewCycle:        reviewCycle,
-		LayPercentage:      layPercentage,
+		ReviewCycle:   reviewCycle,
+		LayPercentage: layPercentage,
 	})
 	if err != nil {
 		return err
@@ -40,14 +40,14 @@ func (c *Client) EditLayPercentageReviewCycle(ctx Context, reviewCycle string, l
 
 	if resp.StatusCode != http.StatusOK {
 		var v struct {
-		    Detail           string           `json:"detail"`
+			Detail           string           `json:"detail"`
 			ValidationErrors ValidationErrors `json:"validation_errors"`
 		}
 
 		if err := json.NewDecoder(resp.Body).Decode(&v); err == nil {
 			return ValidationError{
-			    Message: v.Detail,
-				Errors: v.ValidationErrors,
+				Message: v.Detail,
+				Errors:  v.ValidationErrors,
 			}
 		}
 
@@ -56,4 +56,3 @@ func (c *Client) EditLayPercentageReviewCycle(ctx Context, reviewCycle string, l
 
 	return nil
 }
-

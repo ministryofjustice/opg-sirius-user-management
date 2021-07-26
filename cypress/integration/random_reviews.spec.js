@@ -19,11 +19,11 @@ describe("Random Reviews", () => {
         });
     });
 
-    it("allows me to change the lay percentage", () => {
+    it("the lay percentage change option is present", () => {
         cy.contains("#hook-layPercentageChange", "Change");
     });
 
-    it("allows me to change the review cycle", () => {
+    it("the review cycle change option is present", () => {
         cy.contains("#hook-layReviewCycleChange", "Change");
     });
 });

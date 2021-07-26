@@ -6,8 +6,8 @@ import (
 )
 
 type RandomReviews struct {
-	LayPercentage int   `json:"layPercentage"`
-	ReviewCycle   int   `json:"reviewCycle"`
+	LayPercentage int `json:"layPercentage"`
+	ReviewCycle   int `json:"reviewCycle"`
 }
 
 func (c *Client) RandomReviews(ctx Context) (RandomReviews, error) {

@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const UrlRandomReview = "/api/v1/random-review-settings";
+const UrlRandomReview = "/api/v1/random-review-settings"
 
 func TestRandomReviews(t *testing.T) {
 	pact := &dsl.Pact{
@@ -23,11 +23,11 @@ func TestRandomReviews(t *testing.T) {
 	defer pact.Teardown()
 
 	testCases := []struct {
-		name                    string
-		setup                   func()
-		cookies                 []*http.Cookie
-		expectedRandomReviews   RandomReviews
-		expectedError           error
+		name                  string
+		setup                 func()
+		cookies               []*http.Cookie
+		expectedRandomReviews RandomReviews
+		expectedError         error
 	}{
 		{
 			name: "OK",
@@ -49,8 +49,8 @@ func TestRandomReviews(t *testing.T) {
 						Status:  http.StatusOK,
 						Headers: dsl.MapMatcher{"Content-Type": dsl.String("application/json")},
 						Body: dsl.Like(map[string]interface{}{
-							"layPercentage":          dsl.Like(20),
-							"reviewCycle":            dsl.Like(3),
+							"layPercentage": dsl.Like(20),
+							"reviewCycle":   dsl.Like(3),
 						}),
 					})
 			},
@@ -59,8 +59,8 @@ func TestRandomReviews(t *testing.T) {
 				{Name: "Other", Value: "other"},
 			},
 			expectedRandomReviews: RandomReviews{
-				LayPercentage:      20,
-				ReviewCycle:        3,
+				LayPercentage: 20,
+				ReviewCycle:   3,
 			},
 		},
 

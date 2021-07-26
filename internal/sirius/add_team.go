@@ -41,7 +41,6 @@ func (c *Client) AddTeam(ctx Context, name, teamType, phone, email string) (int,
 		return 0, ErrUnauthorized
 	}
 
-
 	if resp.StatusCode != http.StatusCreated {
 		var v struct {
 			ValidationErrors ValidationErrors `json:"validation_errors"`

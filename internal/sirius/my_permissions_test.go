@@ -154,9 +154,9 @@ func TestPermissionsIgnoredPact(t *testing.T) {
 							"v1-teams": map[string]interface{}{
 								"permissions": []string{"GET", "POST", "PUT", "DELETE"},
 							},
-                           "v1-random-review-settings": map[string]interface{}{
-                           	    "permissions": []string{"GET", "POST"},
-                            },
+							"v1-random-review-settings": map[string]interface{}{
+								"permissions": []string{"GET", "POST"},
+							},
 						}),
 					})
 			},
