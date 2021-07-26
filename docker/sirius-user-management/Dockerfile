@@ -1,4 +1,5 @@
-FROM node:16.4.2-alpine3.12 as asset-env
+FROM node:16.5.0-alpine3.12 as asset-env
+
 
 WORKDIR /app
 
@@ -11,7 +12,8 @@ COPY yarn.lock .
 
 RUN yarn && yarn build
 
-FROM golang:1.16.5 as build-env
+FROM golang:1.16.6 as build-env
+
 
 WORKDIR /app
 
