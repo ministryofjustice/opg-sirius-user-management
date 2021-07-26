@@ -30,6 +30,9 @@ type Client interface {
 	ResendConfirmationClient
 	UnlockUserClient
 	ViewTeamClient
+	RandomReviewsClient
+	EditLayPercentageClient
+	EditLayReviewCycleClient
 }
 
 type Template interface {
@@ -83,6 +86,18 @@ func New(logger Logger, client Client, templates map[string]*template.Template, 
 		wrap(
 			editMyDetails(client, templates["edit-my-details.gotmpl"])))
 
+    mux.Handle("/random-reviews",
+        wrap(
+            randomReviews(client, templates["random-reviews.gotmpl"])))
+
+    mux.Handle("/random-reviews/edit/lay-percentage",
+        wrap(
+            editLayPercentage(client, templates["random-reviews-edit-lay-percentage.gotmpl"])))
+
+    mux.Handle("/random-reviews/edit/lay-review-cycle",
+        wrap(
+            editLayReviewCycle(client, templates["random-reviews-edit-lay-review-cycle.gotmpl"])))
+
 	mux.Handle("/change-password",
 		wrap(
 			changePassword(client, templates["change-password.gotmpl"])))
@@ -115,13 +130,13 @@ func New(logger Logger, client Client, templates map[string]*template.Template, 
 	return http.StripPrefix(prefix, mux)
 }
 
-type RedirectError string
+type Redirect string
 
-func (e RedirectError) Error() string {
+func (e Redirect) Error() string {
 	return "redirect to " + string(e)
 }
 
-func (e RedirectError) To() string {
+func (e Redirect) To() string {
 	return string(e)
 }
 
@@ -166,7 +181,7 @@ func errorHandler(logger Logger, client ErrorHandlerClient, tmplError Template, 
 					return
 				}
 
-				if redirect, ok := err.(RedirectError); ok {
+				if redirect, ok := err.(Redirect); ok {
 					http.Redirect(w, r, prefix+redirect.To(), http.StatusFound)
 					return
 				}

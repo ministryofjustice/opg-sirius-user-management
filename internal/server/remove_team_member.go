@@ -90,7 +90,7 @@ func removeTeamMember(client RemoveTeamMemberClient, tmpl Template) Handler {
 			} else if err != nil {
 				return err
 			} else {
-				return RedirectError(fmt.Sprintf("/teams/%d", team.ID))
+				return Redirect(fmt.Sprintf("/teams/%d", team.ID))
 			}
 		}
 
