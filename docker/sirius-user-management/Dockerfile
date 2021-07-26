@@ -1,6 +1,5 @@
 FROM node:16.5.0-alpine3.12 as asset-env
 
-
 WORKDIR /app
 
 RUN mkdir -p web/static
@@ -13,7 +12,6 @@ COPY yarn.lock .
 RUN yarn && yarn build
 
 FROM golang:1.16.6 as build-env
-
 
 WORKDIR /app
 
