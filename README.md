@@ -40,28 +40,27 @@ SIRIUS_PUBLIC_URL=http://localhost:8080 SIRIUS_URL=http://localhost:8080 PORT=88
 
 ### Testing
 
-Make sure that you have downloaded `pact` onto your computer before running the test.
+Make sure that `pact` is available before running the tests, on a Mac with Homebrew you can do:
 
 ```
 brew tap pact-foundation/pact-ruby-standalone
 brew install pact-ruby-standalone
 ```
-Followed by:
+
+Then to run the tests:
+
 ```
 go test ./...
 ```
 
-This will run the Go unit tests. It relies on `pact` being available on your
-`$PATH`. The tests will produce a `./pacts` directory which is then used to
-provide a stub service for the Cypress tests.
+The tests will produce a `./pacts` directory which is then used to provide a
+stub service for the Cypress tests. To start the application in a way that uses
+the stub service, and open Cypress in the current project run the following:
 
 ```
 docker-compose -f docker/docker-compose.cypress.yml up -d --build
 yarn && yarn cypress
 ```
-
-Will start the application in a way that uses the stub service, then opens
-Cypress in the current project.
 
 
 ## Development
