@@ -7,31 +7,32 @@ import (
 
 type RandomReviews struct {
 	LayPercentage int `json:"layPercentage"`
+	PaPercentage int `json:"paPercentage"`
 	ReviewCycle   int `json:"reviewCycle"`
 }
 
 func (c *Client) RandomReviews(ctx Context) (RandomReviews, error) {
-	var d RandomReviews
+	var data RandomReviews
 
 	req, err := c.newRequest(ctx, http.MethodGet, "/api/v1/random-review-settings", nil)
 	if err != nil {
-		return d, err
+		return data, err
 	}
 
 	resp, err := c.http.Do(req)
 	if err != nil {
-		return d, err
+		return data, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusUnauthorized {
-		return d, ErrUnauthorized
+		return data, ErrUnauthorized
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return d, newStatusError(resp)
+		return data, newStatusError(resp)
 	}
 
-	err = json.NewDecoder(resp.Body).Decode(&d)
-	return d, err
+	err = json.NewDecoder(resp.Body).Decode(&data)
+	return data, err
 }

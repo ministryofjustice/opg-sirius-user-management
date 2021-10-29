@@ -22,12 +22,25 @@
           </dd>
         </div>
 
-        <div class="govuk-summary-list__row">
-          <dt class="govuk-summary-list__key">Review cycle</dt>
-          <dd class="govuk-summary-list__value">{{ .ReviewCycle }} year(s)</dd>
+
+        <div class="govuk-summary-list__row hook-paPercentageRow">
+          <dt class="govuk-summary-list__key hook-paPercentageKey">PA</dt>
+          <dd class="govuk-summary-list__value hook-paPercentageValue">{{ .PaPercentage }} %</dd>
           <dd class="govuk-summary-list__actions">
             {{ if true }}
-              <a class="govuk-link" id="hook-layReviewCycleChange" href="{{ prefix "/random-reviews/edit/lay-review-cycle" }}">
+          <a class="govuk-link" id="hook-paPercentageChange" href="{{ prefix "/random-reviews/edit/pa-percentage" }}">
+            Change<span class="govuk-visually-hidden"> PA</span>
+          </a>
+            {{ end }}
+          </dd>
+        </div>
+
+        <div class="govuk-summary-list__row hook-reviewCycleRow">
+          <dt class="govuk-summary-list__key hook-reviewCycleKey">Review cycle</dt>
+          <dd class="govuk-summary-list__value hook-reviewCycleValue">{{ .ReviewCycle }} year(s)</dd>
+          <dd class="govuk-summary-list__actions">
+            {{ if true }}
+              <a class="govuk-link" id="hook-reviewCycleChange" href="{{ prefix "/random-reviews/edit/review-cycle" }}">
                 Change<span class="govuk-visually-hidden"> review cycle</span>
               </a>
             {{ end }}
