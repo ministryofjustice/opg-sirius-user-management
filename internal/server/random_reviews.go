@@ -13,6 +13,7 @@ type RandomReviewsClient interface {
 type randomReviewsVars struct {
 	Path          string
 	LayPercentage int
+	PaPercentage  int
 	ReviewCycle   int
 }
 
@@ -36,6 +37,7 @@ func randomReviews(client RandomReviewsClient, tmpl Template) Handler {
 		vars := randomReviewsVars{
 			Path:          r.URL.Path,
 			LayPercentage: randomReviews.LayPercentage,
+			PaPercentage: randomReviews.PaPercentage,
 			ReviewCycle:   randomReviews.ReviewCycle,
 		}
 
