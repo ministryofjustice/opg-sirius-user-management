@@ -4,27 +4,28 @@
   <a class="govuk-back-link" href="{{ prefix "/random-reviews" }}">Back</a>
 {{ end }}
 
-{{ define "title" }}Lay cases for random review{{ end }}
+{{ define "title" }}Change random review settings{{ end }}
 
 {{ define "main" }}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
 
-      <h1 class="govuk-heading-xl">Random review cycle</h1>
+      <h1 class="govuk-heading-xl">PA cases for random review</h1>
 
       <form class="form" method="post">
         <input type="hidden" name="xsrfToken" value="{{ .XSRFToken }}" />
 
           <div class="govuk-form-group {{ if .Error }}govuk-form-group--error{{ end }}">
 
-             {{ if .Error }}
-                <span id="name-error" class="govuk-error-message">
-                  <span class="govuk-visually-hidden">Error:</span> {{ .Error }}
-                </span>
-              {{ end }}
+            {{ if .Error }}
+              <span id="name-error" class="govuk-error-message">
+                <span class="govuk-visually-hidden">Error:</span> {{ .Error }}
+              </span>
+            {{ end }}
 
-          <div class="govuk-input__wrapper"><input class="govuk-input govuk-!-width-one-tenth" id="f-layReviewCycle" aria-label="layReviewCycle" name="layReviewCycle" value="{{ .ReviewCycle}}">
-          <div class="govuk-input__suffix" aria-hidden="true">Year(s)</div>
+          <div class="govuk-input__wrapper">
+			  <input class="govuk-input govuk-!-width-one-tenth" id="f-paPercentage" aria-label="paPercentage" name="paPercentage" value="{{ .PaPercentage}}">
+          <div class="govuk-input__suffix" aria-hidden="true">%</div>
           </div>
         </div>
 

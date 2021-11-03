@@ -50,6 +50,7 @@ func TestRandomReviews(t *testing.T) {
 						Headers: dsl.MapMatcher{"Content-Type": dsl.String("application/json")},
 						Body: dsl.Like(map[string]interface{}{
 							"layPercentage": dsl.Like(20),
+							"paPercentage": dsl.Like(30),
 							"reviewCycle":   dsl.Like(3),
 						}),
 					})
@@ -60,6 +61,7 @@ func TestRandomReviews(t *testing.T) {
 			},
 			expectedRandomReviews: RandomReviews{
 				LayPercentage: 20,
+				PaPercentage: 30,
 				ReviewCycle:   3,
 			},
 		},

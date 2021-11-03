@@ -6,18 +6,16 @@ import (
 	"net/http"
 )
 
-type editLayPercentageReviewCycleRequest struct {
-	ReviewCycle   string `json:"reviewCycle"`
+type EditRandomReview struct {
 	LayPercentage string `json:"layPercentage"`
+	PaPercentage string `json:"paPercentage"`
+	ReviewCycle   string `json:"reviewCycle"`
 }
 
-func (c *Client) EditLayPercentageReviewCycle(ctx Context, reviewCycle string, layPercentage string) error {
+func (c *Client) EditRandomReviewSettings(ctx Context, reviewSettings EditRandomReview) error {
 	var body bytes.Buffer
 
-	err := json.NewEncoder(&body).Encode(editLayPercentageReviewCycleRequest{
-		ReviewCycle:   reviewCycle,
-		LayPercentage: layPercentage,
-	})
+	err := json.NewEncoder(&body).Encode(reviewSettings)
 	if err != nil {
 		return err
 	}

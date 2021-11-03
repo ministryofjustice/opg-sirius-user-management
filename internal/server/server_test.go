@@ -51,7 +51,7 @@ func (m *mockErrorHandlerClient) MyPermissions(ctx sirius.Context) (sirius.Permi
 }
 
 func TestNew(t *testing.T) {
-	assert.Implements(t, (*http.Handler)(nil), New(nil, nil, nil, "", "", "", ""))
+	assert.Implements(t, (*http.Handler)(nil), New(nil, nil, nil, "", "", ""))
 }
 
 func TestErrorHandler(t *testing.T) {

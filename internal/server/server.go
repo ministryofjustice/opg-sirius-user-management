@@ -31,15 +31,14 @@ type Client interface {
 	UnlockUserClient
 	ViewTeamClient
 	RandomReviewsClient
-	EditLayPercentageClient
-	EditLayReviewCycleClient
+	EditRandomReviewSettingsClient
 }
 
 type Template interface {
 	ExecuteTemplate(io.Writer, string, interface{}) error
 }
 
-func New(logger Logger, client Client, templates map[string]*template.Template, prefix, siriusURL, siriusPublicURL, webDir string) http.Handler {
+func New(logger Logger, client Client, templates map[string]*template.Template, prefix, siriusPublicURL, webDir string) http.Handler {
 	wrap := errorHandler(logger, client, templates["error.gotmpl"], prefix, siriusPublicURL)
 
 	mux := http.NewServeMux()
@@ -92,11 +91,15 @@ func New(logger Logger, client Client, templates map[string]*template.Template, 
 
 	mux.Handle("/random-reviews/edit/lay-percentage",
 		wrap(
-			editLayPercentage(client, templates["random-reviews-edit-lay-percentage.gotmpl"])))
+			editRandomReviewSettings(client, templates["random-reviews-edit-lay-percentage.gotmpl"])))
 
-	mux.Handle("/random-reviews/edit/lay-review-cycle",
+	mux.Handle("/random-reviews/edit/pa-percentage",
 		wrap(
-			editLayReviewCycle(client, templates["random-reviews-edit-lay-review-cycle.gotmpl"])))
+			editRandomReviewSettings(client, templates["random-reviews-edit-pa-percentage.gotmpl"])))
+
+	mux.Handle("/random-reviews/edit/review-cycle",
+		wrap(
+			editRandomReviewSettings(client, templates["random-reviews-edit-review-cycle.gotmpl"])))
 
 	mux.Handle("/change-password",
 		wrap(
