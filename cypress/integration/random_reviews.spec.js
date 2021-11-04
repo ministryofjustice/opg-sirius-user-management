@@ -5,25 +5,39 @@ describe("Random Reviews", () => {
         cy.visit("/random-reviews");
     });
 
-    it("shows all random reviews", () => {
-        const expected = [
-            ["Lay", "20 %"],
-            ["Review cycle", "3 year(s)"]
-        ];
-
-        cy.get(".hook-layPercentageRow").each(($el, index) => {
+    it("shows all random review settings", () => {
+        cy.get(".hook-layPercentageRow").each(($el) => {
             cy.wrap($el).within(() => {
-                cy.get(".hook-layPercentageKey").contains(expected[index][0]);
-                cy.get(".hook-layPercentageValue").contains(expected[index][1]);
+                cy.contains(".hook-layPercentageKey", "Lay");
+                cy.contains(".hook-layPercentageValue", "20 %");
             });
         });
+
+        cy.get(".hook-paPercentageRow").each(($el) => {
+            cy.wrap($el).within(() => {
+                cy.contains(".hook-paPercentageKey", "PA");
+                cy.contains(".hook-paPercentageValue", "30 %");
+            });
+        });
+
+        cy.contains("#hook-paPercentageChange", "Change");
+
+        cy.get(".hook-reviewCycleRow").each(($el) => {
+            cy.wrap($el).within(() => {
+                cy.contains(".hook-reviewCycleKey", "Review cycle");
+                cy.contains(".hook-reviewCycleValue", "3 year(s)");
+            });
+        });
+
+        cy.contains("#hook-reviewCycleChange", "Change");
     });
 
-    it("the lay percentage change option is present", () => {
-        cy.contains("#hook-layPercentageChange", "Change");
-    });
-
-    it("the review cycle change option is present", () => {
-        cy.contains("#hook-layReviewCycleChange", "Change");
+    describe("Edit lay percentage", () => {
+        it("throws an error after inputting the incorrect value", () => {
+            cy.get("#hook-layPercentageChange").contains("Change").click();
+            cy.get("#f-layPercentage").clear().type("200");
+            cy.get("button[type=submit]").click();
+            cy.contains('#name-error', "Enter a percentage between 0 and 100 for lay cases");
+        });
     });
 });

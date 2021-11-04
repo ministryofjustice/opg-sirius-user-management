@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type mockEditLayReviewCycleClient struct {
+type mockEditRandomReviewSettingsClient struct {
 	count         int
 	saveCount     int
 	lastCtx       sirius.Context
@@ -18,12 +18,13 @@ type mockEditLayReviewCycleClient struct {
 	err           error
 	data          sirius.RandomReviews
 	lastArguments struct {
-		LayPercentage string
-		ReviewCycle   string
+		layPercentage string
+		paPercentage  string
+		reviewCycle   string
 	}
 }
 
-func (m *mockEditLayReviewCycleClient) RandomReviews(ctx sirius.Context) (sirius.RandomReviews, error) {
+func (m *mockEditRandomReviewSettingsClient) RandomReviews(ctx sirius.Context) (sirius.RandomReviews, error) {
 	m.count += 1
 	m.lastCtx = ctx
 	m.lastRequest = "RandomReviews"
@@ -31,35 +32,50 @@ func (m *mockEditLayReviewCycleClient) RandomReviews(ctx sirius.Context) (sirius
 	return m.data, m.err
 }
 
-func (m *mockEditLayReviewCycleClient) EditLayPercentageReviewCycle(ctx sirius.Context, layPercentage string, reviewCycle string) error {
+func (m *mockEditRandomReviewSettingsClient) EditRandomReviewSettings(ctx sirius.Context, reviewSettings sirius.EditRandomReview) error {
 	m.saveCount += 1
 	m.lastCtx = ctx
-	m.lastRequest = "EditLayPercentageReviewCycle"
-	m.lastArguments.LayPercentage = layPercentage
-	m.lastArguments.ReviewCycle = reviewCycle
+	m.lastRequest = "EditRandomReviewSettings"
+	m.lastArguments.layPercentage = reviewSettings.LayPercentage
+	m.lastArguments.paPercentage = reviewSettings.PaPercentage
+	m.lastArguments.reviewCycle = reviewSettings.ReviewCycle
 
 	return m.err
 }
 
-func (m *mockEditLayReviewCycleClient) requiredPermissions() sirius.PermissionSet {
+func (m *mockEditRandomReviewSettingsClient) requiredPermissions() sirius.PermissionSet {
 	return sirius.PermissionSet{"v1-random-review-settings": sirius.PermissionGroup{Permissions: []string{"post"}}}
 }
 
-func TestGetLayReviewCycle(t *testing.T) {
+func TestNotAuthorised(t *testing.T) {
+	client := &mockEditRandomReviewSettingsClient{}
+	template := &mockTemplate{}
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("GET", "/path", nil)
+	handler := editRandomReviewSettings(client, template)
+
+	err := handler(sirius.PermissionSet{}, w, r)
+
+	assert.Equal(t, StatusError(http.StatusForbidden), err)
+}
+
+func TestGetRandomReviewSettings(t *testing.T) {
 	assert := assert.New(t)
 
 	data := sirius.RandomReviews{
 		LayPercentage: 10,
+		PaPercentage: 20,
 		ReviewCycle:   1,
 	}
 
-	client := &mockEditLayReviewCycleClient{data: data}
+	client := &mockEditRandomReviewSettingsClient{data: data}
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
 
-	handler := editLayReviewCycle(client, template)
+	handler := editRandomReviewSettings(client, template)
 	err := handler(client.requiredPermissions(), w, r)
 
 	assert.Nil(err)
@@ -70,28 +86,31 @@ func TestGetLayReviewCycle(t *testing.T) {
 
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
-	assert.Equal(editLayReviewCycleVars{
+	assert.Equal(editRandomReviewSettingsVars{
 		Path:        "/path",
-		ReviewCycle: "1",
+		LayPercentage: 10,
+		PaPercentage: 20,
+		ReviewCycle:   1,
 	}, template.lastVars)
 }
 
-func TestPostLayReviewCycle(t *testing.T) {
+func TestPostRandomReviewSettings(t *testing.T) {
 	assert := assert.New(t)
 
 	data := sirius.RandomReviews{
 		LayPercentage: 10,
+		PaPercentage: 20,
 		ReviewCycle:   1,
 	}
 
-	client := &mockEditLayReviewCycleClient{data: data}
+	client := &mockEditRandomReviewSettingsClient{data: data}
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", strings.NewReader("layReviewCycle=1"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
-	handler := editLayReviewCycle(client, template)
+	handler := editRandomReviewSettings(client, template)
 
 	err := handler(client.requiredPermissions(), w, r)
 	assert.Equal(RedirectError("/random-reviews"), err)
@@ -103,14 +122,16 @@ func TestPostLayReviewCycle(t *testing.T) {
 	assert.Equal(0, template.count)
 	assert.Equal(1, client.data.ReviewCycle)
 	assert.Equal(10, client.data.LayPercentage)
+	assert.Equal(20, client.data.PaPercentage)
 }
 
-func TestPostLayReviewCycleValidationError(t *testing.T) {
+func TestPostRandomReviewSettingsValidationError(t *testing.T) {
 
 	assert := assert.New(t)
 
 	data := sirius.RandomReviews{
 		LayPercentage: 10,
+		PaPercentage: 20,
 		ReviewCycle:   1,
 	}
 
@@ -120,7 +141,7 @@ func TestPostLayReviewCycleValidationError(t *testing.T) {
 		},
 	}
 
-	client := &mockEditLayReviewCycleClient{data: data}
+	client := &mockEditRandomReviewSettingsClient{data: data}
 	client.err = sirius.ValidationError{
 		Errors: errors,
 	}
@@ -128,10 +149,10 @@ func TestPostLayReviewCycleValidationError(t *testing.T) {
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
-	r, _ := http.NewRequest("POST", "/path", strings.NewReader("layReviewCycle=test"))
+	r, _ := http.NewRequest("POST", "/path", strings.NewReader("reviewCycle=-1"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
-	handler := editLayReviewCycle(client, template)
+	handler := editRandomReviewSettings(client, template)
 
 	err := handler(client.requiredPermissions(), w, r)
 	assert.Nil(err)
@@ -140,10 +161,11 @@ func TestPostLayReviewCycleValidationError(t *testing.T) {
 	assert.Equal(http.StatusBadRequest, resp.StatusCode)
 	assert.Equal(1, template.count)
 	assert.Equal("page", template.lastName)
-	assert.Equal(editLayReviewCycleVars{
+	assert.Equal(editRandomReviewSettingsVars{
 		Path:        "/path",
-		ReviewCycle: "test",
+		LayPercentage: 10,
+		PaPercentage: 20,
+		ReviewCycle:   1,
 		Errors:      errors,
 	}, template.lastVars)
-
 }
