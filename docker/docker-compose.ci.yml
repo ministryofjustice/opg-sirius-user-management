@@ -2,9 +2,12 @@ version: "3.6"
 
 services:
   app:
+    image: sirius-user-management:latest
     build:
       context: ..
       dockerfile: ./docker/sirius-user-management/Dockerfile
+    depends_on:
+      - pact-stub
     ports: ["8888:8888"]
     environment:
       PORT: 8888
@@ -18,9 +21,7 @@ services:
       PACT_DIR: ./pacts
       PORT: 8080
     volumes:
-      - type: volume
-        source: pacts_data
-        target: /app/pacts
+      - ../pacts:/app/pacts
 
   puppeteer:
     build: ./puppeteer
@@ -40,8 +41,3 @@ services:
     depends_on:
       - app
       - pact-stub
-
-volumes:
-  pacts_data:
-    name: pacts_data
-    external: true
