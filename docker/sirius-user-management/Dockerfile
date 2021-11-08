@@ -30,10 +30,15 @@ WORKDIR /go/bin
 
 RUN apk --update --no-cache add \
     ca-certificates \
+    tzdata \
     && rm -rf /var/cache/apk/*
-RUN apk --no-cache add tzdata
 
 COPY --from=build-env /go/bin/opg-sirius-user-management opg-sirius-user-management
 COPY --from=build-env /app/web/template web/template
 COPY --from=asset-env /app/web/static web/static
+
+RUN addgroup -S app && \
+    adduser -S -g app app && \
+    chown -R app:app opg-sirius-user-management web/template web/static
+USER app
 ENTRYPOINT ["./opg-sirius-user-management"]
