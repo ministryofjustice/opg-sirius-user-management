@@ -67,10 +67,10 @@ jobs:
         run: |
           echo "$PWD/pact/bin" >> $GITHUB_PATH
       - name: Download pact tools
-        if: steps.cache-pact.outputs.cache-hit != 'true'
+        # if: steps.cache-pact.outputs.cache-hit != 'true'
         run: |
-          curl -LO https://github.com/pact-foundation/pact-ruby-standalone/releases/download/v1.88.6/pact-1.88.6-linux-x86_64.tar.gz
-          tar xzf pact-1.88.6-linux-x86_64.tar.gz
+          curl -LO https://github.com/pact-foundation/pact-ruby-standalone/releases/download/v1.88.79/pact-1.88.79-linux-x86_64.tar.gz
+          tar xzf pact-1.88.79-linux-x86_64.tar.gz
           echo "$PWD/pact/bin" >> $GITHUB_PATH
 
       - name: Run Tests
