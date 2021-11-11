@@ -85,8 +85,10 @@ jobs:
         run: |
           if [ $GITHUB_EVENT_NAME == "pull_request" ]; then
               echo "::set-output name=TAG::${{github.event.pull_request.head.sha}}"
+              echo "::set-output name=BRANCH::${{github.head_ref}}"
           else
               echo "::set-output name=TAG::${{github.sha}}"
+              echo "::set-output name=BRANCH::main"
           fi
       - name: Publish pacts
         if: github.actor != 'dependabot[bot]'
@@ -95,7 +97,7 @@ jobs:
           PACT_BROKER_URL: https://pact-broker.api.opg.service.justice.gov.uk
           PACT_BROKER_USERNAME: admin
           PACT_BROKER_PASSWORD: ${{ secrets.PACT_BROKER_PASSWORD }}
-        run: PACT_TAG=${{ github.head_ref }} PACT_CONSUMER_VERSION=${{ steps.pact_tag.outputs.TAG }} go run internal/pact/publish.go
+        run: PACT_TAG=${{ steps.pact_tag.outputs.BRANCH }} PACT_CONSUMER_VERSION=${{ steps.pact_tag.outputs.TAG }} go run internal/pact/publish.go
       - name: Compare pacts
         if: github.actor == 'dependabot[bot]'
         env:
