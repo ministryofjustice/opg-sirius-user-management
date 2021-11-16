@@ -26,9 +26,9 @@ jobs:
           key: ${{ runner.os }}-images-${{ github.run_id }}-${{ github.run_number }}
       - name: Build Images
         run: |
-          docker-compose -f docker/docker-compose.ci.yml build --parallel app pact-stub
+          make build
           mkdir -p /tmp/images
-          docker save -o /tmp/images/app.tar docker_app:latest
+          docker save -o /tmp/images/app.tar sirius-user-management:latest
           docker save -o /tmp/images/pact-stub.tar docker_pact-stub:latest
 
   test:
@@ -145,11 +145,6 @@ jobs:
         with:
           name: pacts
           path: ./pacts
-      - name: Retrieve pact
-        run: |
-          docker container create --name temp -v pacts_data:/root hello-world
-          docker cp ./pacts/ignored-ignored.json temp:/root/ignored-ignored.json
-          docker cp ./pacts/sirius-user-management-sirius.json temp:/root/sirius-user-management-sirius.json
 
       - name: Restore images
         run: |
@@ -158,11 +153,11 @@ jobs:
 
       - name: Run pa11y
         run: |
-          docker-compose -f docker/docker-compose.ci.yml run --entrypoint="pa11y-ci" puppeteer
+          make pa11y
 
       - name: Run Lighthouse
         run: |
-          docker-compose -f docker/docker-compose.ci.yml run --entrypoint="lhci autorun" puppeteer
+          make lighthouse
 
   cypress:
     name: Cypress
@@ -182,11 +177,6 @@ jobs:
         with:
           name: pacts
           path: ./pacts
-      - name: Retrieve pact
-        run: |
-          docker container create --name temp -v pacts_data:/root hello-world
-          docker cp ./pacts/ignored-ignored.json temp:/root/ignored-ignored.json
-          docker cp ./pacts/sirius-user-management-sirius.json temp:/root/sirius-user-management-sirius.json
 
       - name: Restore images
         run: |
@@ -195,7 +185,7 @@ jobs:
 
       - name: Run cypress
         run: |
-          docker-compose -f docker/docker-compose.ci.yml run cypress
+          make cypress
 
   push:
     name: "Build & Push Containers"
@@ -228,10 +218,20 @@ jobs:
       - name: Restore Image
         run: |
           docker load -i /tmp/images/app.tar
-          docker tag docker_app:latest sirius-user-management:latest
-      - name: Scan
-        run: |
-          docker run --rm  -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy sirius-user-management:latest
+
+      - name: Trivy Image Vulnerability Scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: sirius-user-management:latest
+          format: 'template'
+          template: '@/contrib/sarif.tpl'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v1
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
 
       - name: Bump version
         id: bump_version
