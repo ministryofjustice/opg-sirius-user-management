@@ -24,7 +24,7 @@ COPY . .
 
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o /go/bin/opg-sirius-user-management
 
-FROM alpine:3.14.2
+FROM alpine:3.15.0
 
 WORKDIR /go/bin
 
