@@ -13,7 +13,6 @@ type ListTeamsClient interface {
 
 type listTeamsVars struct {
 	Path      string
-	XSRFToken string
 	Search    string
 	Teams     []sirius.Team
 }
@@ -51,7 +50,6 @@ func listTeams(client ListTeamsClient, tmpl Template) Handler {
 
 		vars := listTeamsVars{
 			Path:      r.URL.Path,
-			XSRFToken: ctx.XSRFToken,
 			Search:    search,
 			Teams:     teams,
 		}
