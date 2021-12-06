@@ -11,7 +11,7 @@ COPY yarn.lock .
 
 RUN yarn && yarn build
 
-FROM golang:1.17.3 as build-env
+FROM golang:1.17.4 as build-env
 
 WORKDIR /app
 
