@@ -39,8 +39,7 @@ func readInteractions(dir string) ([]Interaction, error) {
 		if err != nil {
 			return nil, fmt.Errorf("opening %s: %w", path, err)
 		}
-		/* #nosec */
-		defer file.Close()
+		defer file.Close() // #nosec
 
 		var v Pacts
 		if err = json.NewDecoder(file).Decode(&v); err != nil {
