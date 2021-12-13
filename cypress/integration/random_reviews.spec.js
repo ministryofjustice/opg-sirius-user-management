@@ -31,7 +31,7 @@ describe("Random Reviews", () => {
 
         cy.get(".hook-proPercentageRow").each(($el) => {
             cy.wrap($el).within(() => {
-                cy.contains(".hook-proPercentageKey", "PRO");
+                cy.contains(".hook-proPercentageKey", "Pro");
                 cy.contains(".hook-proPercentageValue", "0 %");
             });
         });
