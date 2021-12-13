@@ -22,7 +22,6 @@
           </dd>
         </div>
 
-
         <div class="govuk-summary-list__row hook-paPercentageRow">
           <dt class="govuk-summary-list__key hook-paPercentageKey">PA</dt>
           <dd class="govuk-summary-list__value hook-paPercentageValue">{{ .PaPercentage }} %</dd>
@@ -30,6 +29,18 @@
             {{ if true }}
           <a class="govuk-link" id="hook-paPercentageChange" href="{{ prefix "/random-reviews/edit/pa-percentage" }}">
             Change<span class="govuk-visually-hidden"> PA</span>
+          </a>
+            {{ end }}
+          </dd>
+        </div>
+
+        <div class="govuk-summary-list__row hook-proPercentageRow">
+          <dt class="govuk-summary-list__key hook-proPercentageKey">Pro</dt>
+          <dd class="govuk-summary-list__value hook-proPercentageValue">{{ .ProPercentage }} %</dd>
+          <dd class="govuk-summary-list__actions">
+            {{ if true }}
+          <a class="govuk-link" id="hook-proPercentageChange" href="{{ prefix "/random-reviews/edit/pro-percentage" }}">
+            Change<span class="govuk-visually-hidden"> Pro</span>
           </a>
             {{ end }}
           </dd>

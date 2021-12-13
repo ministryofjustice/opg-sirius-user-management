@@ -97,6 +97,10 @@ func New(logger Logger, client Client, templates map[string]*template.Template, 
 		wrap(
 			editRandomReviewSettings(client, templates["random-reviews-edit-pa-percentage.gotmpl"])))
 
+	mux.Handle("/random-reviews/edit/pro-percentage",
+		wrap(
+			editRandomReviewSettings(client, templates["random-reviews-edit-pro-percentage.gotmpl"])))
+
 	mux.Handle("/random-reviews/edit/review-cycle",
 		wrap(
 			editRandomReviewSettings(client, templates["random-reviews-edit-review-cycle.gotmpl"])))
