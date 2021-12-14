@@ -16,7 +16,7 @@ describe("Random Reviews", () => {
         cy.get(".hook-paPercentageRow").each(($el) => {
             cy.wrap($el).within(() => {
                 cy.contains(".hook-paPercentageKey", "PA");
-                cy.contains(".hook-paPercentageValue", "30 %");
+                cy.contains(".hook-paPercentageValue", "0 %");
             });
         });
 
@@ -28,6 +28,15 @@ describe("Random Reviews", () => {
                 cy.contains(".hook-reviewCycleValue", "3 year(s)");
             });
         });
+
+        cy.get(".hook-proPercentageRow").each(($el) => {
+            cy.wrap($el).within(() => {
+                cy.contains(".hook-proPercentageKey", "Pro");
+                cy.contains(".hook-proPercentageValue", "0 %");
+            });
+        });
+
+        cy.contains("#hook-proPercentageChange", "Change");
 
         cy.contains("#hook-reviewCycleChange", "Change");
     });
