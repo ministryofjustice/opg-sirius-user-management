@@ -8,7 +8,7 @@
     <div class="govuk-grid-column-two-thirds">
       <h1 class="govuk-heading-xl">Pro cases for random review</h1>
       <form class="form" method="post">
-        <input type="hidden" name="xsrfToken" value="{{ .XSRFToken }}" />
+        <input type="hidden" name="xsrfToken" value="{{ .XSRFToken }}"/>
           <div class="govuk-form-group {{ if .Error }}govuk-form-group--error{{ end }}">
             {{ if .Error }}
               <span id="name-error" class="govuk-error-message">
@@ -16,7 +16,7 @@
               </span>
             {{ end }}
           <div class="govuk-input__wrapper">
-            <input class="govuk-input govuk-!-width-one-tenth" id="f-proPercentage" aria-label="proPercentage" name="proPercentage" value="{{ .ProPercentage}}">
+            <input class="govuk-input govuk-!-width-one-tenth" id="f-proPercentage" aria-label="proPercentage" name="proPercentage" value="{{ .ProPercentage}}"/>
           <div class="govuk-input__suffix" aria-hidden="true">%</div>
           </div>
         </div>
