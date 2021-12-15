@@ -7,7 +7,8 @@ import (
 
 type RandomReviews struct {
 	LayPercentage int `json:"layPercentage"`
-	PaPercentage int `json:"paPercentage"`
+	PaPercentage  int `json:"paPercentage"`
+	ProPercentage int `json:"proPercentage"`
 	ReviewCycle   int `json:"reviewCycle"`
 }
 

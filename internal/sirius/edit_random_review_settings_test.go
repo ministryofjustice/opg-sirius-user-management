@@ -14,10 +14,14 @@ type editLayPercentageBadRequestResponse struct {
 	Detail string `json:"detail" pact:"example=Enter a percentage between 0 and 100 for lay cases"`
 }
 
-
 type editPaPercentageBadRequestResponse struct {
 	Status int    `json:"status" pact:"example=400"`
 	Detail string `json:"detail" pact:"example=Enter a percentage between 0 and 100 for PA cases"`
+}
+
+type editProPercentageBadRequestResponse struct {
+	Status int    `json:"status" pact:"example=400"`
+	Detail string `json:"detail" pact:"example=Enter a percentage between 0 and 100 for Pro cases"`
 }
 
 const UserExists = "User exists"
@@ -39,6 +43,7 @@ func TestEditLayPercentage(t *testing.T) {
 		name          string
 		layPercentage string
 		paPercentage  string
+		proPercentage string
 		reviewCycle   string
 		setup         func()
 		cookies       []*http.Cookie
@@ -48,6 +53,7 @@ func TestEditLayPercentage(t *testing.T) {
 			name:          "Lay percentage - validation errors",
 			layPercentage: "200",
 			paPercentage:  "10",
+			proPercentage: "18",
 			reviewCycle:   "3",
 			setup: func() {
 				pact.
@@ -65,6 +71,7 @@ func TestEditLayPercentage(t *testing.T) {
 						Body: map[string]interface{}{
 							"layPercentage": "200",
 							"paPercentage":  "10",
+							"proPercentage": "18",
 							"reviewCycle":   "3",
 						},
 					}).
@@ -86,6 +93,7 @@ func TestEditLayPercentage(t *testing.T) {
 			name:          "Lay percentage - success",
 			layPercentage: "20",
 			paPercentage:  "10",
+			proPercentage: "18",
 			reviewCycle:   "3",
 			setup: func() {
 				pact.
@@ -104,6 +112,7 @@ func TestEditLayPercentage(t *testing.T) {
 						Body: map[string]interface{}{
 							"layPercentage": "20",
 							"paPercentage":  "10",
+							"proPercentage": "18",
 							"reviewCycle":   "3",
 						},
 					}).
@@ -121,6 +130,7 @@ func TestEditLayPercentage(t *testing.T) {
 			name:          "PA percentage - validation errors",
 			layPercentage: "20",
 			paPercentage:  "1000",
+			proPercentage: "18",
 			reviewCycle:   "3",
 			setup: func() {
 				pact.
@@ -138,6 +148,7 @@ func TestEditLayPercentage(t *testing.T) {
 						Body: map[string]interface{}{
 							"layPercentage": "20",
 							"paPercentage":  "1000",
+							"proPercentage": "18",
 							"reviewCycle":   "3",
 						},
 					}).
@@ -156,9 +167,10 @@ func TestEditLayPercentage(t *testing.T) {
 			},
 		},
 		{
-			name:          "Lay percentage - success",
+			name:          "PA percentage - success",
 			layPercentage: "20",
 			paPercentage:  "50",
+			proPercentage: "18",
 			reviewCycle:   "3",
 			setup: func() {
 				pact.
@@ -177,6 +189,84 @@ func TestEditLayPercentage(t *testing.T) {
 						Body: map[string]interface{}{
 							"layPercentage": "20",
 							"paPercentage":  "50",
+							"proPercentage": "18",
+							"reviewCycle":   "3",
+						},
+					}).
+					WillRespondWith(dsl.Response{
+						Status: http.StatusOK,
+					})
+			},
+			cookies: []*http.Cookie{
+				{Name: "XSRF-TOKEN", Value: "abcde"},
+				{Name: "Other", Value: "other"},
+			},
+			expectedError: nil,
+		},
+		{
+			name:          "PRO percentage - validation errors",
+			layPercentage: "20",
+			paPercentage:  "50",
+			proPercentage: "2000",
+			reviewCycle:   "3",
+			setup: func() {
+				pact.
+					AddInteraction().
+					Given(UserExists).
+					UponReceiving("A request to edit the PRO percentage errors on validation").
+					WithRequest(dsl.Request{
+						Method: http.MethodPost,
+						Path:   dsl.String(UrlRoute),
+						Headers: dsl.MapMatcher{
+							"X-XSRF-TOKEN": dsl.String("abcde"),
+							"Cookie":       dsl.String("XSRF-TOKEN=abcde; Other=other"),
+							BypassMembrane: dsl.String("1"),
+						},
+						Body: map[string]interface{}{
+							"layPercentage": "20",
+							"paPercentage":  "50",
+							"proPercentage": "2000",
+							"reviewCycle":   "3",
+						},
+					}).
+					WillRespondWith(dsl.Response{
+						Status:  http.StatusBadRequest,
+						Headers: dsl.MapMatcher{"Content-Type": dsl.String("application/problem+json")},
+						Body:    dsl.Match(editProPercentageBadRequestResponse{}),
+					})
+			},
+			cookies: []*http.Cookie{
+				{Name: "XSRF-TOKEN", Value: "abcde"},
+				{Name: "Other", Value: "other"},
+			},
+			expectedError: ValidationError{
+				Message: "Enter a percentage between 0 and 100 for Pro cases",
+			},
+		},
+		{
+			name:          "PRO percentage - success",
+			layPercentage: "20",
+			paPercentage:  "50",
+			proPercentage: "18",
+			reviewCycle:   "3",
+			setup: func() {
+				pact.
+					AddInteraction().
+					Given(UserExists).
+					UponReceiving("A request to edit the PRO percentage").
+					WithRequest(dsl.Request{
+						Method: http.MethodPost,
+						Path:   dsl.String(UrlRoute),
+						Headers: dsl.MapMatcher{
+							"Content-type": dsl.String("application/json"),
+							"X-XSRF-TOKEN": dsl.String("abcde"),
+							"Cookie":       dsl.String("XSRF-TOKEN=abcde; Other=other"),
+							BypassMembrane: dsl.String("1"),
+						},
+						Body: map[string]interface{}{
+							"layPercentage": "20",
+							"paPercentage":  "50",
+							"proPercentage": "18",
 							"reviewCycle":   "3",
 						},
 					}).
@@ -194,6 +284,7 @@ func TestEditLayPercentage(t *testing.T) {
 			name:          "Review cycle - success",
 			layPercentage: "20",
 			paPercentage:  "50",
+			proPercentage: "18",
 			reviewCycle:   "5",
 			setup: func() {
 				pact.
@@ -212,6 +303,7 @@ func TestEditLayPercentage(t *testing.T) {
 						Body: map[string]interface{}{
 							"layPercentage": "20",
 							"paPercentage":  "50",
+							"proPercentage": "18",
 							"reviewCycle":   "5",
 						},
 					}).
@@ -229,6 +321,7 @@ func TestEditLayPercentage(t *testing.T) {
 			name:          "Unauthorized",
 			layPercentage: "20",
 			paPercentage:  "10",
+			proPercentage: "18",
 			reviewCycle:   "3",
 			setup: func() {
 				pact.
@@ -244,6 +337,7 @@ func TestEditLayPercentage(t *testing.T) {
 						Body: map[string]interface{}{
 							"layPercentage": "20",
 							"paPercentage":  "10",
+							"proPercentage": "18",
 							"reviewCycle":   "3",
 						},
 					}).
@@ -261,7 +355,7 @@ func TestEditLayPercentage(t *testing.T) {
 
 			assert.Nil(t, pact.Verify(func() error {
 				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
-				data := EditRandomReview{tc.layPercentage, tc.paPercentage, tc.reviewCycle}
+				data := EditRandomReview{tc.layPercentage, tc.paPercentage, tc.proPercentage, tc.reviewCycle}
 
 				err := client.EditRandomReviewSettings(getContext(tc.cookies), data)
 
@@ -278,7 +372,7 @@ func TestEditLayPercentageStatusError(t *testing.T) {
 
 	client, _ := NewClient(http.DefaultClient, s.URL)
 
-	err := client.EditRandomReviewSettings(getContext(nil), EditRandomReview{"3", "10", "20"})
+	err := client.EditRandomReviewSettings(getContext(nil), EditRandomReview{"3", "10", "18", "20"})
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
 		URL:    s.URL + UrlRoute,

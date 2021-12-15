@@ -8,7 +8,8 @@ import (
 
 type EditRandomReview struct {
 	LayPercentage string `json:"layPercentage"`
-	PaPercentage string `json:"paPercentage"`
+	PaPercentage  string `json:"paPercentage"`
+	ProPercentage string `json:"proPercentage"`
 	ReviewCycle   string `json:"reviewCycle"`
 }
 
