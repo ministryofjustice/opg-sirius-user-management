@@ -17,6 +17,7 @@ type editRandomReviewSettingsVars struct {
 	XSRFToken     string
 	LayPercentage int
 	PaPercentage  int
+	ProPercentage int
 	ReviewCycle   int
 	Errors        sirius.ValidationErrors
 	Error         string
@@ -44,6 +45,7 @@ func editRandomReviewSettings(client EditRandomReviewSettingsClient, tmpl Templa
 
 			vars.LayPercentage = randomReviews.LayPercentage
 			vars.PaPercentage = randomReviews.PaPercentage
+			vars.ProPercentage = randomReviews.ProPercentage
 			vars.ReviewCycle = randomReviews.ReviewCycle
 
 			return tmpl.ExecuteTemplate(w, "page", vars)
@@ -56,6 +58,7 @@ func editRandomReviewSettings(client EditRandomReviewSettingsClient, tmpl Templa
 			if verr, ok := err.(sirius.ValidationError); ok {
 				vars.LayPercentage = randomReviewSettings.LayPercentage
 				vars.PaPercentage = randomReviewSettings.PaPercentage
+				vars.ProPercentage = randomReviewSettings.ProPercentage
 				vars.ReviewCycle = randomReviewSettings.ReviewCycle
 				vars.Errors = verr.Errors
 				vars.Error = verr.Message
@@ -84,6 +87,11 @@ func formValueOrExisting(r *http.Request, existing sirius.RandomReviews) sirius.
 		paPercentage = strconv.Itoa(existing.PaPercentage)
 	}
 
+	proPercentage := r.PostFormValue("proPercentage")
+	if proPercentage == "" {
+		proPercentage = strconv.Itoa(existing.ProPercentage)
+	}
+
 	reviewCycle := r.PostFormValue("reviewCycle")
 	if reviewCycle == "" {
 		reviewCycle = strconv.Itoa(existing.ReviewCycle)
@@ -91,7 +99,8 @@ func formValueOrExisting(r *http.Request, existing sirius.RandomReviews) sirius.
 
 	return sirius.EditRandomReview{
 		LayPercentage: layPercentage,
-		PaPercentage: paPercentage,
-		ReviewCycle: reviewCycle,
+		PaPercentage:  paPercentage,
+		ProPercentage: proPercentage,
+		ReviewCycle:   reviewCycle,
 	}
 }
