@@ -139,6 +139,7 @@ func New(logger Logger, client Client, templates map[string]*template.Template, 
 
 func securityHeaders(h http.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Content-Security-Policy", "default-src 'self'")
 		w.Header().Add("Referrer-Policy", "same-origin")
 		w.Header().Add("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload")
 		w.Header().Add("X-Content-Type-Options", "nosniff")
