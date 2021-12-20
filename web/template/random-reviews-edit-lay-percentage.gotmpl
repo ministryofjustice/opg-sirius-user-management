@@ -18,9 +18,9 @@
           <div class="govuk-form-group {{ if .Error }}govuk-form-group--error{{ end }}">
 
             {{ if .Error }}
-              <span id="name-error" class="govuk-error-message">
+              <p id="name-error" class="govuk-error-message">
                 <span class="govuk-visually-hidden">Error:</span> {{ .Error }}
-              </span>
+              </p>
             {{ end }}
 
           <div class="govuk-input__wrapper">
