@@ -26,14 +26,14 @@
           </label>
 
           {{ range .Errors.phoneNumber }}
-            <span id="name-error" class="govuk-error-message">
+            <p id="name-error" class="govuk-error-message">
               <span class="govuk-visually-hidden">Error:</span> {{ . }}
-            </span>
+            </p>
           {{ end }}
 
           <input class="govuk-input govuk-!-width-two-thirds" id="f-phonenumber" name="phonenumber" type="text" value="{{ .PhoneNumber }}">
         </div>
-        
+
         <button type="submit" class="govuk-button" data-module="govuk-button">
           Save changes
         </button>
