@@ -47,9 +47,9 @@
           </label>
 
           {{ range .Errors.name }}
-            <span class="govuk-error-message">
+            <p class="govuk-error-message">
               <span class="govuk-visually-hidden">Error:</span> {{ . }}
-            </span>
+            </p>
           {{ end }}
 
           <input class="govuk-input {{ if .Errors.name }}govuk-input--error{{ end }}" id="f-name" name="name" type="text" value="{{ .Team.DisplayName }}">
@@ -62,9 +62,9 @@
             </legend>
 
             {{ range .Errors.type }}
-              <span class="govuk-error-message">
+              <p class="govuk-error-message">
                 <span class="govuk-visually-hidden">Error:</span> {{ . }}
-              </span>
+              </p>
             {{ end }}
 
             <div class="govuk-radios govuk-radios--conditional" data-module="govuk-radios">
@@ -104,9 +104,9 @@
           </label>
 
           {{ range .Errors.phoneNumber }}
-            <span class="govuk-error-message">
+            <p class="govuk-error-message">
               <span class="govuk-visually-hidden">Error:</span> {{ . }}
-            </span>
+            </p>
           {{ end }}
 
           <input class="govuk-input govuk-!-width-one-third {{ if .Errors.phoneNumber }}govuk-input--error{{ end }}" id="f-phoneNumber" name="phone" type="text" value="{{ .Team.PhoneNumber }}">
@@ -118,9 +118,9 @@
           </label>
 
           {{ range .Errors.email }}
-            <span class="govuk-error-message">
+            <p class="govuk-error-message">
               <span class="govuk-visually-hidden">Error:</span> {{ . }}
-            </span>
+            </p>
           {{ end }}
 
           <input class="govuk-input govuk-!-width-two-thirds {{ if .Errors.email }}govuk-input--error{{ end }}" id="f-email" name="email" type="email" value="{{ .Team.Email }}">
