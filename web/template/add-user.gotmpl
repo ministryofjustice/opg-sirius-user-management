@@ -19,13 +19,13 @@
 
       <form class="form" action="{{ prefix "/add-user" }}" method="post">
         <input type="hidden" name="xsrfToken" value="{{ .XSRFToken }}" />
-        
+
         <div class="govuk-form-group {{ if .Errors.email }}govuk-form-group--error{{ end }}">
           <label class="govuk-label" for="f-email">Email address</label>
           {{ range .Errors.email }}
-            <span class="govuk-error-message">
+            <p class="govuk-error-message">
               <span class="govuk-visually-hidden">Error:</span> {{ . }}
-            </span>
+            </p>
           {{ end }}
           <input class="govuk-input {{ if .Errors.email }}govuk-input--error{{ end }}" id="f-email" name="email" type="text">
         </div>
@@ -33,9 +33,9 @@
         <div class="govuk-form-group {{ if .Errors.firstname }}govuk-form-group--error{{ end }}">
           <label class="govuk-label" for="f-firstname">First name</label>
           {{ range .Errors.firstname }}
-            <span class="govuk-error-message">
+            <p class="govuk-error-message">
               <span class="govuk-visually-hidden">Error:</span> {{ . }}
-            </span>
+            </p>
           {{ end }}
           <input class="govuk-input govuk-!-width-two-thirds {{ if .Errors.firstname }}govuk-input--error{{ end }}" id="f-firstname" name="firstname" type="text" autocomplete="name" spellcheck="false">
         </div>
@@ -43,9 +43,9 @@
         <div class="govuk-form-group {{ if .Errors.surname }}govuk-form-group--error{{ end }}">
           <label class="govuk-label" for="f-surname">Last name</label>
           {{ range .Errors.surname }}
-            <span class="govuk-error-message">
+            <p class="govuk-error-message">
               <span class="govuk-visually-hidden">Error:</span> {{ . }}
-            </span>
+            </p>
           {{ end }}
           <input class="govuk-input govuk-!-width-two-thirds {{ if .Errors.surname }}govuk-input--error{{ end }}" id="f-surname" name="surname" type="text" autocomplete="name" spellcheck="false">
         </div>
@@ -63,7 +63,7 @@
               <div class="govuk-radios__item">
                 <input class="govuk-radios__input" id="f-organisation-2" name="organisation" type="radio" value="OPG User" checked>
                 <label class="govuk-label govuk-radios__label" for="f-organisation-2">
-                  OPG 
+                  OPG
                 </label>
               </div>
             </div>
@@ -76,11 +76,11 @@
             <div id="f-roles-item-hint" class="govuk-hint">
               Select one or more roles
             </div>
-            
+
             {{ range .Errors.roles }}
-              <span class="govuk-error-message">
+              <p class="govuk-error-message">
                 <span class="govuk-visually-hidden">Error:</span> {{ . }}
-              </span>
+              </p>
             {{ end }}
 
             <div class="govuk-checkboxes govuk-checkboxes--small">
