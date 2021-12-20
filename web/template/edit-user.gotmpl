@@ -75,9 +75,9 @@
         <div class="govuk-form-group {{ if .Errors.firstname }}govuk-form-group--error{{ end }}">
           <label class="govuk-label" for="f-firstname">First name</label>
           {{ range .Errors.firstname }}
-            <span class="govuk-error-message">
+            <p class="govuk-error-message">
               <span class="govuk-visually-hidden">Error:</span> {{ . }}
-            </span>
+            </p>
           {{ end }}
           <input class="govuk-input govuk-!-width-two-thirds {{ if .Errors.firstname }}govuk-input--error{{ end }}" id="f-firstname" name="firstname" type="text" autocomplete="name" spellcheck="false" value="{{ .User.Firstname }}">
         </div>
@@ -85,9 +85,9 @@
         <div class="govuk-form-group {{ if .Errors.surname }}govuk-form-group--error{{ end }}">
           <label class="govuk-label" for="f-surname">Last name</label>
           {{ range .Errors.surname }}
-            <span class="govuk-error-message">
+            <p class="govuk-error-message">
               <span class="govuk-visually-hidden">Error:</span> {{ . }}
-            </span>
+            </p>
           {{ end }}
           <input class="govuk-input govuk-!-width-two-thirds {{ if .Errors.surname }}govuk-input--error{{ end }}" id="f-surname" name="surname" type="text" autocomplete="name" spellcheck="false" value="{{ .User.Surname }}">
         </div>
@@ -132,9 +132,9 @@
           <fieldset class="govuk-fieldset">
             <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">Roles</legend>
             {{ range .Errors.roles }}
-              <span class="govuk-error-message">
+              <p class="govuk-error-message">
                 <span class="govuk-visually-hidden">Error:</span> {{ . }}
-              </span>
+              </p>
             {{ end }}
 
             <div class="govuk-checkboxes govuk-checkboxes--small">
