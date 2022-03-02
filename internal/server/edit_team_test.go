@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -8,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
+	"github.com/ministryofjustice/opg-sirius-user-management/tbd/handler"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -75,12 +77,13 @@ func TestGetEditTeam(t *testing.T) {
 			Label:  "Test type",
 		},
 	}
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/teams/edit/123", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := editTeam(client, template)(client.requiredPermissions(), w, r)
+	err := editTeam(client, template.Func())(w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.team.count)
@@ -91,7 +94,6 @@ func TestGetEditTeam(t *testing.T) {
 	assert.Equal(0, client.editTeam.count)
 
 	assert.Equal(1, template.count)
-	assert.Equal("page", template.lastName)
 	assert.Equal(editTeamVars{
 		Path:            "/teams/edit/123",
 		Team:            client.team.data,
@@ -105,9 +107,10 @@ func TestGetEditTeamNoPermission(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, sirius.PermissionSet{}))
 
-	err := editTeam(nil, nil)(sirius.PermissionSet{}, w, r)
-	assert.Equal(StatusError(http.StatusForbidden), err)
+	err := editTeam(nil, nil)(w, r)
+	assert.Equal(handler.Status(http.StatusForbidden), err)
 }
 
 func TestGetEditTeamWithoutTypeEditPermission(t *testing.T) {
@@ -121,14 +124,15 @@ func TestGetEditTeamWithoutTypeEditPermission(t *testing.T) {
 			Label:  "Test type",
 		},
 	}
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/teams/edit/123", nil)
-
-	err := editTeam(client, template)(sirius.PermissionSet{
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, sirius.PermissionSet{
 		"v1-teams": sirius.PermissionGroup{Permissions: []string{"put"}},
-	}, w, r)
+	}))
+
+	err := editTeam(client, template.Func())(w, r)
 	assert.Nil(err)
 
 	assert.Equal(editTeamVars{
@@ -149,16 +153,16 @@ func TestGetEditTeamWithDeletePermission(t *testing.T) {
 			Label:  "Test type",
 		},
 	}
-	template := &mockTemplate{}
-
-	w := httptest.NewRecorder()
-	r, _ := http.NewRequest("GET", "/teams/edit/123", nil)
-
+	template := &mockTemplateFn{}
 	permissions := sirius.PermissionSet{
 		"v1-teams": sirius.PermissionGroup{Permissions: []string{"put", "post", "delete"}},
 	}
 
-	err := editTeam(client, template)(permissions, w, r)
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("GET", "/teams/edit/123", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, permissions))
+
+	err := editTeam(client, template.Func())(w, r)
 	assert.Nil(err)
 
 	assert.Equal(editTeamVars{
@@ -181,13 +185,14 @@ func TestGetEditTeamBadPath(t *testing.T) {
 
 			client := &mockEditTeamClient{}
 			client.team.data = sirius.Team{DisplayName: "Complaints team"}
-			template := &mockTemplate{}
+			template := &mockTemplateFn{}
 
 			r, _ := http.NewRequest("GET", path, nil)
+			r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-			err := editTeam(client, template)(client.requiredPermissions(), nil, r)
+			err := editTeam(client, template.Func())(nil, r)
 
-			assert.Equal(StatusError(http.StatusNotFound), err)
+			assert.Equal(handler.Status(http.StatusNotFound), err)
 
 			assert.Equal(0, client.team.count)
 			assert.Equal(0, client.editTeam.count)
@@ -208,13 +213,14 @@ func TestPostEditTeam(t *testing.T) {
 		PhoneNumber: "01234",
 	}
 	client.teamTypes.data = []sirius.RefDataTeamType{}
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/teams/edit/123", strings.NewReader("name=New+name&service=supervision&supervision-type=FINANCE&email=new@opgtest.com&phone=9876"))
 	r.Header.Add("Content-type", "application/x-www-form-urlencoded")
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := editTeam(client, template)(client.requiredPermissions(), w, r)
+	err := editTeam(client, template.Func())(w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.team.count)
@@ -224,7 +230,6 @@ func TestPostEditTeam(t *testing.T) {
 	assert.Equal("New name", client.editTeam.lastTeam.DisplayName)
 
 	assert.Equal(1, template.count)
-	assert.Equal("page", template.lastName)
 	assert.Equal(editTeamVars{
 		Path: "/teams/edit/123",
 		Team: sirius.Team{
@@ -251,13 +256,14 @@ func TestPostEditLpaTeam(t *testing.T) {
 		Email:       "complaint@opgtest.com",
 		PhoneNumber: "01234",
 	}
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/teams/edit/123", strings.NewReader("name=New+name&service=lpa&email=new@opgtest.com&phone=9876"))
 	r.Header.Add("Content-type", "application/x-www-form-urlencoded")
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := editTeam(client, template)(client.requiredPermissions(), w, r)
+	err := editTeam(client, template.Func())(w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.team.count)
@@ -267,7 +273,6 @@ func TestPostEditLpaTeam(t *testing.T) {
 	assert.Equal("New name", client.editTeam.lastTeam.DisplayName)
 
 	assert.Equal(1, template.count)
-	assert.Equal("page", template.lastName)
 	assert.Equal(editTeamVars{
 		Path: "/teams/edit/123",
 		Team: sirius.Team{
@@ -295,15 +300,16 @@ func TestPostEditTeamWithoutPermission(t *testing.T) {
 		PhoneNumber: "01234",
 	}
 	client.teamTypes.data = []sirius.RefDataTeamType{}
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/teams/edit/123", strings.NewReader("name=New+name&service=lpa&email=new@opgtest.com&phone=9876"))
 	r.Header.Add("Content-type", "application/x-www-form-urlencoded")
-
-	err := editTeam(client, template)(sirius.PermissionSet{
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, sirius.PermissionSet{
 		"v1-teams": sirius.PermissionGroup{Permissions: []string{"put"}},
-	}, w, r)
+	}))
+
+	err := editTeam(client, template.Func())(w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.editTeam.count)
@@ -343,19 +349,19 @@ func TestPostEditTeamValidationError(t *testing.T) {
 	client.editTeam.err = &sirius.ValidationError{
 		Errors: validationErrors,
 	}
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/teams/edit/123", strings.NewReader("name=New+name&service=supervision&supervision-type=FINANCE&email=new@opgtest.com&phone=9876"))
 	r.Header.Add("Content-type", "application/x-www-form-urlencoded")
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := editTeam(client, template)(client.requiredPermissions(), w, r)
+	err := editTeam(client, template.Func())(w, r)
 	assert.Nil(err)
 
 	assert.Equal(http.StatusBadRequest, w.Result().StatusCode)
 
 	assert.Equal(1, template.count)
-	assert.Equal("page", template.lastName)
 	assert.Equal(editTeamVars{
 		Path: "/teams/edit/123",
 		Team: sirius.Team{
@@ -380,12 +386,13 @@ func TestPostEditTeamOtherError(t *testing.T) {
 		DisplayName: "Complaints team",
 	}
 	client.editTeam.err = expectedErr
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/teams/edit/123", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := editTeam(client, template)(client.requiredPermissions(), w, r)
+	err := editTeam(client, template.Func())(w, r)
 
 	assert.Equal(expectedErr, err)
 
@@ -396,15 +403,16 @@ func TestPostEditTeamRetrieveError(t *testing.T) {
 	assert := assert.New(t)
 
 	client := &mockEditTeamClient{}
-	client.team.err = StatusError(http.StatusNotFound)
-	template := &mockTemplate{}
+	client.team.err = handler.Status(http.StatusNotFound)
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/teams/edit/123", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := editTeam(client, template)(client.requiredPermissions(), w, r)
+	err := editTeam(client, template.Func())(w, r)
 
-	assert.Equal(StatusError(http.StatusNotFound), err)
+	assert.Equal(handler.Status(http.StatusNotFound), err)
 
 	assert.Equal(0, client.editTeam.count)
 	assert.Equal(0, template.count)
@@ -414,15 +422,16 @@ func TestPostEditTeamRefDataError(t *testing.T) {
 	assert := assert.New(t)
 
 	client := &mockEditTeamClient{}
-	client.teamTypes.err = StatusError(http.StatusNotFound)
-	template := &mockTemplate{}
+	client.teamTypes.err = handler.Status(http.StatusNotFound)
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/teams/edit/123", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := editTeam(client, template)(client.requiredPermissions(), w, r)
+	err := editTeam(client, template.Func())(w, r)
 
-	assert.Equal(StatusError(http.StatusNotFound), err)
+	assert.Equal(handler.Status(http.StatusNotFound), err)
 
 	assert.Equal(0, client.editTeam.count)
 	assert.Equal(0, template.count)
@@ -435,13 +444,14 @@ func TestBadMethodEditTeam(t *testing.T) {
 	client.team.data = sirius.Team{
 		DisplayName: "Complaints team",
 	}
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	r, _ := http.NewRequest("DELETE", "/teams/edit/123", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := editTeam(client, template)(client.requiredPermissions(), nil, r)
+	err := editTeam(client, template.Func())(nil, r)
 
-	assert.Equal(StatusError(http.StatusMethodNotAllowed), err)
+	assert.Equal(handler.Status(http.StatusMethodNotAllowed), err)
 
 	assert.Equal(0, client.editTeam.count)
 	assert.Equal(0, template.count)

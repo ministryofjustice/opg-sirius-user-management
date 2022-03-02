@@ -1,12 +1,14 @@
 package server
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
+	"github.com/ministryofjustice/opg-sirius-user-management/tbd/handler"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -52,12 +54,13 @@ func TestGetDeleteUser(t *testing.T) {
 
 	client := &mockDeleteUserClient{}
 	client.user.data = sirius.AuthUser{Firstname: "test"}
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/delete-user/123", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := deleteUser(client, template)(client.requiredPermissions(), w, r)
+	err := deleteUser(client, template.Func())(w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.user.count)
@@ -65,7 +68,6 @@ func TestGetDeleteUser(t *testing.T) {
 	assert.Equal(0, client.deleteUser.count)
 
 	assert.Equal(1, template.count)
-	assert.Equal("page", template.lastName)
 	assert.Equal(deleteUserVars{
 		Path: "/delete-user/123",
 		User: client.user.data,
@@ -77,9 +79,10 @@ func TestGetDeleteUserNoPermission(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, sirius.PermissionSet{}))
 
-	err := deleteUser(nil, nil)(sirius.PermissionSet{}, w, r)
-	assert.Equal(StatusError(http.StatusForbidden), err)
+	err := deleteUser(nil, nil)(w, r)
+	assert.Equal(handler.Status(http.StatusForbidden), err)
 }
 
 func TestGetDeleteUserError(t *testing.T) {
@@ -89,12 +92,13 @@ func TestGetDeleteUserError(t *testing.T) {
 
 	client := &mockDeleteUserClient{}
 	client.user.err = expectedError
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/delete-user/123", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := deleteUser(client, template)(client.requiredPermissions(), w, r)
+	err := deleteUser(client, template.Func())(w, r)
 	assert.Equal(expectedError, err)
 
 	assert.Equal(1, client.user.count)
@@ -112,13 +116,14 @@ func TestGetDeleteUserBadPath(t *testing.T) {
 			assert := assert.New(t)
 
 			client := &mockDeleteUserClient{}
-			template := &mockTemplate{}
+			template := &mockTemplateFn{}
 
 			w := httptest.NewRecorder()
 			r, _ := http.NewRequest("GET", path, nil)
+			r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-			err := deleteUser(client, template)(client.requiredPermissions(), w, r)
-			assert.Equal(StatusError(http.StatusNotFound), err)
+			err := deleteUser(client, template.Func())(w, r)
+			assert.Equal(handler.Status(http.StatusNotFound), err)
 
 			assert.Equal(0, client.user.count)
 			assert.Equal(0, client.deleteUser.count)
@@ -132,12 +137,13 @@ func TestPostDeleteUser(t *testing.T) {
 
 	client := &mockDeleteUserClient{}
 	client.user.data = sirius.AuthUser{Firstname: "test", Surname: "user", Email: "user@opgtest.com"}
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/delete-user/123", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := deleteUser(client, template)(client.requiredPermissions(), w, r)
+	err := deleteUser(client, template.Func())(w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.deleteUser.count)
@@ -159,19 +165,19 @@ func TestPostDeleteUserClientError(t *testing.T) {
 
 	client := &mockDeleteUserClient{}
 	client.deleteUser.err = sirius.ClientError("problem")
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/delete-user/123", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := deleteUser(client, template)(client.requiredPermissions(), w, r)
+	err := deleteUser(client, template.Func())(w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.deleteUser.count)
 	assert.Equal(1, client.user.count)
 
 	assert.Equal(1, template.count)
-	assert.Equal("page", template.lastName)
 	assert.Equal(deleteUserVars{
 		Path: "/delete-user/123",
 		User: client.user.data,
@@ -189,12 +195,13 @@ func TestPostDeleteUserOtherError(t *testing.T) {
 	expectedErr := errors.New("oops")
 	client := &mockDeleteUserClient{}
 	client.deleteUser.err = expectedErr
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/delete-user/123", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := deleteUser(client, template)(client.requiredPermissions(), w, r)
+	err := deleteUser(client, template.Func())(w, r)
 	assert.Equal(expectedErr, err)
 
 	assert.Equal(1, client.deleteUser.count)
@@ -208,7 +215,8 @@ func TestPutDeleteUser(t *testing.T) {
 	client := &mockDeleteUserClient{}
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("PUT", "/delete-user/123", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := deleteUser(nil, nil)(client.requiredPermissions(), w, r)
-	assert.Equal(StatusError(http.StatusMethodNotAllowed), err)
+	err := deleteUser(nil, nil)(w, r)
+	assert.Equal(handler.Status(http.StatusMethodNotAllowed), err)
 }

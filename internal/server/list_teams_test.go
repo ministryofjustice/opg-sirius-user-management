@@ -1,12 +1,14 @@
 package server
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
+	"github.com/ministryofjustice/opg-sirius-user-management/tbd/handler"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -42,12 +44,13 @@ func TestListTeams(t *testing.T) {
 	client := &mockListTeamsClient{
 		data: data,
 	}
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := listTeams(client, template)(client.requiredPermissions(), w, r)
+	err := listTeams(client, template.Func())(w, r)
 	assert.Nil(err)
 
 	resp := w.Result()
@@ -57,7 +60,6 @@ func TestListTeams(t *testing.T) {
 	assert.Equal(1, client.count)
 
 	assert.Equal(1, template.count)
-	assert.Equal("page", template.lastName)
 	assert.Equal(listTeamsVars{
 		Path:  "/path",
 		Teams: data,
@@ -69,9 +71,10 @@ func TestListTeamsNoPermission(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, sirius.PermissionSet{}))
 
-	err := listTeams(nil, nil)(sirius.PermissionSet{}, w, r)
-	assert.Equal(StatusError(http.StatusForbidden), err)
+	err := listTeams(nil, nil)(w, r)
+	assert.Equal(handler.Status(http.StatusForbidden), err)
 }
 
 func TestListTeamsSearch(t *testing.T) {
@@ -94,12 +97,13 @@ func TestListTeamsSearch(t *testing.T) {
 	client := &mockListTeamsClient{
 		data: data,
 	}
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path?search=milo", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := listTeams(client, template)(client.requiredPermissions(), w, r)
+	err := listTeams(client, template.Func())(w, r)
 	assert.Nil(err)
 
 	resp := w.Result()
@@ -109,7 +113,6 @@ func TestListTeamsSearch(t *testing.T) {
 	assert.Equal(1, client.count)
 
 	assert.Equal(1, template.count)
-	assert.Equal("page", template.lastName)
 	assert.Equal(listTeamsVars{
 		Path:   "/path",
 		Search: "milo",
@@ -129,12 +132,13 @@ func TestListTeamsError(t *testing.T) {
 
 	expectedErr := errors.New("err")
 	client := &mockListTeamsClient{err: expectedErr}
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/?search=long", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := listTeams(client, template)(client.requiredPermissions(), w, r)
+	err := listTeams(client, template.Func())(w, r)
 
 	assert.Equal(expectedErr, err)
 	assert.Equal(0, template.count)
@@ -146,7 +150,8 @@ func TestPostListTeams(t *testing.T) {
 	client := &mockListTeamsClient{}
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := listTeams(nil, nil)(client.requiredPermissions(), w, r)
-	assert.Equal(StatusError(http.StatusMethodNotAllowed), err)
+	err := listTeams(nil, nil)(w, r)
+	assert.Equal(handler.Status(http.StatusMethodNotAllowed), err)
 }

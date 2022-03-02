@@ -1,12 +1,14 @@
 package server
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
+	"github.com/ministryofjustice/opg-sirius-user-management/tbd/handler"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -36,13 +38,14 @@ func TestGetRandomReviews(t *testing.T) {
 		ReviewCycle:   3,
 	}
 	client := &mockRandomReviewsClient{data: data}
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	handler := randomReviews(client, template)
-	err := handler(client.requiredPermissions(), w, r)
+	handler := randomReviews(client, template.Func())
+	err := handler(w, r)
 	assert.Nil(err)
 
 	resp := w.Result()
@@ -50,7 +53,6 @@ func TestGetRandomReviews(t *testing.T) {
 	assert.Equal(getContext(r), client.lastCtx)
 	assert.Equal(1, client.count)
 	assert.Equal(1, template.count)
-	assert.Equal("page", template.lastName)
 	assert.Equal(randomReviewsVars{
 		Path:          "/path",
 		LayPercentage: 20,
@@ -61,16 +63,16 @@ func TestGetRandomReviews(t *testing.T) {
 func TestGetRandomReviewsUnauthenticated(t *testing.T) {
 	assert := assert.New(t)
 
-	client := &mockRandomReviewsClient{err: StatusError(http.StatusForbidden)}
-	template := &mockTemplate{}
+	client := &mockRandomReviewsClient{err: handler.Status(http.StatusForbidden)}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	handler := randomReviews(client, template)
-	err := handler(sirius.PermissionSet{}, w, r)
+	err := randomReviews(client, template.Func())(w, r)
 
-	assert.Equal(StatusError(http.StatusForbidden), err)
+	assert.Equal(handler.Status(http.StatusForbidden), err)
 
 	assert.Equal(0, template.count)
 }
@@ -78,16 +80,16 @@ func TestGetRandomReviewsUnauthenticated(t *testing.T) {
 func TestGetRandomReviewsMethodNotAllowed(t *testing.T) {
 	assert := assert.New(t)
 
-	client := &mockRandomReviewsClient{err: StatusError(http.StatusMethodNotAllowed)}
-	template := &mockTemplate{}
+	client := &mockRandomReviewsClient{err: handler.Status(http.StatusMethodNotAllowed)}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	handler := randomReviews(client, template)
-	err := handler(client.requiredPermissions(), w, r)
+	err := randomReviews(client, template.Func())(w, r)
 
-	assert.Equal(StatusError(http.StatusMethodNotAllowed), err)
+	assert.Equal(handler.Status(http.StatusMethodNotAllowed), err)
 
 	assert.Equal(0, template.count)
 }
@@ -96,13 +98,14 @@ func TestGetRandomReviewsSiriusErrors(t *testing.T) {
 	assert := assert.New(t)
 
 	client := &mockRandomReviewsClient{err: errors.New("err")}
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	handler := randomReviews(client, template)
-	err := handler(client.requiredPermissions(), w, r)
+	handler := randomReviews(client, template.Func())
+	err := handler(w, r)
 
 	assert.Equal("err", err.Error())
 

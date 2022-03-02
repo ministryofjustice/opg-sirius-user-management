@@ -6,6 +6,8 @@ import (
 	"strings"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
+	"github.com/ministryofjustice/opg-sirius-user-management/tbd/handler"
+	"github.com/ministryofjustice/opg-sirius-user-management/tbd/template"
 )
 
 type ViewTeamClient interface {
@@ -18,19 +20,20 @@ type viewTeamVars struct {
 	Team      sirius.Team
 }
 
-func viewTeam(client ViewTeamClient, tmpl Template) Handler {
-	return func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error {
+func viewTeam(client ViewTeamClient, tmpl template.Template) handler.Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
+		perm := myPermissions(r)
 		if !perm.HasPermission("v1-teams", http.MethodPut) {
-			return StatusError(http.StatusForbidden)
+			return handler.Status(http.StatusForbidden)
 		}
 
 		if r.Method != http.MethodGet {
-			return StatusError(http.StatusMethodNotAllowed)
+			return handler.Status(http.StatusMethodNotAllowed)
 		}
 
 		id, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/teams/"))
 		if err != nil {
-			return StatusError(http.StatusNotFound)
+			return handler.Status(http.StatusNotFound)
 		}
 
 		ctx := getContext(r)
@@ -46,6 +49,6 @@ func viewTeam(client ViewTeamClient, tmpl Template) Handler {
 			Team:      team,
 		}
 
-		return tmpl.ExecuteTemplate(w, "page", vars)
+		return tmpl(w, vars)
 	}
 }
