@@ -4,6 +4,8 @@ import (
 	"net/http"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
+	"github.com/ministryofjustice/opg-sirius-user-management/tbd/handler"
+	"github.com/ministryofjustice/opg-sirius-user-management/tbd/template"
 )
 
 type ListUsersClient interface {
@@ -17,14 +19,16 @@ type listUsersVars struct {
 	Errors sirius.ValidationErrors
 }
 
-func listUsers(client ListUsersClient, tmpl Template) Handler {
-	return func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error {
+func listUsers(client ListUsersClient, tmpl template.Template) handler.Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
+		perm := myPermissions(r)
+
 		if !perm.HasPermission("v1-users", http.MethodPut) {
-			return StatusError(http.StatusForbidden)
+			return handler.Status(http.StatusForbidden)
 		}
 
 		if r.Method != http.MethodGet {
-			return StatusError(http.StatusMethodNotAllowed)
+			return handler.Status(http.StatusMethodNotAllowed)
 		}
 
 		search := r.FormValue("search")
@@ -50,6 +54,6 @@ func listUsers(client ListUsersClient, tmpl Template) Handler {
 			}
 		}
 
-		return tmpl.ExecuteTemplate(w, "page", vars)
+		return tmpl(w, vars)
 	}
 }

@@ -7,6 +7,8 @@ import (
 	"strings"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
+	"github.com/ministryofjustice/opg-sirius-user-management/tbd/handler"
+	"github.com/ministryofjustice/opg-sirius-user-management/tbd/template"
 )
 
 type RemoveTeamMemberClient interface {
@@ -22,23 +24,24 @@ type removeTeamMemberVars struct {
 	Errors    sirius.ValidationErrors
 }
 
-func removeTeamMember(client RemoveTeamMemberClient, tmpl Template) Handler {
-	return func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error {
+func removeTeamMember(client RemoveTeamMemberClient, tmpl template.Template) handler.Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
+		perm := myPermissions(r)
 		if !perm.HasPermission("v1-teams", http.MethodPut) {
-			return StatusError(http.StatusForbidden)
+			return handler.Status(http.StatusForbidden)
 		}
 
 		if r.Method != http.MethodPost {
-			return StatusError(http.StatusMethodNotAllowed)
+			return handler.Status(http.StatusMethodNotAllowed)
 		}
 
 		id, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/teams/remove-member/"))
 		if err != nil {
-			return StatusError(http.StatusNotFound)
+			return handler.Status(http.StatusNotFound)
 		}
 
 		if err := r.ParseForm(); err != nil {
-			return StatusError(http.StatusBadRequest)
+			return handler.Status(http.StatusBadRequest)
 		}
 
 		ctx := getContext(r)
@@ -58,7 +61,7 @@ func removeTeamMember(client RemoveTeamMemberClient, tmpl Template) Handler {
 		for _, id := range r.PostForm["selected[]"] {
 			userID, err := strconv.Atoi(id)
 			if err != nil {
-				return StatusError(http.StatusBadRequest)
+				return handler.Status(http.StatusBadRequest)
 			}
 
 			for _, user := range team.Members {
@@ -90,10 +93,10 @@ func removeTeamMember(client RemoveTeamMemberClient, tmpl Template) Handler {
 			} else if err != nil {
 				return err
 			} else {
-				return RedirectError(fmt.Sprintf("/teams/%d", team.ID))
+				return handler.Redirect(fmt.Sprintf("/teams/%d", team.ID))
 			}
 		}
 
-		return tmpl.ExecuteTemplate(w, "page", vars)
+		return tmpl(w, vars)
 	}
 }

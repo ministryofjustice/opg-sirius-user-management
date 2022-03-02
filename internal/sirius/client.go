@@ -15,6 +15,10 @@ func (e ClientError) Error() string {
 	return string(e)
 }
 
+func (e ClientError) IsUnauthorized() bool {
+	return e == ErrUnauthorized
+}
+
 type ValidationErrors map[string]map[string]string
 
 type ValidationError struct {

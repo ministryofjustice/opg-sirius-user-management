@@ -1,13 +1,14 @@
 package server
 
 import (
-	"fmt"
-	"html/template"
-	"io"
+	"context"
 	"net/http"
 	"net/url"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
+	"github.com/ministryofjustice/opg-sirius-user-management/tbd/handler"
+	"github.com/ministryofjustice/opg-sirius-user-management/tbd/securityheaders"
+	"github.com/ministryofjustice/opg-sirius-user-management/tbd/template"
 )
 
 type Logger interface {
@@ -23,7 +24,7 @@ type Client interface {
 	EditMyDetailsClient
 	EditTeamClient
 	EditUserClient
-	ErrorHandlerClient
+	MyPermissionsClient
 	ListTeamsClient
 	ListUsersClient
 	MyDetailsClient
@@ -34,12 +35,24 @@ type Client interface {
 	EditRandomReviewSettingsClient
 }
 
-type Template interface {
-	ExecuteTemplate(io.Writer, string, interface{}) error
-}
+func New(logger Logger, client Client, templates template.Templates, prefix, siriusPublicURL, webDir string) http.Handler {
+	errorTmpl := templates.Get("error.gotmpl")
 
-func New(logger Logger, client Client, templates map[string]*template.Template, prefix, siriusPublicURL, webDir string) http.Handler {
-	wrap := errorHandler(logger, client, templates["error.gotmpl"], prefix, siriusPublicURL)
+	wrap := handler.New(prefix, siriusPublicURL+"/auth", func(w http.ResponseWriter, r *http.Request, code int, err error) {
+		logger.Request(r, err)
+
+		err = errorTmpl(w, errorVars{
+			SiriusURL: siriusPublicURL,
+			Path:      "",
+			Code:      code,
+			Error:     err.Error(),
+		})
+
+		if err != nil {
+			logger.Request(r, err)
+			http.Error(w, "Could not generate error template", http.StatusInternalServerError)
+		}
+	}, withMyPermissions(client))
 
 	mux := http.NewServeMux()
 	mux.Handle("/", http.RedirectHandler(prefix+"/my-details", http.StatusFound))
@@ -47,132 +60,95 @@ func New(logger Logger, client Client, templates map[string]*template.Template, 
 
 	mux.Handle("/users",
 		wrap(
-			listUsers(client, templates["users.gotmpl"])))
+			listUsers(client, templates.Get("users.gotmpl"))))
 
 	mux.Handle("/teams",
 		wrap(
-			listTeams(client, templates["teams.gotmpl"])))
+			listTeams(client, templates.Get("teams.gotmpl"))))
 
 	mux.Handle("/teams/",
 		wrap(
-			viewTeam(client, templates["team.gotmpl"])))
+			viewTeam(client, templates.Get("team.gotmpl"))))
 
 	mux.Handle("/teams/add",
 		wrap(
-			addTeam(client, templates["team-add.gotmpl"])))
+			addTeam(client, templates.Get("team-add.gotmpl"))))
 
 	mux.Handle("/teams/edit/",
 		wrap(
-			editTeam(client, templates["team-edit.gotmpl"])))
+			editTeam(client, templates.Get("team-edit.gotmpl"))))
 
 	mux.Handle("/teams/delete/",
 		wrap(
-			deleteTeam(client, templates["team-delete.gotmpl"])))
+			deleteTeam(client, templates.Get("team-delete.gotmpl"))))
 
 	mux.Handle("/teams/add-member/",
 		wrap(
-			addTeamMember(client, templates["team-add-member.gotmpl"])))
+			addTeamMember(client, templates.Get("team-add-member.gotmpl"))))
 
 	mux.Handle("/teams/remove-member/",
 		wrap(
-			removeTeamMember(client, templates["team-remove-member.gotmpl"])))
+			removeTeamMember(client, templates.Get("team-remove-member.gotmpl"))))
 
 	mux.Handle("/my-details",
 		wrap(
-			myDetails(client, templates["my-details.gotmpl"])))
+			myDetails(client, templates.Get("my-details.gotmpl"))))
 
 	mux.Handle("/my-details/edit",
 		wrap(
-			editMyDetails(client, templates["edit-my-details.gotmpl"])))
+			editMyDetails(client, templates.Get("edit-my-details.gotmpl"))))
 
 	mux.Handle("/random-reviews",
 		wrap(
-			randomReviews(client, templates["random-reviews.gotmpl"])))
+			randomReviews(client, templates.Get("random-reviews.gotmpl"))))
 
 	mux.Handle("/random-reviews/edit/lay-percentage",
 		wrap(
-			editRandomReviewSettings(client, templates["random-reviews-edit-lay-percentage.gotmpl"])))
+			editRandomReviewSettings(client, templates.Get("random-reviews-edit-lay-percentage.gotmpl"))))
 
 	mux.Handle("/random-reviews/edit/pa-percentage",
 		wrap(
-			editRandomReviewSettings(client, templates["random-reviews-edit-pa-percentage.gotmpl"])))
+			editRandomReviewSettings(client, templates.Get("random-reviews-edit-pa-percentage.gotmpl"))))
 
 	mux.Handle("/random-reviews/edit/pro-percentage",
 		wrap(
-			editRandomReviewSettings(client, templates["random-reviews-edit-pro-percentage.gotmpl"])))
+			editRandomReviewSettings(client, templates.Get("random-reviews-edit-pro-percentage.gotmpl"))))
 
 	mux.Handle("/random-reviews/edit/review-cycle",
 		wrap(
-			editRandomReviewSettings(client, templates["random-reviews-edit-review-cycle.gotmpl"])))
+			editRandomReviewSettings(client, templates.Get("random-reviews-edit-review-cycle.gotmpl"))))
 
 	mux.Handle("/change-password",
 		wrap(
-			changePassword(client, templates["change-password.gotmpl"])))
+			changePassword(client, templates.Get("change-password.gotmpl"))))
 
 	mux.Handle("/add-user",
 		wrap(
-			addUser(client, templates["add-user.gotmpl"])))
+			addUser(client, templates.Get("add-user.gotmpl"))))
 
 	mux.Handle("/edit-user/",
 		wrap(
-			editUser(client, templates["edit-user.gotmpl"])))
+			editUser(client, templates.Get("edit-user.gotmpl"))))
 
 	mux.Handle("/unlock-user/",
 		wrap(
-			unlockUser(client, templates["unlock-user.gotmpl"])))
+			unlockUser(client, templates.Get("unlock-user.gotmpl"))))
 
 	mux.Handle("/delete-user/",
 		wrap(
-			deleteUser(client, templates["delete-user.gotmpl"])))
+			deleteUser(client, templates.Get("delete-user.gotmpl"))))
 
 	mux.Handle("/resend-confirmation",
 		wrap(
-			resendConfirmation(client, templates["resend-confirmation.gotmpl"])))
+			resendConfirmation(client, templates.Get("resend-confirmation.gotmpl"))))
 
 	static := http.FileServer(http.Dir(webDir + "/static"))
 	mux.Handle("/assets/", static)
 	mux.Handle("/javascript/", static)
 	mux.Handle("/stylesheets/", static)
 
-	return http.StripPrefix(prefix, securityHeaders(mux))
+	return http.StripPrefix(prefix, securityheaders.Use(mux))
 }
-
-func securityHeaders(h http.Handler) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Add("Content-Security-Policy", "default-src 'self'")
-		w.Header().Add("Referrer-Policy", "same-origin")
-		w.Header().Add("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload")
-		w.Header().Add("X-Content-Type-Options", "nosniff")
-		w.Header().Add("X-Frame-Options", "SAMEORIGIN")
-		w.Header().Add("X-XSS-Protection", "1; mode=block")
-
-		h.ServeHTTP(w, r)
-	}
-}
-
-type RedirectError string
-
-func (e RedirectError) Error() string {
-	return "redirect to " + string(e)
-}
-
-func (e RedirectError) To() string {
-	return string(e)
-}
-
-type StatusError int
-
-func (e StatusError) Error() string {
-	code := e.Code()
-
-	return fmt.Sprintf("%d %s", code, http.StatusText(code))
-}
-
-func (e StatusError) Code() int {
-	return int(e)
-}
-
-type Handler func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error
 
 type errorVars struct {
 	SiriusURL string
@@ -182,54 +158,27 @@ type errorVars struct {
 	Error string
 }
 
-type ErrorHandlerClient interface {
+type MyPermissionsClient interface {
 	MyPermissions(sirius.Context) (sirius.PermissionSet, error)
 }
 
-func errorHandler(logger Logger, client ErrorHandlerClient, tmplError Template, prefix, siriusURL string) func(next Handler) http.Handler {
-	return func(next Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+type myPermissionsKey struct{}
+
+func withMyPermissions(client MyPermissionsClient) handler.Middleware {
+	return func(next handler.Handler) handler.Handler {
+		return func(w http.ResponseWriter, r *http.Request) error {
 			myPermissions, err := client.MyPermissions(getContext(r))
-
-			if err == nil {
-				err = next(myPermissions, w, r)
-			}
-
 			if err != nil {
-				if err == sirius.ErrUnauthorized {
-					http.Redirect(w, r, siriusURL+"/auth", http.StatusFound)
-					return
-				}
-
-				if redirect, ok := err.(RedirectError); ok {
-					http.Redirect(w, r, prefix+redirect.To(), http.StatusFound)
-					return
-				}
-
-				logger.Request(r, err)
-
-				code := http.StatusInternalServerError
-				if status, ok := err.(StatusError); ok {
-					if status.Code() == http.StatusForbidden || status.Code() == http.StatusNotFound {
-						code = status.Code()
-					}
-				}
-
-				w.WriteHeader(code)
-				err = tmplError.ExecuteTemplate(w, "page", errorVars{
-					SiriusURL: siriusURL,
-					Path:      "",
-					Code:      code,
-					Error:     err.Error(),
-				})
-
-				if err != nil {
-					logger.Request(r, err)
-					http.Error(w, "Could not generate error template", http.StatusInternalServerError)
-				}
+				return err
 			}
-		})
+
+			return next(w, r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, myPermissions)))
+		}
 	}
+}
+
+func myPermissions(r *http.Request) sirius.PermissionSet {
+	return r.Context().Value(myPermissionsKey{}).(sirius.PermissionSet)
 }
 
 func getContext(r *http.Request) sirius.Context {

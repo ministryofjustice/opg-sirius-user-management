@@ -5,6 +5,8 @@ import (
 	"net/http"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
+	"github.com/ministryofjustice/opg-sirius-user-management/tbd/handler"
+	"github.com/ministryofjustice/opg-sirius-user-management/tbd/template"
 )
 
 type AddTeamClient interface {
@@ -25,10 +27,11 @@ type addTeamVars struct {
 	Errors    sirius.ValidationErrors
 }
 
-func addTeam(client AddTeamClient, tmpl Template) Handler {
-	return func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error {
+func addTeam(client AddTeamClient, tmpl template.Template) handler.Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
+		perm := myPermissions(r)
 		if !perm.HasPermission("v1-teams", http.MethodPost) {
-			return StatusError(http.StatusForbidden)
+			return handler.Status(http.StatusForbidden)
 		}
 
 		ctx := getContext(r)
@@ -46,7 +49,7 @@ func addTeam(client AddTeamClient, tmpl Template) Handler {
 				TeamTypes: teamTypes,
 			}
 
-			return tmpl.ExecuteTemplate(w, "page", vars)
+			return tmpl(w, vars)
 
 		case http.MethodPost:
 			var (
@@ -82,15 +85,15 @@ func addTeam(client AddTeamClient, tmpl Template) Handler {
 				}
 
 				w.WriteHeader(http.StatusBadRequest)
-				return tmpl.ExecuteTemplate(w, "page", vars)
+				return tmpl(w, vars)
 			} else if err != nil {
 				return err
 			}
 
-			return RedirectError(fmt.Sprintf("/teams/%d", id))
+			return handler.Redirect(fmt.Sprintf("/teams/%d", id))
 
 		default:
-			return StatusError(http.StatusMethodNotAllowed)
+			return handler.Status(http.StatusMethodNotAllowed)
 		}
 	}
 }
