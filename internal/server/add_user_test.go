@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -8,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
+	"github.com/ministryofjustice/opg-sirius-user-management/tbd/handler"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -57,12 +59,13 @@ func TestGetAddUser(t *testing.T) {
 	assert := assert.New(t)
 
 	client := &mockAddUserClient{}
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := addUser(client, template)(client.requiredPermissions(), w, r)
+	err := addUser(client, template.Func())(w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.roles.count)
@@ -71,7 +74,6 @@ func TestGetAddUser(t *testing.T) {
 	assert.Equal(0, client.addUser.count)
 
 	assert.Equal(1, template.count)
-	assert.Equal("page", template.lastName)
 	assert.Equal(addUserVars{
 		Path:  "/path",
 		Roles: []string{"System Admin", "Manager"},
@@ -83,22 +85,24 @@ func TestGetAddUserNoPermission(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, sirius.PermissionSet{}))
 
-	err := addUser(nil, nil)(sirius.PermissionSet{}, w, r)
-	assert.Equal(StatusError(http.StatusForbidden), err)
+	err := addUser(nil, nil)(w, r)
+	assert.Equal(handler.Status(http.StatusForbidden), err)
 }
 
 func TestPostAddUser(t *testing.T) {
 	assert := assert.New(t)
 
 	client := &mockAddUserClient{}
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", strings.NewReader("email=a&firstname=b&surname=c&organisation=d&roles=e&roles=f"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := addUser(client, template)(client.requiredPermissions(), w, r)
+	err := addUser(client, template.Func())(w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.roles.count)
@@ -112,7 +116,6 @@ func TestPostAddUser(t *testing.T) {
 	assert.Equal([]string{"e", "f"}, client.addUser.lastRoles)
 
 	assert.Equal(1, template.count)
-	assert.Equal("page", template.lastName)
 	assert.Equal(addUserVars{
 		Path:    "/path",
 		Success: true,
@@ -132,12 +135,13 @@ func TestPostAddUserValidationError(t *testing.T) {
 	client.addUser.err = sirius.ValidationError{
 		Errors: errors,
 	}
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := addUser(client, template)(client.requiredPermissions(), w, r)
+	err := addUser(client, template.Func())(w, r)
 	assert.Nil(err)
 
 	resp := w.Result()
@@ -147,7 +151,6 @@ func TestPostAddUserValidationError(t *testing.T) {
 	assert.Equal(1, client.addUser.count)
 
 	assert.Equal(1, template.count)
-	assert.Equal("page", template.lastName)
 	assert.Equal(addUserVars{
 		Path:   "/path",
 		Roles:  []string{"System Admin", "Manager"},
@@ -161,12 +164,13 @@ func TestPostAddUserOtherError(t *testing.T) {
 	expectedErr := errors.New("oops")
 	client := &mockAddUserClient{}
 	client.addUser.err = expectedErr
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := addUser(client, template)(client.requiredPermissions(), w, r)
+	err := addUser(client, template.Func())(w, r)
 	assert.Equal(expectedErr, err)
 
 	assert.Equal(1, client.roles.count)
@@ -180,12 +184,13 @@ func TestPostAddUserRolesError(t *testing.T) {
 	expectedErr := errors.New("oops")
 	client := &mockAddUserClient{}
 	client.roles.err = expectedErr
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := addUser(client, template)(client.requiredPermissions(), w, r)
+	err := addUser(client, template.Func())(w, r)
 	assert.Equal(expectedErr, err)
 
 	assert.Equal(1, client.roles.count)

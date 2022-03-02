@@ -4,6 +4,8 @@ import (
 	"net/http"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
+	"github.com/ministryofjustice/opg-sirius-user-management/tbd/handler"
+	"github.com/ministryofjustice/opg-sirius-user-management/tbd/template"
 )
 
 type ResendConfirmationClient interface {
@@ -16,15 +18,16 @@ type resendConfirmationVars struct {
 	Email string
 }
 
-func resendConfirmation(client ResendConfirmationClient, tmpl Template) Handler {
-	return func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error {
+func resendConfirmation(client ResendConfirmationClient, tmpl template.Template) handler.Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
+		perm := myPermissions(r)
 		if !perm.HasPermission("v1-users", http.MethodPut) {
-			return StatusError(http.StatusForbidden)
+			return handler.Status(http.StatusForbidden)
 		}
 
 		switch r.Method {
 		case http.MethodGet:
-			return RedirectError("/users")
+			return handler.Redirect("/users")
 
 		case http.MethodPost:
 			vars := resendConfirmationVars{
@@ -38,10 +41,10 @@ func resendConfirmation(client ResendConfirmationClient, tmpl Template) Handler 
 				return err
 			}
 
-			return tmpl.ExecuteTemplate(w, "page", vars)
+			return tmpl(w, vars)
 
 		default:
-			return StatusError(http.StatusMethodNotAllowed)
+			return handler.Status(http.StatusMethodNotAllowed)
 		}
 	}
 }

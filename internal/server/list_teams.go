@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
+	"github.com/ministryofjustice/opg-sirius-user-management/tbd/handler"
+	"github.com/ministryofjustice/opg-sirius-user-management/tbd/template"
 )
 
 type ListTeamsClient interface {
@@ -12,19 +14,20 @@ type ListTeamsClient interface {
 }
 
 type listTeamsVars struct {
-	Path      string
-	Search    string
-	Teams     []sirius.Team
+	Path   string
+	Search string
+	Teams  []sirius.Team
 }
 
-func listTeams(client ListTeamsClient, tmpl Template) Handler {
-	return func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error {
+func listTeams(client ListTeamsClient, tmpl template.Template) handler.Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
+		perm := myPermissions(r)
 		if !perm.HasPermission("v1-teams", http.MethodPut) {
-			return StatusError(http.StatusForbidden)
+			return handler.Status(http.StatusForbidden)
 		}
 
 		if r.Method != http.MethodGet {
-			return StatusError(http.StatusMethodNotAllowed)
+			return handler.Status(http.StatusMethodNotAllowed)
 		}
 
 		ctx := getContext(r)
@@ -49,11 +52,11 @@ func listTeams(client ListTeamsClient, tmpl Template) Handler {
 		}
 
 		vars := listTeamsVars{
-			Path:      r.URL.Path,
-			Search:    search,
-			Teams:     teams,
+			Path:   r.URL.Path,
+			Search: search,
+			Teams:  teams,
 		}
 
-		return tmpl.ExecuteTemplate(w, "page", vars)
+		return tmpl(w, vars)
 	}
 }

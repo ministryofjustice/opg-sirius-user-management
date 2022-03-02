@@ -7,6 +7,8 @@ import (
 	"strings"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
+	"github.com/ministryofjustice/opg-sirius-user-management/tbd/handler"
+	"github.com/ministryofjustice/opg-sirius-user-management/tbd/template"
 )
 
 type DeleteTeamClient interface {
@@ -22,19 +24,20 @@ type deleteTeamVars struct {
 	SuccessMessage string
 }
 
-func deleteTeam(client DeleteTeamClient, tmpl Template) Handler {
-	return func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error {
+func deleteTeam(client DeleteTeamClient, tmpl template.Template) handler.Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
+		perm := myPermissions(r)
 		if !perm.HasPermission("v1-teams", http.MethodDelete) {
-			return StatusError(http.StatusForbidden)
+			return handler.Status(http.StatusForbidden)
 		}
 
 		id, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/teams/delete/"))
 		if err != nil {
-			return StatusError(http.StatusNotFound)
+			return handler.Status(http.StatusNotFound)
 		}
 
 		if r.Method != http.MethodGet && r.Method != http.MethodPost {
-			return StatusError(http.StatusMethodNotAllowed)
+			return handler.Status(http.StatusMethodNotAllowed)
 		}
 
 		ctx := getContext(r)
@@ -68,6 +71,6 @@ func deleteTeam(client DeleteTeamClient, tmpl Template) Handler {
 			}
 		}
 
-		return tmpl.ExecuteTemplate(w, "page", vars)
+		return tmpl(w, vars)
 	}
 }
