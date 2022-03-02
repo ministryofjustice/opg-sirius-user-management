@@ -92,12 +92,13 @@ jobs:
           fi
       - name: Publish pacts
         if: github.actor != 'dependabot[bot]'
-        env:
-          PACT_DIR: ./pacts
-          PACT_BROKER_URL: https://pact-broker.api.opg.service.justice.gov.uk
-          PACT_BROKER_USERNAME: admin
-          PACT_BROKER_PASSWORD: ${{ secrets.PACT_BROKER_PASSWORD }}
-        run: PACT_TAG=${{ steps.pact_tag.outputs.BRANCH }} PACT_CONSUMER_VERSION=${{ steps.pact_tag.outputs.TAG }} go run internal/pact/publish.go
+        run: |
+          pact-broker publish ./pacts/sirius-user-management-sirius.json \
+            --consumer-app-version ${{ steps.pact_tag.outputs.TAG }} \
+            --tag ${{ steps.pact_tag.outputs.BRANCH }} \
+            --broker-base-url https://pact-broker.api.opg.service.justice.gov.uk \
+            --broker-username admin \
+            --broker-password ${{ secrets.PACT_BROKER_PASSWORD }}
       - name: Compare pacts
         if: github.actor == 'dependabot[bot]'
         env:
