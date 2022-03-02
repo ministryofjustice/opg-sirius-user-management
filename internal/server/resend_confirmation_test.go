@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -8,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
+	"github.com/ministryofjustice/opg-sirius-user-management/tbd/handler"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -36,9 +38,10 @@ func TestGetResendConfirmation(t *testing.T) {
 	client := &mockResendConfirmationClient{}
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := resendConfirmation(nil, nil)(client.requiredPermissions(), w, r)
-	assert.Equal(RedirectError("/users"), err)
+	err := resendConfirmation(nil, nil)(w, r)
+	assert.Equal(handler.Redirect("/users"), err)
 }
 
 func TestGetResendConfirmationNoPermission(t *testing.T) {
@@ -46,22 +49,24 @@ func TestGetResendConfirmationNoPermission(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, sirius.PermissionSet{}))
 
-	err := resendConfirmation(nil, nil)(sirius.PermissionSet{}, w, r)
-	assert.Equal(StatusError(http.StatusForbidden), err)
+	err := resendConfirmation(nil, nil)(w, r)
+	assert.Equal(handler.Status(http.StatusForbidden), err)
 }
 
 func TestPostResendConfirmation(t *testing.T) {
 	assert := assert.New(t)
 
 	client := &mockResendConfirmationClient{}
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", strings.NewReader("email=a&id=b"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := resendConfirmation(client, template)(client.requiredPermissions(), w, r)
+	err := resendConfirmation(client, template.Func())(w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.count)
@@ -69,7 +74,6 @@ func TestPostResendConfirmation(t *testing.T) {
 	assert.Equal("a", client.lastEmail)
 
 	assert.Equal(1, template.count)
-	assert.Equal("page", template.lastName)
 	assert.Equal(resendConfirmationVars{
 		Path:  "/path",
 		ID:    "b",
@@ -87,7 +91,8 @@ func TestPostResendConfirmationError(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := resendConfirmation(client, nil)(client.requiredPermissions(), w, r)
+	err := resendConfirmation(client, nil)(w, r)
 	assert.Equal(expectedErr, err)
 }

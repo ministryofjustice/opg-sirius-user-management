@@ -6,6 +6,8 @@ import (
 	"strings"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
+	"github.com/ministryofjustice/opg-sirius-user-management/tbd/handler"
+	"github.com/ministryofjustice/opg-sirius-user-management/tbd/template"
 )
 
 type EditTeamClient interface {
@@ -25,15 +27,16 @@ type editTeamVars struct {
 	Errors          sirius.ValidationErrors
 }
 
-func editTeam(client EditTeamClient, tmpl Template) Handler {
-	return func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error {
+func editTeam(client EditTeamClient, tmpl template.Template) handler.Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
+		perm := myPermissions(r)
 		if !perm.HasPermission("v1-teams", http.MethodPut) {
-			return StatusError(http.StatusForbidden)
+			return handler.Status(http.StatusForbidden)
 		}
 
 		id, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/teams/edit/"))
 		if err != nil {
-			return StatusError(http.StatusNotFound)
+			return handler.Status(http.StatusNotFound)
 		}
 
 		ctx := getContext(r)
@@ -62,7 +65,7 @@ func editTeam(client EditTeamClient, tmpl Template) Handler {
 
 		switch r.Method {
 		case http.MethodGet:
-			return tmpl.ExecuteTemplate(w, "page", vars)
+			return tmpl(w, vars)
 		case http.MethodPost:
 			vars.Team.DisplayName = r.PostFormValue("name")
 			vars.Team.PhoneNumber = r.PostFormValue("phone")
@@ -90,9 +93,9 @@ func editTeam(client EditTeamClient, tmpl Template) Handler {
 				vars.Success = true
 			}
 
-			return tmpl.ExecuteTemplate(w, "page", vars)
+			return tmpl(w, vars)
 		default:
-			return StatusError(http.StatusMethodNotAllowed)
+			return handler.Status(http.StatusMethodNotAllowed)
 		}
 	}
 }

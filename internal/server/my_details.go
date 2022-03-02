@@ -4,6 +4,8 @@ import (
 	"net/http"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
+	"github.com/ministryofjustice/opg-sirius-user-management/tbd/handler"
+	"github.com/ministryofjustice/opg-sirius-user-management/tbd/template"
 )
 
 type MyDetailsClient interface {
@@ -23,10 +25,10 @@ type myDetailsVars struct {
 	CanEditPhoneNumber bool
 }
 
-func myDetails(client MyDetailsClient, tmpl Template) Handler {
-	return func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error {
+func myDetails(client MyDetailsClient, tmpl template.Template) handler.Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		if r.Method != http.MethodGet {
-			return StatusError(http.StatusMethodNotAllowed)
+			return handler.Status(http.StatusMethodNotAllowed)
 		}
 
 		ctx := getContext(r)
@@ -36,6 +38,7 @@ func myDetails(client MyDetailsClient, tmpl Template) Handler {
 			return err
 		}
 
+		perm := myPermissions(r)
 		canEditPhoneNumber := perm.HasPermission("v1-users-updatetelephonenumber", http.MethodPut)
 
 		vars := myDetailsVars{
@@ -60,6 +63,6 @@ func myDetails(client MyDetailsClient, tmpl Template) Handler {
 			vars.Teams = append(vars.Teams, team.DisplayName)
 		}
 
-		return tmpl.ExecuteTemplate(w, "page", vars)
+		return tmpl(w, vars)
 	}
 }

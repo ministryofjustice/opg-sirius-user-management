@@ -7,6 +7,8 @@ import (
 	"strings"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
+	"github.com/ministryofjustice/opg-sirius-user-management/tbd/handler"
+	"github.com/ministryofjustice/opg-sirius-user-management/tbd/template"
 )
 
 type UnlockUserClient interface {
@@ -21,19 +23,20 @@ type unlockUserVars struct {
 	Errors    sirius.ValidationErrors
 }
 
-func unlockUser(client UnlockUserClient, tmpl Template) Handler {
-	return func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error {
+func unlockUser(client UnlockUserClient, tmpl template.Template) handler.Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
+		perm := myPermissions(r)
 		if !perm.HasPermission("v1-users", http.MethodPut) {
-			return StatusError(http.StatusForbidden)
+			return handler.Status(http.StatusForbidden)
 		}
 
 		id, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/unlock-user/"))
 		if err != nil {
-			return StatusError(http.StatusNotFound)
+			return handler.Status(http.StatusNotFound)
 		}
 
 		if r.Method != http.MethodGet && r.Method != http.MethodPost {
-			return StatusError(http.StatusMethodNotAllowed)
+			return handler.Status(http.StatusMethodNotAllowed)
 		}
 
 		ctx := getContext(r)
@@ -64,10 +67,10 @@ func unlockUser(client UnlockUserClient, tmpl Template) Handler {
 			} else if err != nil {
 				return err
 			} else {
-				return RedirectError(fmt.Sprintf("/edit-user/%d", user.ID))
+				return handler.Redirect(fmt.Sprintf("/edit-user/%d", user.ID))
 			}
 		}
 
-		return tmpl.ExecuteTemplate(w, "page", vars)
+		return tmpl(w, vars)
 	}
 }

@@ -54,7 +54,9 @@ type requestEvent struct {
 	Data          interface{} `json:"data"`
 }
 
-type expandedError interface {
+// An ExpandedError will set message and data of the line logged by Request to
+// Title and Data respectively.
+type ExpandedError interface {
 	Title() string
 	Data() interface{}
 }
@@ -70,7 +72,7 @@ func (l *Logger) Request(r *http.Request, err error) {
 		Timestamp:     now,
 	}
 
-	if ee, ok := err.(expandedError); ok {
+	if ee, ok := err.(ExpandedError); ok {
 		event.Message = ee.Title()
 		event.Data = ee.Data()
 	}

@@ -5,6 +5,8 @@ import (
 	"strconv"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
+	"github.com/ministryofjustice/opg-sirius-user-management/tbd/handler"
+	"github.com/ministryofjustice/opg-sirius-user-management/tbd/template"
 )
 
 type EditLayPercentageClient interface {
@@ -21,10 +23,11 @@ type editLayPercentageVars struct {
 	Error         string
 }
 
-func editLayPercentage(client EditLayPercentageClient, tmpl Template) Handler {
-	return func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error {
+func editLayPercentage(client EditLayPercentageClient, tmpl template.Template) handler.Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
+		perm := myPermissions(r)
 		if !perm.HasPermission("v1-random-review-settings", http.MethodPost) {
-			return StatusError(http.StatusForbidden)
+			return handler.Status(http.StatusForbidden)
 		}
 
 		ctx := getContext(r)
@@ -43,7 +46,7 @@ func editLayPercentage(client EditLayPercentageClient, tmpl Template) Handler {
 
 			vars.LayPercentage = strconv.Itoa(randomReviews.LayPercentage)
 
-			return tmpl.ExecuteTemplate(w, "page", vars)
+			return tmpl(w, vars)
 
 		case http.MethodPost:
 
@@ -59,15 +62,15 @@ func editLayPercentage(client EditLayPercentageClient, tmpl Template) Handler {
 				vars.Errors = verr.Errors
 				vars.Error = verr.Message
 				w.WriteHeader(http.StatusBadRequest)
-				return tmpl.ExecuteTemplate(w, "page", vars)
+				return tmpl(w, vars)
 			} else if err != nil {
 				return err
 			}
 
-			return RedirectError("/random-reviews")
+			return handler.Redirect("/random-reviews")
 
 		default:
-			return StatusError(http.StatusMethodNotAllowed)
+			return handler.Status(http.StatusMethodNotAllowed)
 		}
 	}
 }
