@@ -1,12 +1,14 @@
 package server
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
+	"github.com/ministryofjustice/opg-sirius-user-management/tbd/handler"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -44,13 +46,14 @@ func TestListUsers(t *testing.T) {
 	client := &mockListUsersClient{
 		data: data,
 	}
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path?search=milo", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	handler := listUsers(client, template)
-	err := handler(client.requiredPermissions(), w, r)
+	handler := listUsers(client, template.Func())
+	err := handler(w, r)
 
 	assert.Nil(err)
 
@@ -62,7 +65,6 @@ func TestListUsers(t *testing.T) {
 	assert.Equal("milo", client.lastSearch)
 
 	assert.Equal(1, template.count)
-	assert.Equal("page", template.lastName)
 	assert.Equal(listUsersVars{
 		Path:   "/path",
 		Search: "milo",
@@ -82,9 +84,10 @@ func TestListUsersNoPermission(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, sirius.PermissionSet{}))
 
-	err := listUsers(nil, nil)(sirius.PermissionSet{}, w, r)
-	assert.Equal(StatusError(http.StatusForbidden), err)
+	err := listUsers(nil, nil)(w, r)
+	assert.Equal(handler.Status(http.StatusForbidden), err)
 }
 
 func TestListUsersRequiresSearch(t *testing.T) {
@@ -101,13 +104,14 @@ func TestListUsersRequiresSearch(t *testing.T) {
 	client := &mockListUsersClient{
 		data: data,
 	}
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	handler := listUsers(client, template)
-	err := handler(client.requiredPermissions(), w, r)
+	handler := listUsers(client, template.Func())
+	err := handler(w, r)
 
 	assert.Nil(err)
 
@@ -117,7 +121,6 @@ func TestListUsersRequiresSearch(t *testing.T) {
 	assert.Equal(0, client.count)
 
 	assert.Equal(1, template.count)
-	assert.Equal("page", template.lastName)
 	assert.Equal(listUsersVars{
 		Path:   "/path",
 		Search: "",
@@ -131,13 +134,14 @@ func TestListUsersClientError(t *testing.T) {
 	client := &mockListUsersClient{
 		err: sirius.ClientError("problem"),
 	}
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path?search=m", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	handler := listUsers(client, template)
-	err := handler(client.requiredPermissions(), w, r)
+	handler := listUsers(client, template.Func())
+	err := handler(w, r)
 
 	assert.Nil(err)
 
@@ -147,7 +151,6 @@ func TestListUsersClientError(t *testing.T) {
 	assert.Equal(1, client.count)
 
 	assert.Equal(1, template.count)
-	assert.Equal("page", template.lastName)
 	assert.Equal(listUsersVars{
 		Path:   "/path",
 		Search: "m",
@@ -165,13 +168,14 @@ func TestListUsersSiriusErrors(t *testing.T) {
 
 	expectedErr := errors.New("err")
 	client := &mockListUsersClient{err: expectedErr}
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/?search=long", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	handler := listUsers(client, template)
-	err := handler(client.requiredPermissions(), w, r)
+	handler := listUsers(client, template.Func())
+	err := handler(w, r)
 
 	assert.Equal(expectedErr, err)
 	assert.Equal(0, template.count)
@@ -179,16 +183,16 @@ func TestListUsersSiriusErrors(t *testing.T) {
 
 func TestPostListUsers(t *testing.T) {
 	assert := assert.New(t)
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	client := &mockListUsersClient{}
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	handler := listUsers(nil, template)
-	err := handler(client.requiredPermissions(), w, r)
+	err := listUsers(nil, template.Func())(w, r)
 
-	assert.Equal(StatusError(http.StatusMethodNotAllowed), err)
+	assert.Equal(handler.Status(http.StatusMethodNotAllowed), err)
 
 	assert.Equal(0, template.count)
 }

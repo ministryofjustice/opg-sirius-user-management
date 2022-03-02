@@ -15,6 +15,14 @@ func (e ClientError) Error() string {
 	return string(e)
 }
 
+func (e ClientError) StatusCode() int {
+	if e == ErrUnauthorized {
+		return http.StatusUnauthorized
+	}
+
+	return http.StatusBadRequest
+}
+
 type ValidationErrors map[string]map[string]string
 
 type ValidationError struct {

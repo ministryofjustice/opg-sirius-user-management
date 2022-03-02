@@ -1,12 +1,14 @@
 package server
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
+	"github.com/ministryofjustice/opg-sirius-user-management/tbd/handler"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -52,12 +54,13 @@ func TestGetUnlockUser(t *testing.T) {
 
 	client := &mockUnlockUserClient{}
 	client.user.data = sirius.AuthUser{Firstname: "test"}
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/unlock-user/123", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := unlockUser(client, template)(client.requiredPermissions(), w, r)
+	err := unlockUser(client, template.Func())(w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.user.count)
@@ -65,7 +68,6 @@ func TestGetUnlockUser(t *testing.T) {
 	assert.Equal(0, client.editUser.count)
 
 	assert.Equal(1, template.count)
-	assert.Equal("page", template.lastName)
 	assert.Equal(unlockUserVars{
 		Path: "/unlock-user/123",
 		User: client.user.data,
@@ -77,9 +79,10 @@ func TestGetUnlockUserNoPermission(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, sirius.PermissionSet{}))
 
-	err := unlockUser(nil, nil)(sirius.PermissionSet{}, w, r)
-	assert.Equal(StatusError(http.StatusForbidden), err)
+	err := unlockUser(nil, nil)(w, r)
+	assert.Equal(handler.Status(http.StatusForbidden), err)
 }
 
 func TestGetUnlockUserError(t *testing.T) {
@@ -89,12 +92,13 @@ func TestGetUnlockUserError(t *testing.T) {
 
 	client := &mockUnlockUserClient{}
 	client.user.err = expectedError
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/unlock-user/123", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := unlockUser(client, template)(client.requiredPermissions(), w, r)
+	err := unlockUser(client, template.Func())(w, r)
 	assert.Equal(expectedError, err)
 
 	assert.Equal(1, client.user.count)
@@ -112,13 +116,14 @@ func TestGetUnlockUserBadPath(t *testing.T) {
 			assert := assert.New(t)
 
 			client := &mockUnlockUserClient{}
-			template := &mockTemplate{}
+			template := &mockTemplateFn{}
 
 			w := httptest.NewRecorder()
 			r, _ := http.NewRequest("GET", path, nil)
+			r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-			err := unlockUser(client, template)(client.requiredPermissions(), w, r)
-			assert.Equal(StatusError(http.StatusNotFound), err)
+			err := unlockUser(client, template.Func())(w, r)
+			assert.Equal(handler.Status(http.StatusNotFound), err)
 
 			assert.Equal(0, client.user.count)
 			assert.Equal(0, client.editUser.count)
@@ -132,13 +137,14 @@ func TestPostUnlockUser(t *testing.T) {
 
 	client := &mockUnlockUserClient{}
 	client.user.data = sirius.AuthUser{ID: 123, Email: "user@opgtest.com", Locked: true}
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/unlock-user/123", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := unlockUser(client, template)(client.requiredPermissions(), w, r)
-	assert.Equal(RedirectError("/edit-user/123"), err)
+	err := unlockUser(client, template.Func())(w, r)
+	assert.Equal(handler.Redirect("/edit-user/123"), err)
 
 	assert.Equal(1, client.editUser.count)
 	assert.Equal(getContext(r), client.editUser.lastCtx)
@@ -157,19 +163,19 @@ func TestPostUnlockUserClientError(t *testing.T) {
 
 	client := &mockUnlockUserClient{}
 	client.editUser.err = sirius.ClientError("problem")
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/unlock-user/123", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := unlockUser(client, template)(client.requiredPermissions(), w, r)
+	err := unlockUser(client, template.Func())(w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.user.count)
 	assert.Equal(1, client.editUser.count)
 
 	assert.Equal(1, template.count)
-	assert.Equal("page", template.lastName)
 	assert.Equal(unlockUserVars{
 		Path: "/unlock-user/123",
 		User: client.user.data,
@@ -187,12 +193,13 @@ func TestPostUnlockUserOtherError(t *testing.T) {
 	expectedErr := errors.New("oops")
 	client := &mockUnlockUserClient{}
 	client.editUser.err = expectedErr
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/unlock-user/123", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := unlockUser(client, template)(client.requiredPermissions(), w, r)
+	err := unlockUser(client, template.Func())(w, r)
 	assert.Equal(expectedErr, err)
 
 	assert.Equal(1, client.user.count)
@@ -206,7 +213,8 @@ func TestPutUnlockUser(t *testing.T) {
 	client := &mockUnlockUserClient{}
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("PUT", "/unlock-user/123", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := unlockUser(nil, nil)(client.requiredPermissions(), w, r)
-	assert.Equal(StatusError(http.StatusMethodNotAllowed), err)
+	err := unlockUser(nil, nil)(w, r)
+	assert.Equal(handler.Status(http.StatusMethodNotAllowed), err)
 }

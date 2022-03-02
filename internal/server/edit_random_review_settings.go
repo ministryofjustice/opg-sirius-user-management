@@ -5,6 +5,8 @@ import (
 	"strconv"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
+	"github.com/ministryofjustice/opg-sirius-user-management/tbd/handler"
+	"github.com/ministryofjustice/opg-sirius-user-management/tbd/template"
 )
 
 type EditRandomReviewSettingsClient interface {
@@ -23,10 +25,11 @@ type editRandomReviewSettingsVars struct {
 	Error         string
 }
 
-func editRandomReviewSettings(client EditRandomReviewSettingsClient, tmpl Template) Handler {
-	return func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error {
+func editRandomReviewSettings(client EditRandomReviewSettingsClient, tmpl template.Template) handler.Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
+		perm := myPermissions(r)
 		if !perm.HasPermission("v1-random-review-settings", http.MethodPost) {
-			return StatusError(http.StatusForbidden)
+			return handler.Status(http.StatusForbidden)
 		}
 
 		ctx := getContext(r)
@@ -48,7 +51,7 @@ func editRandomReviewSettings(client EditRandomReviewSettingsClient, tmpl Templa
 			vars.ProPercentage = randomReviews.ProPercentage
 			vars.ReviewCycle = randomReviews.ReviewCycle
 
-			return tmpl.ExecuteTemplate(w, "page", vars)
+			return tmpl(w, vars)
 
 		case http.MethodPost:
 			randomReviewSettings, _ := client.RandomReviews(ctx)
@@ -64,14 +67,14 @@ func editRandomReviewSettings(client EditRandomReviewSettingsClient, tmpl Templa
 				vars.Error = verr.Message
 
 				w.WriteHeader(http.StatusBadRequest)
-				return tmpl.ExecuteTemplate(w, "page", vars)
+				return tmpl(w, vars)
 			} else if err != nil {
 				return err
 			}
-			return RedirectError("/random-reviews")
+			return handler.Redirect("/random-reviews")
 
 		default:
-			return StatusError(http.StatusMethodNotAllowed)
+			return handler.Status(http.StatusMethodNotAllowed)
 		}
 	}
 }

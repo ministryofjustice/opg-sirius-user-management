@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -9,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
+	"github.com/ministryofjustice/opg-sirius-user-management/tbd/handler"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -68,13 +70,14 @@ func TestPostRemoveTeamMember(t *testing.T) {
 
 	client := &mockRemoveTeamMemberClient{}
 	client.team.data = generateTeamWithIds(12, 16, 45)
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/teams/remove-member/123", strings.NewReader("selected[]=12&selected[]=45"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := removeTeamMember(client, template)(client.requiredPermissions(), w, r)
+	err := removeTeamMember(client, template.Func())(w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.team.count)
@@ -84,7 +87,6 @@ func TestPostRemoveTeamMember(t *testing.T) {
 	assert.Equal(0, client.editTeam.count)
 
 	assert.Equal(1, template.count)
-	assert.Equal("page", template.lastName)
 	assert.Equal(removeTeamMemberVars{
 		Path: "/teams/remove-member/123",
 		Team: client.team.data,
@@ -100,9 +102,10 @@ func TestPostRemoveTeamMemberNoPermission(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, sirius.PermissionSet{}))
 
-	err := removeTeamMember(nil, nil)(sirius.PermissionSet{}, w, r)
-	assert.Equal(StatusError(http.StatusForbidden), err)
+	err := removeTeamMember(nil, nil)(w, r)
+	assert.Equal(handler.Status(http.StatusForbidden), err)
 }
 
 func TestPostRemoveTeamMemberBadPath(t *testing.T) {
@@ -118,9 +121,11 @@ func TestPostRemoveTeamMemberBadPath(t *testing.T) {
 			client := &mockRemoveTeamMemberClient{}
 			r, _ := http.NewRequest("POST", path, strings.NewReader("selected[]=12&selected[]=45"))
 			r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-			err := editTeam(nil, nil)(client.requiredPermissions(), nil, r)
+			r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-			assert.Equal(StatusError(http.StatusNotFound), err)
+			err := editTeam(nil, nil)(nil, r)
+
+			assert.Equal(handler.Status(http.StatusNotFound), err)
 		})
 	}
 }
@@ -132,13 +137,14 @@ func TestPostRemoveTeamMemberTeamError(t *testing.T) {
 
 	client := &mockRemoveTeamMemberClient{}
 	client.team.err = expectedError
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/teams/remove-member/123", strings.NewReader("selected[]=12&selected[]=45"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := removeTeamMember(client, template)(client.requiredPermissions(), w, r)
+	err := removeTeamMember(client, template.Func())(w, r)
 	assert.Equal(expectedError, err)
 
 	assert.Equal(1, client.team.count)
@@ -154,14 +160,15 @@ func TestPostRemoveTeamMemberBadData(t *testing.T) {
 			assert := assert.New(t)
 
 			client := &mockRemoveTeamMemberClient{}
-			template := &mockTemplate{}
+			template := &mockTemplateFn{}
 
 			w := httptest.NewRecorder()
 			r, _ := http.NewRequest("POST", "/teams/remove-member/123", strings.NewReader(data))
 			r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+			r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-			err := removeTeamMember(client, template)(client.requiredPermissions(), w, r)
-			assert.Equal(StatusError(http.StatusBadRequest), err)
+			err := removeTeamMember(client, template.Func())(w, r)
+			assert.Equal(handler.Status(http.StatusBadRequest), err)
 
 			assert.Equal(0, client.editTeam.count)
 		})
@@ -173,13 +180,14 @@ func TestPostRemoveTeamMemberIgnoresBadIds(t *testing.T) {
 
 	client := &mockRemoveTeamMemberClient{}
 	client.team.data = generateTeamWithIds(12, 16, 45)
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/teams/remove-member/123", strings.NewReader("selected[]=19&selected[]=45"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := removeTeamMember(client, template)(client.requiredPermissions(), w, r)
+	err := removeTeamMember(client, template.Func())(w, r)
 	assert.Nil(err)
 
 	assert.Equal(removeTeamMemberVars{
@@ -196,14 +204,15 @@ func TestConfirmPostRemoveTeamMember(t *testing.T) {
 
 	client := &mockRemoveTeamMemberClient{}
 	client.team.data = generateTeamWithIds(12, 16, 45)
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/teams/remove-member/123", strings.NewReader("selected[]=12&selected[]=45&confirm=true"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := removeTeamMember(client, template)(client.requiredPermissions(), w, r)
-	assert.Equal(RedirectError("/teams/123"), err)
+	err := removeTeamMember(client, template.Func())(w, r)
+	assert.Equal(handler.Redirect("/teams/123"), err)
 
 	assert.Equal(1, client.team.count)
 	assert.Equal(1, client.editTeam.count)
@@ -222,13 +231,14 @@ func TestConfirmPostRemoveTeamMemberClientError(t *testing.T) {
 	client := &mockRemoveTeamMemberClient{}
 	client.team.data = generateTeamWithIds(12, 16, 45)
 	client.editTeam.err = sirius.ClientError("Team has been deleted")
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/teams/remove-member/123", strings.NewReader("selected[]=12&selected[]=45&confirm=true"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := removeTeamMember(client, template)(client.requiredPermissions(), w, r)
+	err := removeTeamMember(client, template.Func())(w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.team.count)
@@ -257,13 +267,14 @@ func TestConfirmPostRemoveTeamMemberOtherError(t *testing.T) {
 	client := &mockRemoveTeamMemberClient{}
 	client.team.data = generateTeamWithIds(12, 16, 45)
 	client.editTeam.err = expectedError
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/teams/remove-member/123", strings.NewReader("selected[]=12&selected[]=45&confirm=true"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := removeTeamMember(client, template)(client.requiredPermissions(), w, r)
+	err := removeTeamMember(client, template.Func())(w, r)
 	assert.Equal(expectedError, err)
 
 	assert.Equal(1, client.team.count)
@@ -276,7 +287,8 @@ func TestGetRemoveTeamMemberTeam(t *testing.T) {
 	client := &mockRemoveTeamMemberClient{}
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/teams/remove-member/123", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := removeTeamMember(nil, nil)(client.requiredPermissions(), w, r)
-	assert.Equal(StatusError(http.StatusMethodNotAllowed), err)
+	err := removeTeamMember(nil, nil)(w, r)
+	assert.Equal(handler.Status(http.StatusMethodNotAllowed), err)
 }
