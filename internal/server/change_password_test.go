@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -33,18 +34,17 @@ func (m *mockChangePasswordClient) ChangePassword(ctx sirius.Context, existingPa
 func TestGetChangePassword(t *testing.T) {
 	assert := assert.New(t)
 
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
 
-	handler := changePassword(nil, template)
-	err := handler(sirius.PermissionSet{}, w, r)
+	handler := changePassword(nil, template.Func())
+	err := handler(w, r)
 
 	assert.Nil(err)
 
 	assert.Equal(1, template.count)
-	assert.Equal("page", template.lastName)
 	assert.Equal(changePasswordVars{
 		Path: "/path",
 	}, template.lastVars)
@@ -54,14 +54,14 @@ func TestPostChangePassword(t *testing.T) {
 	assert := assert.New(t)
 
 	client := &mockChangePasswordClient{}
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", strings.NewReader("currentpassword=a&password1=b&password2=c"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
-	handler := changePassword(client, template)
-	err := handler(sirius.PermissionSet{}, w, r)
+	handler := changePassword(client, template.Func())
+	err := handler(w, r)
 
 	assert.Nil(err)
 
@@ -70,7 +70,6 @@ func TestPostChangePassword(t *testing.T) {
 	assert.Equal("b", client.lastNewPassword)
 	assert.Equal("c", client.lastNewPasswordConfirm)
 
-	assert.Equal("page", template.lastName)
 	assert.Equal(changePasswordVars{
 		Path:    "/path",
 		Success: true,
@@ -81,13 +80,13 @@ func TestPostChangePasswordUnauthenticated(t *testing.T) {
 	assert := assert.New(t)
 
 	client := &mockChangePasswordClient{err: sirius.ErrUnauthorized}
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", nil)
 
-	handler := changePassword(client, template)
-	err := handler(sirius.PermissionSet{}, w, r)
+	handler := changePassword(client, template.Func())
+	err := handler(w, r)
 
 	assert.Equal(sirius.ErrUnauthorized, err)
 
@@ -98,13 +97,13 @@ func TestPostChangePasswordSiriusError(t *testing.T) {
 	assert := assert.New(t)
 
 	client := &mockChangePasswordClient{err: sirius.ClientError("Something happened")}
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", nil)
 
-	handler := changePassword(client, template)
-	err := handler(sirius.PermissionSet{}, w, r)
+	handler := changePassword(client, template.Func())
+	err := handler(w, r)
 
 	assert.Nil(err)
 
@@ -112,7 +111,6 @@ func TestPostChangePasswordSiriusError(t *testing.T) {
 	assert.Equal(http.StatusBadRequest, resp.StatusCode)
 
 	assert.Equal(1, template.count)
-	assert.Equal("page", template.lastName)
 	assert.Equal(changePasswordVars{
 		Path: "/path",
 		Errors: sirius.ValidationErrors{
@@ -128,13 +126,14 @@ func TestPostChangePasswordOtherError(t *testing.T) {
 
 	expectedErr := errors.New("oops")
 	client := &mockChangePasswordClient{err: expectedErr}
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, sirius.PermissionSet{}))
 
-	handler := changePassword(client, template)
-	err := handler(sirius.PermissionSet{}, w, r)
+	handler := changePassword(client, template.Func())
+	err := handler(w, r)
 
 	assert.Equal(expectedErr, err)
 

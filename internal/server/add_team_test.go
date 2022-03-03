@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -8,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
+	"github.com/ministryofjustice/opg-sirius-user-management/tbd/handler"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -59,12 +61,13 @@ func TestGetAddTeam(t *testing.T) {
 	client.teamTypes.data = []sirius.RefDataTeamType{
 		{Handle: "a"},
 	}
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := addTeam(client, template)(client.requiredPermissions(), w, r)
+	err := addTeam(client, template.Func())(w, r)
 	assert.Nil(err)
 
 	assert.Equal(0, client.addTeam.count)
@@ -73,7 +76,6 @@ func TestGetAddTeam(t *testing.T) {
 	assert.Equal(getContext(r), client.teamTypes.lastCtx)
 
 	assert.Equal(1, template.count)
-	assert.Equal("page", template.lastName)
 	assert.Equal(addTeamVars{
 		Path:      "/path",
 		TeamTypes: client.teamTypes.data,
@@ -85,9 +87,10 @@ func TestGetAddTeamNoPermission(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, sirius.PermissionSet{}))
 
-	err := addTeam(nil, nil)(sirius.PermissionSet{}, w, r)
-	assert.Equal(StatusError(http.StatusForbidden), err)
+	err := addTeam(nil, nil)(w, r)
+	assert.Equal(handler.Status(http.StatusForbidden), err)
 }
 
 func TestGetAddTeamTeamTypesError(t *testing.T) {
@@ -97,12 +100,13 @@ func TestGetAddTeamTeamTypesError(t *testing.T) {
 
 	client := &mockAddTeamClient{}
 	client.teamTypes.err = expectedError
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := addTeam(client, template)(client.requiredPermissions(), w, r)
+	err := addTeam(client, template.Func())(w, r)
 	assert.Equal(expectedError, err)
 
 	assert.Equal(1, client.teamTypes.count)
@@ -118,14 +122,15 @@ func TestPostAddTeam(t *testing.T) {
 	client.teamTypes.data = []sirius.RefDataTeamType{
 		{Handle: "a"},
 	}
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", strings.NewReader("name=a&service=b&supervision-type=c&phone=d&email=e"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := addTeam(client, template)(client.requiredPermissions(), w, r)
-	assert.Equal(RedirectError("/teams/123"), err)
+	err := addTeam(client, template.Func())(w, r)
+	assert.Equal(handler.Redirect("/teams/123"), err)
 
 	assert.Equal(1, client.addTeam.count)
 	assert.Equal(getContext(r), client.addTeam.lastCtx)
@@ -146,14 +151,15 @@ func TestPostAddTeamLpa(t *testing.T) {
 	client.teamTypes.data = []sirius.RefDataTeamType{
 		{Handle: "a"},
 	}
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", strings.NewReader("name=a&service=lpa&supervision-type=c&phone=d&email=e"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := addTeam(client, template)(client.requiredPermissions(), w, r)
-	assert.Equal(RedirectError("/teams/123"), err)
+	err := addTeam(client, template.Func())(w, r)
+	assert.Equal(handler.Redirect("/teams/123"), err)
 
 	assert.Equal(1, client.addTeam.count)
 	assert.Equal(getContext(r), client.addTeam.lastCtx)
@@ -178,20 +184,20 @@ func TestPostAddTeamValidationError(t *testing.T) {
 			"something": {"": "something"},
 		},
 	}
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", strings.NewReader("name=a&service=b&supervision-type=c&phone=d&email=e"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := addTeam(client, template)(client.requiredPermissions(), w, r)
+	err := addTeam(client, template.Func())(w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.addTeam.count)
 	assert.Equal(1, client.teamTypes.count)
 
 	assert.Equal(1, template.count)
-	assert.Equal("page", template.lastName)
 	assert.Equal(addTeamVars{
 		Path:      "/path",
 		Name:      "a",
@@ -216,13 +222,14 @@ func TestPostAddTeamError(t *testing.T) {
 		{Handle: "a"},
 	}
 	client.addTeam.err = expectedError
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", strings.NewReader("name=a&service=b&supervision-type=c&phone=d&email=e"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := addTeam(client, template)(client.requiredPermissions(), w, r)
+	err := addTeam(client, template.Func())(w, r)
 	assert.Equal(expectedError, err)
 
 	assert.Equal(1, client.addTeam.count)
@@ -236,7 +243,8 @@ func TestPutAddTeam(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("PUT", "/path", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := addTeam(client, nil)(client.requiredPermissions(), w, r)
-	assert.Equal(StatusError(http.StatusMethodNotAllowed), err)
+	err := addTeam(client, nil)(w, r)
+	assert.Equal(handler.Status(http.StatusMethodNotAllowed), err)
 }

@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -8,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
+	"github.com/ministryofjustice/opg-sirius-user-management/tbd/handler"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -66,12 +68,13 @@ func TestGetEditUser(t *testing.T) {
 
 	client := &mockEditUserClient{}
 	client.user.data = sirius.AuthUser{Firstname: "test"}
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/edit-user/123", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := editUser(client, template)(client.requiredPermissions(), w, r)
+	err := editUser(client, template.Func())(w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.roles.count)
@@ -81,7 +84,6 @@ func TestGetEditUser(t *testing.T) {
 	assert.Equal(0, client.editUser.count)
 
 	assert.Equal(1, template.count)
-	assert.Equal("page", template.lastName)
 	assert.Equal(editUserVars{
 		Path:  "/edit-user/123",
 		User:  client.user.data,
@@ -94,9 +96,10 @@ func TestGetEditUserNoPermission(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, sirius.PermissionSet{}))
 
-	err := editUser(nil, nil)(sirius.PermissionSet{}, w, r)
-	assert.Equal(StatusError(http.StatusForbidden), err)
+	err := editUser(nil, nil)(w, r)
+	assert.Equal(handler.Status(http.StatusForbidden), err)
 }
 
 func TestGetEditUserBadPath(t *testing.T) {
@@ -111,9 +114,10 @@ func TestGetEditUserBadPath(t *testing.T) {
 			client := &mockEditUserClient{}
 			w := httptest.NewRecorder()
 			r, _ := http.NewRequest("GET", path, nil)
+			r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-			err := editUser(nil, nil)(client.requiredPermissions(), w, r)
-			assert.Equal(StatusError(http.StatusNotFound), err)
+			err := editUser(nil, nil)(w, r)
+			assert.Equal(handler.Status(http.StatusNotFound), err)
 		})
 	}
 }
@@ -123,13 +127,14 @@ func TestPostEditUser(t *testing.T) {
 
 	client := &mockEditUserClient{}
 	client.user.data = sirius.AuthUser{Firstname: "test"}
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/edit-user/123", strings.NewReader("email=a&firstname=b&surname=c&organisation=d&roles=e&roles=f&locked=Yes&suspended=No"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := editUser(client, template)(client.requiredPermissions(), w, r)
+	err := editUser(client, template.Func())(w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.roles.count)
@@ -150,7 +155,6 @@ func TestPostEditUser(t *testing.T) {
 	assert.Equal(0, client.user.count)
 
 	assert.Equal(1, template.count)
-	assert.Equal("page", template.lastName)
 	assert.Equal(editUserVars{
 		Path:    "/edit-user/123",
 		Success: true,
@@ -173,13 +177,14 @@ func TestPostEditUserClientError(t *testing.T) {
 
 	client := &mockEditUserClient{}
 	client.editUser.err = sirius.ClientError("something")
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/edit-user/123", strings.NewReader("email=a&firstname=b&surname=c&organisation=d&roles=e&roles=f&locked=Yes&suspended=No"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := editUser(client, template)(client.requiredPermissions(), w, r)
+	err := editUser(client, template.Func())(w, r)
 	assert.Nil(err)
 
 	assert.Equal(1, client.roles.count)
@@ -187,7 +192,6 @@ func TestPostEditUserClientError(t *testing.T) {
 	assert.Equal(0, client.user.count)
 
 	assert.Equal(1, template.count)
-	assert.Equal("page", template.lastName)
 	assert.Equal(editUserVars{
 		Path:  "/edit-user/123",
 		Roles: []string{"System Admin", "Manager"},
@@ -214,12 +218,13 @@ func TestPostEditUserOtherError(t *testing.T) {
 	expectedErr := errors.New("oops")
 	client := &mockEditUserClient{}
 	client.editUser.err = expectedErr
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/edit-user/123", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := editUser(client, template)(client.requiredPermissions(), w, r)
+	err := editUser(client, template.Func())(w, r)
 	assert.Equal(expectedErr, err)
 
 	assert.Equal(1, client.roles.count)
@@ -234,12 +239,13 @@ func TestPostEditUserRolesError(t *testing.T) {
 	expectedErr := errors.New("oops")
 	client := &mockEditUserClient{}
 	client.roles.err = expectedErr
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/edit-user/123", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := editUser(client, template)(client.requiredPermissions(), w, r)
+	err := editUser(client, template.Func())(w, r)
 	assert.Equal(expectedErr, err)
 
 	assert.Equal(1, client.roles.count)

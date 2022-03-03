@@ -4,6 +4,8 @@ import (
 	"net/http"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
+	"github.com/ministryofjustice/opg-sirius-user-management/tbd/handler"
+	"github.com/ministryofjustice/opg-sirius-user-management/tbd/template"
 )
 
 type ChangePasswordClient interface {
@@ -17,8 +19,8 @@ type changePasswordVars struct {
 	Errors    sirius.ValidationErrors
 }
 
-func changePassword(client ChangePasswordClient, tmpl Template) Handler {
-	return func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error {
+func changePassword(client ChangePasswordClient, tmpl template.Template) handler.Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := getContext(r)
 
 		vars := changePasswordVars{
@@ -28,7 +30,7 @@ func changePassword(client ChangePasswordClient, tmpl Template) Handler {
 
 		switch r.Method {
 		case http.MethodGet:
-			return tmpl.ExecuteTemplate(w, "page", vars)
+			return tmpl(w, vars)
 
 		case http.MethodPost:
 			var (
@@ -50,7 +52,7 @@ func changePassword(client ChangePasswordClient, tmpl Template) Handler {
 					},
 				}
 				w.WriteHeader(http.StatusBadRequest)
-				return tmpl.ExecuteTemplate(w, "page", vars)
+				return tmpl(w, vars)
 			}
 
 			if err != nil {
@@ -58,10 +60,10 @@ func changePassword(client ChangePasswordClient, tmpl Template) Handler {
 			}
 
 			vars.Success = true
-			return tmpl.ExecuteTemplate(w, "page", vars)
+			return tmpl(w, vars)
 
 		default:
-			return StatusError(http.StatusMethodNotAllowed)
+			return handler.Status(http.StatusMethodNotAllowed)
 		}
 	}
 }

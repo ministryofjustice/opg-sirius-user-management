@@ -1,11 +1,13 @@
 package server
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
+	"github.com/ministryofjustice/opg-sirius-user-management/tbd/handler"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -46,12 +48,13 @@ func TestViewTeam(t *testing.T) {
 	client := &mockViewTeamClient{
 		data: data,
 	}
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/teams/16", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := viewTeam(client, template)(client.requiredPermissions(), w, r)
+	err := viewTeam(client, template.Func())(w, r)
 	assert.Nil(err)
 
 	resp := w.Result()
@@ -61,7 +64,6 @@ func TestViewTeam(t *testing.T) {
 	assert.Equal(1, client.count)
 
 	assert.Equal(1, template.count)
-	assert.Equal("page", template.lastName)
 	assert.Equal(viewTeamVars{
 		Path: "/teams/16",
 		Team: data,
@@ -73,39 +75,42 @@ func TestViewTeamNoPermission(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, sirius.PermissionSet{}))
 
-	err := viewTeam(nil, nil)(sirius.PermissionSet{}, w, r)
-	assert.Equal(StatusError(http.StatusForbidden), err)
+	err := viewTeam(nil, nil)(w, r)
+	assert.Equal(handler.Status(http.StatusForbidden), err)
 }
 
 func TestViewTeamNotFound(t *testing.T) {
 	assert := assert.New(t)
 
 	client := &mockViewTeamClient{
-		err: StatusError(http.StatusNotFound),
+		err: handler.Status(http.StatusNotFound),
 	}
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/teams/25", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := viewTeam(client, template)(client.requiredPermissions(), w, r)
+	err := viewTeam(client, template.Func())(w, r)
 
-	assert.Equal(StatusError(http.StatusNotFound), err)
+	assert.Equal(handler.Status(http.StatusNotFound), err)
 }
 
 func TestViewTeamBadPath(t *testing.T) {
 	assert := assert.New(t)
 
 	client := &mockViewTeamClient{}
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/teams/jeoi", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := viewTeam(client, template)(client.requiredPermissions(), w, r)
+	err := viewTeam(client, template.Func())(w, r)
 
-	assert.Equal(StatusError(http.StatusNotFound), err)
+	assert.Equal(handler.Status(http.StatusNotFound), err)
 }
 
 func TestPostViewTeam(t *testing.T) {
@@ -114,7 +119,8 @@ func TestPostViewTeam(t *testing.T) {
 	client := &mockViewTeamClient{}
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := viewTeam(nil, nil)(client.requiredPermissions(), w, r)
-	assert.Equal(StatusError(http.StatusMethodNotAllowed), err)
+	err := viewTeam(nil, nil)(w, r)
+	assert.Equal(handler.Status(http.StatusMethodNotAllowed), err)
 }

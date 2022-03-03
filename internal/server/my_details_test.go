@@ -1,12 +1,14 @@
 package server
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
+	"github.com/ministryofjustice/opg-sirius-user-management/tbd/handler"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -39,13 +41,14 @@ func TestGetMyDetails(t *testing.T) {
 		},
 	}
 	client := &mockMyDetailsClient{data: data}
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, sirius.PermissionSet{}))
 
-	handler := myDetails(client, template)
-	err := handler(sirius.PermissionSet{}, w, r)
+	handler := myDetails(client, template.Func())
+	err := handler(w, r)
 
 	assert.Nil(err)
 
@@ -56,7 +59,6 @@ func TestGetMyDetails(t *testing.T) {
 	assert.Equal(1, client.count)
 
 	assert.Equal(1, template.count)
-	assert.Equal("page", template.lastName)
 	assert.Equal(myDetailsVars{
 		Path:               "/path",
 		ID:                 123,
@@ -86,13 +88,14 @@ func TestGetMyDetailsUsesPermission(t *testing.T) {
 		},
 	}
 	client := &mockMyDetailsClient{data: data}
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, sirius.PermissionSet{"v1-users-updatetelephonenumber": sirius.PermissionGroup{Permissions: []string{"put"}}}))
 
-	handler := myDetails(client, template)
-	err := handler(sirius.PermissionSet{"v1-users-updatetelephonenumber": sirius.PermissionGroup{Permissions: []string{"put"}}}, w, r)
+	handler := myDetails(client, template.Func())
+	err := handler(w, r)
 
 	assert.Nil(err)
 
@@ -101,7 +104,6 @@ func TestGetMyDetailsUsesPermission(t *testing.T) {
 	assert.Equal(getContext(r), client.lastCtx)
 
 	assert.Equal(1, template.count)
-	assert.Equal("page", template.lastName)
 	assert.Equal(myDetailsVars{
 		Path:               "/path",
 		ID:                 123,
@@ -120,13 +122,14 @@ func TestGetMyDetailsUnauthenticated(t *testing.T) {
 	assert := assert.New(t)
 
 	client := &mockMyDetailsClient{err: sirius.ErrUnauthorized}
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, sirius.PermissionSet{}))
 
-	handler := myDetails(client, template)
-	err := handler(sirius.PermissionSet{}, w, r)
+	handler := myDetails(client, template.Func())
+	err := handler(w, r)
 
 	assert.Equal(sirius.ErrUnauthorized, err)
 
@@ -137,13 +140,14 @@ func TestGetMyDetailsSiriusErrors(t *testing.T) {
 	assert := assert.New(t)
 
 	client := &mockMyDetailsClient{err: errors.New("err")}
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, sirius.PermissionSet{}))
 
-	handler := myDetails(client, template)
-	err := handler(sirius.PermissionSet{}, w, r)
+	handler := myDetails(client, template.Func())
+	err := handler(w, r)
 
 	assert.Equal("err", err.Error())
 
@@ -152,15 +156,15 @@ func TestGetMyDetailsSiriusErrors(t *testing.T) {
 
 func TestPostMyDetails(t *testing.T) {
 	assert := assert.New(t)
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, sirius.PermissionSet{}))
 
-	handler := myDetails(nil, template)
-	err := handler(sirius.PermissionSet{}, w, r)
+	err := myDetails(nil, template.Func())(w, r)
 
-	assert.Equal(StatusError(http.StatusMethodNotAllowed), err)
+	assert.Equal(handler.Status(http.StatusMethodNotAllowed), err)
 
 	assert.Equal(0, template.count)
 }

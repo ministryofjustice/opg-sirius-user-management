@@ -1,12 +1,14 @@
 package server
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
+	"github.com/ministryofjustice/opg-sirius-user-management/tbd/handler"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -49,15 +51,15 @@ func (m *mockEditRandomReviewSettingsClient) requiredPermissions() sirius.Permis
 
 func TestNotAuthorised(t *testing.T) {
 	client := &mockEditRandomReviewSettingsClient{}
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
-	handler := editRandomReviewSettings(client, template)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, sirius.PermissionSet{}))
 
-	err := handler(sirius.PermissionSet{}, w, r)
+	err := editRandomReviewSettings(client, template.Func())(w, r)
 
-	assert.Equal(t, StatusError(http.StatusForbidden), err)
+	assert.Equal(t, handler.Status(http.StatusForbidden), err)
 }
 
 func TestGetRandomReviewSettings(t *testing.T) {
@@ -65,18 +67,19 @@ func TestGetRandomReviewSettings(t *testing.T) {
 
 	data := sirius.RandomReviews{
 		LayPercentage: 10,
-		PaPercentage: 20,
+		PaPercentage:  20,
 		ReviewCycle:   1,
 	}
 
 	client := &mockEditRandomReviewSettingsClient{data: data}
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	handler := editRandomReviewSettings(client, template)
-	err := handler(client.requiredPermissions(), w, r)
+	handler := editRandomReviewSettings(client, template.Func())
+	err := handler(w, r)
 
 	assert.Nil(err)
 
@@ -85,11 +88,10 @@ func TestGetRandomReviewSettings(t *testing.T) {
 	assert.Equal(getContext(r), client.lastCtx)
 
 	assert.Equal(1, template.count)
-	assert.Equal("page", template.lastName)
 	assert.Equal(editRandomReviewSettingsVars{
-		Path:        "/path",
+		Path:          "/path",
 		LayPercentage: 10,
-		PaPercentage: 20,
+		PaPercentage:  20,
 		ReviewCycle:   1,
 	}, template.lastVars)
 }
@@ -99,21 +101,20 @@ func TestPostRandomReviewSettings(t *testing.T) {
 
 	data := sirius.RandomReviews{
 		LayPercentage: 10,
-		PaPercentage: 20,
+		PaPercentage:  20,
 		ReviewCycle:   1,
 	}
 
 	client := &mockEditRandomReviewSettingsClient{data: data}
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", strings.NewReader("layReviewCycle=1"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	handler := editRandomReviewSettings(client, template)
-
-	err := handler(client.requiredPermissions(), w, r)
-	assert.Equal(RedirectError("/random-reviews"), err)
+	err := editRandomReviewSettings(client, template.Func())(w, r)
+	assert.Equal(handler.Redirect("/random-reviews"), err)
 
 	resp := w.Result()
 	assert.Equal(http.StatusOK, resp.StatusCode)
@@ -131,7 +132,7 @@ func TestPostRandomReviewSettingsValidationError(t *testing.T) {
 
 	data := sirius.RandomReviews{
 		LayPercentage: 10,
-		PaPercentage: 20,
+		PaPercentage:  20,
 		ReviewCycle:   1,
 	}
 
@@ -146,26 +147,26 @@ func TestPostRandomReviewSettingsValidationError(t *testing.T) {
 		Errors: errors,
 	}
 
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", strings.NewReader("reviewCycle=-1"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	handler := editRandomReviewSettings(client, template)
+	handler := editRandomReviewSettings(client, template.Func())
 
-	err := handler(client.requiredPermissions(), w, r)
+	err := handler(w, r)
 	assert.Nil(err)
 
 	resp := w.Result()
 	assert.Equal(http.StatusBadRequest, resp.StatusCode)
 	assert.Equal(1, template.count)
-	assert.Equal("page", template.lastName)
 	assert.Equal(editRandomReviewSettingsVars{
-		Path:        "/path",
+		Path:          "/path",
 		LayPercentage: 10,
-		PaPercentage: 20,
+		PaPercentage:  20,
 		ReviewCycle:   1,
-		Errors:      errors,
+		Errors:        errors,
 	}, template.lastVars)
 }
