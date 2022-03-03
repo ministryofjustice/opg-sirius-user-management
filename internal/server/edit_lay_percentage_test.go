@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -8,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
+	"github.com/ministryofjustice/opg-sirius-user-management/tbd/handler"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -58,13 +60,14 @@ func TestGetLayPercentage(t *testing.T) {
 	}
 
 	client := &mockEditLayPercentageClient{data: data}
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/path", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	handler := editLayPercentage(client, template)
-	err := handler(client.requiredPermissions(), w, r)
+	handler := editLayPercentage(client, template.Func())
+	err := handler(w, r)
 
 	assert.Nil(err)
 
@@ -73,7 +76,6 @@ func TestGetLayPercentage(t *testing.T) {
 	assert.Equal(getContext(r), client.lastCtx)
 
 	assert.Equal(1, template.count)
-	assert.Equal("page", template.lastName)
 	assert.Equal(editLayPercentageVars{
 		Path:          "/path",
 		LayPercentage: "10",
@@ -89,16 +91,15 @@ func TestPostLayPercentage(t *testing.T) {
 	}
 
 	client := &mockEditLayPercentageClient{data: data}
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", strings.NewReader("layPercentage=10"))
 	r.Header.Add(constantType, applicationHeader)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	handler := editLayPercentage(client, template)
-
-	err := handler(client.requiredPermissions(), w, r)
-	assert.Equal(RedirectError("/random-reviews"), err)
+	err := editLayPercentage(client, template.Func())(w, r)
+	assert.Equal(handler.Redirect("/random-reviews"), err)
 
 	resp := w.Result()
 	assert.Equal(http.StatusOK, resp.StatusCode)
@@ -129,21 +130,21 @@ func TestPostLayPercentageValidationError(t *testing.T) {
 		Errors: errors,
 	}
 
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", strings.NewReader("layPercentage=test"))
 	r.Header.Add(constantType, applicationHeader)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	handler := editLayPercentage(client, template)
+	handler := editLayPercentage(client, template.Func())
 
-	err := handler(client.requiredPermissions(), w, r)
+	err := handler(w, r)
 	assert.Nil(err)
 
 	resp := w.Result()
 	assert.Equal(http.StatusBadRequest, resp.StatusCode)
 	assert.Equal(1, template.count)
-	assert.Equal("page", template.lastName)
 	assert.Equal(editLayPercentageVars{
 		Path:          "/path",
 		LayPercentage: "test",
@@ -157,9 +158,10 @@ func TestPostEditLayPercentageNoPermission(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, sirius.PermissionSet{}))
 
-	err := editLayPercentage(nil, nil)(sirius.PermissionSet{}, w, r)
-	assert.Equal(StatusError(http.StatusForbidden), err)
+	err := editLayPercentage(nil, nil)(w, r)
+	assert.Equal(handler.Status(http.StatusForbidden), err)
 }
 
 func TestGetRandomReviewError(t *testing.T) {
@@ -169,12 +171,13 @@ func TestGetRandomReviewError(t *testing.T) {
 
 	client := &mockEditLayPercentageClient{}
 	client.err = expectedError
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/random-review-settings", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := editLayPercentage(client, template)(client.requiredPermissions(), w, r)
+	err := editLayPercentage(client, template.Func())(w, r)
 	assert.Equal(expectedError, err)
 
 	assert.Equal(1, client.count)
@@ -188,13 +191,14 @@ func TestPostEditLayPercentageError(t *testing.T) {
 
 	client := &mockEditLayPercentageClient{}
 	client.err = expectedError
-	template := &mockTemplate{}
+	template := &mockTemplateFn{}
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("POST", "/path", strings.NewReader("layPercentage=test"))
 	r.Header.Add(constantType, applicationHeader)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := editLayPercentage(client, template)(client.requiredPermissions(), w, r)
+	err := editLayPercentage(client, template.Func())(w, r)
 	assert.Equal(expectedError, err)
 
 	assert.Equal(1, client.count)
@@ -207,7 +211,8 @@ func TestPutEditLayPercentageError(t *testing.T) {
 	client := &mockEditLayPercentageClient{}
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("PUT", "/random-review-settings", nil)
+	r = r.WithContext(context.WithValue(r.Context(), myPermissionsKey{}, client.requiredPermissions()))
 
-	err := editLayPercentage(nil, nil)(client.requiredPermissions(), w, r)
-	assert.Equal(StatusError(http.StatusMethodNotAllowed), err)
+	err := editLayPercentage(nil, nil)(w, r)
+	assert.Equal(handler.Status(http.StatusMethodNotAllowed), err)
 }

@@ -4,6 +4,8 @@ import (
 	"net/http"
 
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
+	"github.com/ministryofjustice/opg-sirius-user-management/tbd/handler"
+	"github.com/ministryofjustice/opg-sirius-user-management/tbd/template"
 )
 
 type RandomReviewsClient interface {
@@ -18,14 +20,15 @@ type randomReviewsVars struct {
 	ReviewCycle   int
 }
 
-func randomReviews(client RandomReviewsClient, tmpl Template) Handler {
-	return func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error {
+func randomReviews(client RandomReviewsClient, tmpl template.Template) handler.Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
+		perm := myPermissions(r)
 		if !perm.HasPermission("v1-random-review-settings", http.MethodGet) {
-			return StatusError(http.StatusForbidden)
+			return handler.Status(http.StatusForbidden)
 		}
 
 		if r.Method != http.MethodGet {
-			return StatusError(http.StatusMethodNotAllowed)
+			return handler.Status(http.StatusMethodNotAllowed)
 		}
 
 		ctx := getContext(r)
@@ -43,6 +46,6 @@ func randomReviews(client RandomReviewsClient, tmpl Template) Handler {
 			ReviewCycle:   randomReviews.ReviewCycle,
 		}
 
-		return tmpl.ExecuteTemplate(w, "page", vars)
+		return tmpl(w, vars)
 	}
 }
