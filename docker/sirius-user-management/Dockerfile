@@ -4,11 +4,12 @@ WORKDIR /app
 
 RUN mkdir -p web/static
 
-COPY web/assets web/assets
 COPY package.json .
 COPY yarn.lock .
+RUN yarn
 
-RUN yarn && yarn build
+COPY web/assets web/assets
+RUN yarn build
 
 FROM golang:1.17.7 as build-env
 
@@ -19,7 +20,8 @@ COPY go.sum .
 
 RUN go mod download
 
-COPY . .
+COPY main.go main.go
+COPY internal internal
 
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o /go/bin/opg-sirius-user-management
 
@@ -33,8 +35,8 @@ RUN apk --update --no-cache add \
     && rm -rf /var/cache/apk/*
 
 COPY --from=build-env /go/bin/opg-sirius-user-management opg-sirius-user-management
-COPY --from=build-env /app/web/template web/template
 COPY --from=asset-env /app/web/static web/static
+COPY web/template web/template
 
 RUN addgroup -S app && \
     adduser -S -g app app && \
