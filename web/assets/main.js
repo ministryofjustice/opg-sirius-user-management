@@ -1,8 +1,7 @@
-import './main.scss';
-import GOVUKFrontend from 'govuk-frontend/govuk/all.js';
-import MOJFrontend from '@ministryofjustice/frontend/moj/all.js';
+import GOVUKFrontend from "govuk-frontend/govuk/all.js";
+import MOJFrontend from "@ministryofjustice/frontend/moj/all.js";
 
-document.body.className = ((document.body.className) ? document.body.className + ' js-enabled' : 'js-enabled');
+document.body.className = document.body.className
+  ? document.body.className + " js-enabled"
+  : "js-enabled";
 GOVUKFrontend.initAll();
-
-

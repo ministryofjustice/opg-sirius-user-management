@@ -4,39 +4,39 @@ $govuk-include-default-font-face: false;
 @import "node_modules/@ministryofjustice/frontend/moj/all";
 
 .govuk-table .link-button {
-    @include govuk-link-common;
-    @include govuk-link-style-default;
-    color: $govuk-link-colour;
-    text-decoration: underline;
-    margin-bottom: 0;
-    padding: 0;
-    border: none;
-    box-shadow: none;
-    background: transparent;
-    line-height: 1.3157894737;
-    font-size: 1.1875rem;
-    cursor: pointer;
+  @include govuk-link-common;
+  @include govuk-link-style-default;
+  color: $govuk-link-colour;
+  text-decoration: underline;
+  margin-bottom: 0;
+  padding: 0;
+  border: none;
+  box-shadow: none;
+  background: transparent;
+  line-height: 1.3157894737;
+  font-size: 1.1875rem;
+  cursor: pointer;
 }
 
 .govuk-checkboxes--small .govuk-checkboxes__label {
-    &::before {
-        top: 0;
-    }
+  &::before {
+    top: 0;
+  }
 
-    &::after {
-        top: 8px;
-    }
+  &::after {
+    top: 8px;
+  }
 }
 
 .govuk-\!-width-one-tenth {
-    width: 100% !important;
+  width: 100% !important;
 
-    @include govuk-media-query($from: tablet) {
-      width: 10% !important;
-    }
+  @include govuk-media-query($from: tablet) {
+    width: 10% !important;
+  }
 }
 
 #link-placement {
-    padding-left: 1em;
-    line-height : 2;
+  padding-left: 1em;
+  line-height: 2;
 }
