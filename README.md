@@ -37,7 +37,6 @@ yarn && yarn build
 SIRIUS_PUBLIC_URL=http://localhost:8080 SIRIUS_URL=http://localhost:8080 PORT=8888 go run main.go
 ```
 
-
 ### Testing
 
 Make sure that `pact` is available before running the tests, on a Mac with Homebrew you can do:
@@ -62,13 +61,11 @@ docker-compose -f docker/docker-compose.cypress.yml up -d --build
 yarn && yarn cypress
 ```
 
-
 ## Development
 
 On CI we lint using [golangci-lint](https://golangci-lint.run/). It may be
 useful to install locally to check changes. This will include a check on
 formatting so it is recommended to setup your editor to use `go fmt`.
-
 
 ## Architecture
 
@@ -91,17 +88,15 @@ permissions are defined in
 into its own file and provide a specific subset of the client as an interface to
 depend on.
 
-
 ## Environment variables
 
 | Name                | Description                         |
-|---------------------|-------------------------------------|
+| ------------------- | ----------------------------------- |
 | `PORT`              | Port to run on                      |
 | `WEB_DIR`           | Path to the 'web' directory         |
 | `SIRIUS_URL`        | Base URL to call Sirius             |
 | `SIRIUS_PUBLIC_URL` | Base URL to redirect to Sirius      |
 | `PREFIX`            | Path to prefix to each page's route |
-
 
 ## Prototype
 
