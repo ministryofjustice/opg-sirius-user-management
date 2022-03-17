@@ -72,8 +72,7 @@ formatting so it is recommended to setup your editor to use `go fmt`.
 
 ## Architecture
 
-The Go code is mostly split between two internal packages. The static assets are
-built with Webpack.
+The Go code is mostly split between two internal packages.
 
 ### `./internal/sirius`
 
