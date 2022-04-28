@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/ministryofjustice/opg-go-common/securityheaders"
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
 )
 
@@ -134,20 +135,7 @@ func New(logger Logger, client Client, templates map[string]*template.Template, 
 	mux.Handle("/javascript/", static)
 	mux.Handle("/stylesheets/", static)
 
-	return http.StripPrefix(prefix, securityHeaders(mux))
-}
-
-func securityHeaders(h http.Handler) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Add("Content-Security-Policy", "default-src 'self'")
-		w.Header().Add("Referrer-Policy", "same-origin")
-		w.Header().Add("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload")
-		w.Header().Add("X-Content-Type-Options", "nosniff")
-		w.Header().Add("X-Frame-Options", "SAMEORIGIN")
-		w.Header().Add("X-XSS-Protection", "1; mode=block")
-
-		h.ServeHTTP(w, r)
-	}
+	return http.StripPrefix(prefix, securityheaders.Use(mux))
 }
 
 type RedirectError string
