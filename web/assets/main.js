@@ -1,4 +1,4 @@
-import GOVUKFrontend from "govuk-frontend/govuk/all.js";
+import * as GOVUKFrontend from "govuk-frontend";
 import MOJFrontend from "@ministryofjustice/frontend/moj/all.js";
 
 document.body.className = document.body.className
