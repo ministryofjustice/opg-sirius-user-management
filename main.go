@@ -64,6 +64,7 @@ func main() {
 	server := &http.Server{
 		Addr:    ":" + port,
 		Handler: server.New(logger, client, tmpls, prefix, siriusPublicURL, webDir),
+		ReadHeaderTimeout: 10 * time.Second,
 	}
 
 	go func() {
