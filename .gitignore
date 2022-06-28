@@ -5,6 +5,8 @@ logs/
 node_modules
 pacts/
 web/static
+test-results
 # ignore JetBrains project files
 .idea
+.vscode
 .yarn-error.log
