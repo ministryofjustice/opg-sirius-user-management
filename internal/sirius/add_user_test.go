@@ -64,6 +64,12 @@ func TestAddUser(t *testing.T) {
 					}).
 					WillRespondWith(dsl.Response{
 						Status: http.StatusCreated,
+						Body: map[string]interface{}{
+							"firstname": "John",
+							"surname":   "Doe",
+							"email":     "john.doe@example.com",
+							"roles":     []string{"COP User", "other1", "other2"},
+						},
 					})
 			},
 			cookies: []*http.Cookie{
