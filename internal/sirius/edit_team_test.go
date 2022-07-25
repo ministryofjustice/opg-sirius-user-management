@@ -28,6 +28,8 @@ func TestEditTeam(t *testing.T) {
 	}
 	defer pact.Teardown()
 
+	teamNameSuffix := randomString(15)
+
 	testCases := []struct {
 		name          string
 		setup         func()
@@ -39,7 +41,7 @@ func TestEditTeam(t *testing.T) {
 			name: "OK",
 			team: Team{
 				ID:          65,
-				DisplayName: "Test team",
+				DisplayName: "Test team" + teamNameSuffix,
 				Type:        "INVESTIGATIONS",
 				PhoneNumber: "014729583920",
 				Email:       "test.team@opgtest.com",
@@ -60,7 +62,7 @@ func TestEditTeam(t *testing.T) {
 						},
 						Body: map[string]interface{}{
 							"email":       "test.team@opgtest.com",
-							"name":        "Test team",
+							"name":        "Test team" + teamNameSuffix,
 							"phoneNumber": "014729583920",
 							"type":        "INVESTIGATIONS",
 							"memberIds":   []int{},
@@ -81,7 +83,7 @@ func TestEditTeam(t *testing.T) {
 			name: "OKSendsMembers",
 			team: Team{
 				ID:          65,
-				DisplayName: "Test team with members",
+				DisplayName: "Test team with members" + teamNameSuffix,
 				Type:        "INVESTIGATIONS",
 				PhoneNumber: "014729583920",
 				Email:       "test.team@opgtest.com",
@@ -108,7 +110,7 @@ func TestEditTeam(t *testing.T) {
 						},
 						Body: map[string]interface{}{
 							"email":       "test.team@opgtest.com",
-							"name":        "Test team with members",
+							"name":        "Test team with members" + teamNameSuffix,
 							"phoneNumber": "014729583920",
 							"type":        "INVESTIGATIONS",
 							"memberIds":   []int{23},
