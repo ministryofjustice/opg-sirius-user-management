@@ -1,6 +1,7 @@
 package sirius
 
 import (
+	"crypto/rand"
 	"fmt"
 	"net/http"
 	"testing"
@@ -8,6 +9,20 @@ import (
 	"github.com/pact-foundation/pact-go/dsl"
 	"github.com/stretchr/testify/assert"
 )
+
+const letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-"
+
+func randomString(n int) string {
+	bytes := make([]byte, n)
+	_, err := rand.Read(bytes)
+	if err != nil {
+		panic(err)
+	}
+	for i, b := range bytes {
+		bytes[i] = letters[b%byte(len(letters))]
+	}
+	return string(bytes)
+}
 
 func TestAddTeam(t *testing.T) {
 	pact := &dsl.Pact{
@@ -19,6 +34,8 @@ func TestAddTeam(t *testing.T) {
 		PactDir:           "../../pacts",
 	}
 	defer pact.Teardown()
+
+	teamNameSuffix := randomString(15)
 
 	testCases := []struct {
 		scenario      string
@@ -49,7 +66,7 @@ func TestAddTeam(t *testing.T) {
 						},
 						Body: map[string]interface{}{
 							"email":       "john.doe@example.com",
-							"name":        "testteam",
+							"name":        "testteam" + teamNameSuffix,
 							"phoneNumber": "0300456090",
 						},
 					}).
@@ -65,7 +82,7 @@ func TestAddTeam(t *testing.T) {
 				{Name: "Other", Value: "other"},
 			},
 			email:      "john.doe@example.com",
-			name:       "testteam",
+			name:       "testteam" + teamNameSuffix,
 			phone:      "0300456090",
 			teamType:   "",
 			expectedID: 123,
@@ -89,7 +106,7 @@ func TestAddTeam(t *testing.T) {
 						},
 						Body: map[string]interface{}{
 							"email":       "john.doe@example.com",
-							"name":        "supervisiontestteam",
+							"name":        "supervisiontestteam" + teamNameSuffix,
 							"phoneNumber": "0300456090",
 							"type":        "INVESTIGATIONS",
 						},
@@ -106,7 +123,7 @@ func TestAddTeam(t *testing.T) {
 				{Name: "Other", Value: "other"},
 			},
 			email:      "john.doe@example.com",
-			name:       "supervisiontestteam",
+			name:       "supervisiontestteam" + teamNameSuffix,
 			phone:      "0300456090",
 			teamType:   "INVESTIGATIONS",
 			expectedID: 123,
