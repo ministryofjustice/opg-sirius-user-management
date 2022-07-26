@@ -28,8 +28,6 @@ func TestAddUser(t *testing.T) {
 	}
 	defer pact.Teardown()
 
-	userEmailSuffix := randomString(15)
-
 	testCases := []struct {
 		name          string
 		setup         func()
@@ -60,7 +58,7 @@ func TestAddUser(t *testing.T) {
 						Body: map[string]interface{}{
 							"firstname": "John",
 							"surname":   "Doe",
-							"email":     "john.doe" + userEmailSuffix + "@example.com",
+							"email":     "john.doe@example.com",
 							"roles":     []string{"COP User", "other1", "other2"},
 						},
 					}).
@@ -74,7 +72,7 @@ func TestAddUser(t *testing.T) {
 			},
 			firstName:    "John",
 			lastName:     "Doe",
-			email:        "john.doe" + userEmailSuffix + "@example.com",
+			email:        "john.doe@example.com",
 			organisation: "COP User",
 			roles:        []string{"other1", "other2"},
 		},
