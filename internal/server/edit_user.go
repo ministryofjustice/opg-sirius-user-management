@@ -60,6 +60,7 @@ func editUser(client EditUserClient, tmpl Template) Handler {
 		case http.MethodPost:
 			vars.User = sirius.AuthUser{
 				ID:           id,
+				Email:        r.PostFormValue("email"),
 				Firstname:    r.PostFormValue("firstname"),
 				Surname:      r.PostFormValue("surname"),
 				Organisation: r.PostFormValue("organisation"),
@@ -85,7 +86,6 @@ func editUser(client EditUserClient, tmpl Template) Handler {
 			}
 
 			vars.Success = true
-			vars.User.Email = r.PostFormValue("email")
 			return tmpl.ExecuteTemplate(w, "page", vars)
 
 		default:
