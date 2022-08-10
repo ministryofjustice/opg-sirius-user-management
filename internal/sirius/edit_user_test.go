@@ -35,6 +35,7 @@ func TestEditUser(t *testing.T) {
 			name: "OK",
 			user: AuthUser{
 				ID:           123,
+				Email:        "c@email",
 				Firstname:    "a",
 				Surname:      "b",
 				Organisation: "d",
@@ -57,6 +58,7 @@ func TestEditUser(t *testing.T) {
 						},
 						Body: map[string]interface{}{
 							"id":        123,
+							"email":     "c@email",
 							"firstname": "a",
 							"surname":   "b",
 							"roles":     []string{"e", "f", "d"},
