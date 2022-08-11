@@ -68,8 +68,12 @@
 
         <div class="govuk-form-group">
           <label class="govuk-label" for="f-email">Email address</label>
-          <input class="govuk-input" id="f-email" type="text" value="{{ .User.Email }}" disabled>
-          <input name="email" type="hidden" value="{{ .User.Email }}">
+          {{ range .Errors.email }}
+            <p class="govuk-error-message">
+              <span class="govuk-visually-hidden">Error:</span> {{ . }}
+            </p>
+          {{ end }}
+          <input class="govuk-input {{ if .Errors.email }}govuk-input--error{{ end }}" id="f-email" name="email" type="text" value="{{ .User.Email }}">
         </div>
 
         <div class="govuk-form-group {{ if .Errors.firstname }}govuk-form-group--error{{ end }}">
