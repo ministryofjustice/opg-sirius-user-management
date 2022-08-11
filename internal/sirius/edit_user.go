@@ -9,6 +9,7 @@ import (
 
 type editUserRequest struct {
 	ID        int      `json:"id"`
+	Email     string   `json:"email,omitempty"`
 	Firstname string   `json:"firstname"`
 	Surname   string   `json:"surname"`
 	Roles     []string `json:"roles"`
@@ -20,6 +21,7 @@ func (c *Client) EditUser(ctx Context, user AuthUser) error {
 	var body bytes.Buffer
 	err := json.NewEncoder(&body).Encode(editUserRequest{
 		ID:        user.ID,
+		Email:     user.Email,
 		Firstname: user.Firstname,
 		Surname:   user.Surname,
 		Roles:     append(user.Roles, user.Organisation),
