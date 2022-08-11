@@ -139,6 +139,7 @@ func TestPostEditUser(t *testing.T) {
 	assert.Equal(getContext(r), client.editUser.lastCtx)
 	assert.Equal(sirius.AuthUser{
 		ID:           123,
+		Email:        "a",
 		Firstname:    "b",
 		Surname:      "c",
 		Organisation: "d",
@@ -193,6 +194,7 @@ func TestPostEditUserClientError(t *testing.T) {
 		Roles: []string{"System Admin", "Manager"},
 		User: sirius.AuthUser{
 			ID:           123,
+			Email:        "a",
 			Firstname:    "b",
 			Surname:      "c",
 			Organisation: "d",
