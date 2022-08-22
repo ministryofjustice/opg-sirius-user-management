@@ -14,7 +14,7 @@
   "dependencies": {
     "@ministryofjustice/frontend": "1.0.1",
     "cypress": "10.4.0",
-    "govuk-frontend": "^4.3.0"
+    "govuk-frontend": "^4.3.1"
   },
   "devDependencies": {
     "esbuild": "^0.14.27",
