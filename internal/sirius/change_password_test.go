@@ -1,6 +1,7 @@
 package sirius
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -27,7 +28,6 @@ func TestChangePassword(t *testing.T) {
 	testCases := []struct {
 		name             string
 		setup            func()
-		cookies          []*http.Cookie
 		existingPassword string
 		password         string
 		confirmPassword  string
@@ -44,9 +44,6 @@ func TestChangePassword(t *testing.T) {
 						Method: http.MethodPost,
 						Path:   dsl.String("/auth/change-password"),
 						Headers: dsl.MapMatcher{
-							"X-XSRF-TOKEN":        dsl.String("abcde"),
-							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
-							"OPG-Bypass-Membrane": dsl.String("1"),
 							"Content-Type":        dsl.String("application/x-www-form-urlencoded"),
 						},
 						Body: "existingPassword=Password1&password=Password1&confirmPassword=Password1",
@@ -55,36 +52,10 @@ func TestChangePassword(t *testing.T) {
 						Status: http.StatusOK,
 					})
 			},
-			cookies: []*http.Cookie{
-				{Name: "XSRF-TOKEN", Value: "abcde"},
-				{Name: "Other", Value: "other"},
-			},
 			existingPassword: "Password1",
 			password:         "Password1",
 			confirmPassword:  "Password1",
 		},
-
-		{
-			name: "Unauthorized",
-			setup: func() {
-				pact.
-					AddInteraction().
-					Given("User exists with password").
-					UponReceiving("A request to change password without cookies").
-					WithRequest(dsl.Request{
-						Method: http.MethodPost,
-						Path:   dsl.String("/auth/change-password"),
-						Headers: dsl.MapMatcher{
-							"OPG-Bypass-Membrane": dsl.String("1"),
-						},
-					}).
-					WillRespondWith(dsl.Response{
-						Status: http.StatusUnauthorized,
-					})
-			},
-			expectedError: ErrUnauthorized,
-		},
-
 		{
 			name: "Errors",
 			setup: func() {
@@ -96,9 +67,6 @@ func TestChangePassword(t *testing.T) {
 						Method: http.MethodPost,
 						Path:   dsl.String("/auth/change-password"),
 						Headers: dsl.MapMatcher{
-							"X-XSRF-TOKEN":        dsl.String("abcde"),
-							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
-							"OPG-Bypass-Membrane": dsl.String("1"),
 							"Content-Type":        dsl.String("application/x-www-form-urlencoded"),
 						},
 						Body: "existingPassword=x&password=y&confirmPassword=z",
@@ -107,10 +75,6 @@ func TestChangePassword(t *testing.T) {
 						Status: http.StatusBadRequest,
 						Body:   dsl.Match(errorsResponse{}),
 					})
-			},
-			cookies: []*http.Cookie{
-				{Name: "XSRF-TOKEN", Value: "abcde"},
-				{Name: "Other", Value: "other"},
 			},
 			existingPassword: "x",
 			password:         "y",
@@ -126,7 +90,7 @@ func TestChangePassword(t *testing.T) {
 			assert.Nil(t, pact.Verify(func() error {
 				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
 
-				err := client.ChangePassword(getContext(tc.cookies), tc.existingPassword, tc.password, tc.confirmPassword)
+				err := client.ChangePassword(Context{Context: context.Background()}, tc.existingPassword, tc.password, tc.confirmPassword)
 				assert.Equal(t, tc.expectedError, err)
 				return nil
 			}))
@@ -140,7 +104,7 @@ func TestChangePasswordStatusError(t *testing.T) {
 
 	client, _ := NewClient(http.DefaultClient, s.URL)
 
-	err := client.ChangePassword(getContext(nil), "", "", "")
+	err := client.ChangePassword(Context{Context: context.Background()}, "", "", "")
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
 		URL:    s.URL + "/auth/change-password",

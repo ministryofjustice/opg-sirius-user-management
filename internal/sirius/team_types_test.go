@@ -1,6 +1,7 @@
 package sirius
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -23,7 +24,6 @@ func TestTeamTypes(t *testing.T) {
 	testCases := []struct {
 		name             string
 		setup            func()
-		cookies          []*http.Cookie
 		expectedResponse []RefDataTeamType
 		expectedError    error
 	}{
@@ -40,11 +40,6 @@ func TestTeamTypes(t *testing.T) {
 						Query: dsl.MapMatcher{
 							"filter": dsl.String("teamType"),
 						},
-						Headers: dsl.MapMatcher{
-							"X-XSRF-TOKEN":        dsl.String("abcde"),
-							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
-							"OPG-Bypass-Membrane": dsl.String("1"),
-						},
 					}).
 					WillRespondWith(dsl.Response{
 						Status: http.StatusOK,
@@ -56,40 +51,12 @@ func TestTeamTypes(t *testing.T) {
 						}),
 					})
 			},
-			cookies: []*http.Cookie{
-				{Name: "XSRF-TOKEN", Value: "abcde"},
-				{Name: "Other", Value: "other"},
-			},
 			expectedResponse: []RefDataTeamType{
 				{
 					Handle: "ALLOCATIONS",
 					Label:  "Allocations",
 				},
 			},
-		},
-
-		{
-			name: "Unauthorized",
-			setup: func() {
-				pact.
-					AddInteraction().
-					Given("Some team types").
-					UponReceiving("A request for team types without cookies").
-					WithRequest(dsl.Request{
-						Method: http.MethodGet,
-						Path:   dsl.String("/api/v1/reference-data"),
-						Query: dsl.MapMatcher{
-							"filter": dsl.String("teamType"),
-						},
-						Headers: dsl.MapMatcher{
-							"OPG-Bypass-Membrane": dsl.String("1"),
-						},
-					}).
-					WillRespondWith(dsl.Response{
-						Status: http.StatusUnauthorized,
-					})
-			},
-			expectedError: ErrUnauthorized,
 		},
 	}
 
@@ -100,7 +67,7 @@ func TestTeamTypes(t *testing.T) {
 			assert.Nil(t, pact.Verify(func() error {
 				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
 
-				types, err := client.TeamTypes(getContext(tc.cookies))
+				types, err := client.TeamTypes(Context{Context: context.Background()})
 
 				assert.Equal(t, tc.expectedResponse, types)
 				assert.Equal(t, tc.expectedError, err)
@@ -116,7 +83,7 @@ func TestTeamTypesStatusError(t *testing.T) {
 
 	client, _ := NewClient(http.DefaultClient, s.URL)
 
-	_, err := client.TeamTypes(getContext(nil))
+	_, err := client.TeamTypes(Context{Context: context.Background()})
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
 		URL:    s.URL + "/api/v1/reference-data?filter=teamType",
