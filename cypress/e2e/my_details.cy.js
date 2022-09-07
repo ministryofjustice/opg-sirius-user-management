@@ -1,6 +1,12 @@
 describe("My details", () => {
   beforeEach(() => {
-    cy.visit("/my-details");
+    cy.visit("/my-details", {
+      headers: {
+        Cookie: "XSRF-TOKEN=abcde; Other=other",
+        "OPG-Bypass-Membrane": "1",
+        "X-XSRF-TOKEN": "abcde",
+      },
+    });
   });
 
   it("shows my details", () => {

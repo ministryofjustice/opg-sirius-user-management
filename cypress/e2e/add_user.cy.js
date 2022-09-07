@@ -1,5 +1,7 @@
 describe("Add user", () => {
   beforeEach(() => {
+    cy.setCookie("Other", "other");
+    cy.setCookie("XSRF-TOKEN", "abcde");
     cy.visit("/users");
   });
 

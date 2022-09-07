@@ -1,5 +1,7 @@
 describe("Delete a team", () => {
   beforeEach(() => {
+    cy.setCookie("Other", "other");
+    cy.setCookie("XSRF-TOKEN", "abcde");
     cy.visit("/teams/delete/65");
   });
 
