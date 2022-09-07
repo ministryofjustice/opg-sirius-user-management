@@ -77,27 +77,6 @@ func TestUser(t *testing.T) {
 				Inactive:     true,
 			},
 		},
-
-		{
-			name: "Unauthorized",
-			setup: func() {
-				pact.
-					AddInteraction().
-					Given("User exists").
-					UponReceiving("A request for the user without cookies").
-					WithRequest(dsl.Request{
-						Method: http.MethodGet,
-						Path:   dsl.String("/auth/user/123"),
-						Headers: dsl.MapMatcher{
-							"OPG-Bypass-Membrane": dsl.String("1"),
-						},
-					}).
-					WillRespondWith(dsl.Response{
-						Status: http.StatusUnauthorized,
-					})
-			},
-			expectedError: ErrUnauthorized,
-		},
 	}
 
 	for _, tc := range testCases {

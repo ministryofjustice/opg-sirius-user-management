@@ -124,41 +124,6 @@ func TestEditTeam(t *testing.T) {
 			},
 			expectedError: func(port int) error { return nil },
 		},
-
-		{
-			name: "Unauthorized",
-			team: Team{
-				ID:          65,
-				DisplayName: "Test team",
-				Type:        "FINANCE",
-			},
-			setup: func() {
-				pact.
-					AddInteraction().
-					Given("Supervision team with members exists").
-					UponReceiving("A request to edit the team without cookies").
-					WithRequest(dsl.Request{
-						Method: http.MethodPut,
-						Path:   dsl.String("/api/v1/teams/65"),
-						Headers: dsl.MapMatcher{
-							"OPG-Bypass-Membrane": dsl.String("1"),
-							"Content-Type":        dsl.String("application/json"),
-						},
-						Body: map[string]interface{}{
-							"name":        "Test team",
-							"type":        "FINANCE",
-							"email":       "",
-							"phoneNumber": "",
-							"memberIds":   []int{},
-						},
-					}).
-					WillRespondWith(dsl.Response{
-						Status: http.StatusUnauthorized,
-					})
-			},
-			expectedError: func(port int) error { return ErrUnauthorized },
-		},
-
 		{
 			name: "Validation Errors",
 			team: Team{
