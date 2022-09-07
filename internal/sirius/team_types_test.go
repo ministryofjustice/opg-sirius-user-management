@@ -67,30 +67,6 @@ func TestTeamTypes(t *testing.T) {
 				},
 			},
 		},
-
-		{
-			name: "Unauthorized",
-			setup: func() {
-				pact.
-					AddInteraction().
-					Given("Some team types").
-					UponReceiving("A request for team types without cookies").
-					WithRequest(dsl.Request{
-						Method: http.MethodGet,
-						Path:   dsl.String("/api/v1/reference-data"),
-						Query: dsl.MapMatcher{
-							"filter": dsl.String("teamType"),
-						},
-						Headers: dsl.MapMatcher{
-							"OPG-Bypass-Membrane": dsl.String("1"),
-						},
-					}).
-					WillRespondWith(dsl.Response{
-						Status: http.StatusUnauthorized,
-					})
-			},
-			expectedError: ErrUnauthorized,
-		},
 	}
 
 	for _, tc := range testCases {

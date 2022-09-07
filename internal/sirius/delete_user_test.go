@@ -54,28 +54,6 @@ func TestDeleteUser(t *testing.T) {
 				{Name: "Other", Value: "other"},
 			},
 		},
-
-		{
-			name:   "Unauthorized",
-			userID: 123,
-			setup: func() {
-				pact.
-					AddInteraction().
-					Given("A user").
-					UponReceiving("A request delete the user without cookies").
-					WithRequest(dsl.Request{
-						Method: http.MethodDelete,
-						Path:   dsl.String("/auth/user/123"),
-						Headers: dsl.MapMatcher{
-							"OPG-Bypass-Membrane": dsl.String("1"),
-						},
-					}).
-					WillRespondWith(dsl.Response{
-						Status: http.StatusUnauthorized,
-					})
-			},
-			expectedError: ErrUnauthorized,
-		},
 	}
 
 	for _, tc := range testCases {

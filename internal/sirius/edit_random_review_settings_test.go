@@ -317,36 +317,6 @@ func TestEditLayPercentage(t *testing.T) {
 			},
 			expectedError: nil,
 		},
-		{
-			name:          "Unauthorized",
-			layPercentage: "20",
-			paPercentage:  "10",
-			proPercentage: "18",
-			reviewCycle:   "3",
-			setup: func() {
-				pact.
-					AddInteraction().
-					Given(UserExists).
-					UponReceiving("A request to get lay percentage without cookies").
-					WithRequest(dsl.Request{
-						Method: http.MethodPost,
-						Path:   dsl.String(UrlRoute),
-						Headers: dsl.MapMatcher{
-							BypassMembrane: dsl.String("1"),
-						},
-						Body: map[string]interface{}{
-							"layPercentage": "20",
-							"paPercentage":  "10",
-							"proPercentage": "18",
-							"reviewCycle":   "3",
-						},
-					}).
-					WillRespondWith(dsl.Response{
-						Status: http.StatusUnauthorized,
-					})
-			},
-			expectedError: ErrUnauthorized,
-		},
 	}
 
 	for _, tc := range testCases {

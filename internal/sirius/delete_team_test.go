@@ -54,28 +54,6 @@ func TestDeleteTeam(t *testing.T) {
 				{Name: "Other", Value: "other"},
 			},
 		},
-
-		{
-			name:   "Unauthorized",
-			teamID: 461,
-			setup: func() {
-				pact.
-					AddInteraction().
-					Given("A team that can be deleted").
-					UponReceiving("A request to delete the team without cookies").
-					WithRequest(dsl.Request{
-						Method: http.MethodDelete,
-						Path:   dsl.String("/api/v1/teams/461"),
-						Headers: dsl.MapMatcher{
-							"OPG-Bypass-Membrane": dsl.String("1"),
-						},
-					}).
-					WillRespondWith(dsl.Response{
-						Status: http.StatusUnauthorized,
-					})
-			},
-			expectedError: ErrUnauthorized,
-		},
 	}
 
 	for _, tc := range testCases {
