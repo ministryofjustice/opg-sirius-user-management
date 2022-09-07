@@ -1,6 +1,7 @@
 package sirius
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -22,6 +23,14 @@ func invalidJSONServer() *httptest.Server {
 			_, _ = w.Write([]byte("1a is not valid json"))
 		}),
 	)
+}
+
+func getContext(cookies []*http.Cookie) Context {
+	return Context{
+		Context:   context.Background(),
+		Cookies:   cookies,
+		XSRFToken: "abcde",
+	}
 }
 
 func TestClientError(t *testing.T) {

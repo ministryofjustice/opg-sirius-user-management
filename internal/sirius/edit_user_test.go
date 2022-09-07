@@ -1,7 +1,6 @@
 package sirius
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -29,6 +28,7 @@ func TestEditUser(t *testing.T) {
 		name          string
 		setup         func()
 		user          AuthUser
+		cookies       []*http.Cookie
 		expectedError error
 	}{
 		{
@@ -51,6 +51,11 @@ func TestEditUser(t *testing.T) {
 					WithRequest(dsl.Request{
 						Method: http.MethodPut,
 						Path:   dsl.String("/auth/user/123"),
+						Headers: dsl.MapMatcher{
+							"X-XSRF-TOKEN":        dsl.String("abcde"),
+							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
+							"OPG-Bypass-Membrane": dsl.String("1"),
+						},
 						Body: map[string]interface{}{
 							"id":        123,
 							"email":     "c@opgtest.com",
@@ -65,6 +70,34 @@ func TestEditUser(t *testing.T) {
 						Status: http.StatusOK,
 					})
 			},
+			cookies: []*http.Cookie{
+				{Name: "XSRF-TOKEN", Value: "abcde"},
+				{Name: "Other", Value: "other"},
+			},
+		},
+
+		{
+			name: "Unauthorized",
+			user: AuthUser{
+				ID: 123,
+			},
+			setup: func() {
+				pact.
+					AddInteraction().
+					Given("A user").
+					UponReceiving("A request edit the user without cookies").
+					WithRequest(dsl.Request{
+						Method: http.MethodPut,
+						Path:   dsl.String("/auth/user/123"),
+						Headers: dsl.MapMatcher{
+							"OPG-Bypass-Membrane": dsl.String("1"),
+						},
+					}).
+					WillRespondWith(dsl.Response{
+						Status: http.StatusUnauthorized,
+					})
+			},
+			expectedError: ErrUnauthorized,
 		},
 
 		{
@@ -81,6 +114,11 @@ func TestEditUser(t *testing.T) {
 					WithRequest(dsl.Request{
 						Method: http.MethodPut,
 						Path:   dsl.String("/auth/user/123"),
+						Headers: dsl.MapMatcher{
+							"X-XSRF-TOKEN":        dsl.String("abcde"),
+							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
+							"OPG-Bypass-Membrane": dsl.String("1"),
+						},
 						Body: map[string]interface{}{
 							"id":        123,
 							"firstname": "grehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjgergrehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjgergrehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjgergrehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjgergrehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjgergrehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjger",
@@ -95,6 +133,10 @@ func TestEditUser(t *testing.T) {
 						Body:   dsl.Match(editUserErrorsResponse{}),
 					})
 			},
+			cookies: []*http.Cookie{
+				{Name: "XSRF-TOKEN", Value: "abcde"},
+				{Name: "Other", Value: "other"},
+			},
 			expectedError: ClientError("oops"),
 		},
 	}
@@ -106,7 +148,7 @@ func TestEditUser(t *testing.T) {
 			assert.Nil(t, pact.Verify(func() error {
 				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
 
-				err := client.EditUser(Context{Context: context.Background()}, tc.user)
+				err := client.EditUser(getContext(tc.cookies), tc.user)
 
 				assert.Equal(t, tc.expectedError, err)
 				return nil
@@ -121,7 +163,7 @@ func TestEditUserStatusError(t *testing.T) {
 
 	client, _ := NewClient(http.DefaultClient, s.URL)
 
-	err := client.EditUser(Context{Context: context.Background()}, AuthUser{ID: 123})
+	err := client.EditUser(getContext(nil), AuthUser{ID: 123})
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
 		URL:    s.URL + "/auth/user/123",
