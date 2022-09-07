@@ -108,31 +108,6 @@ func TestEditMyDetails(t *testing.T) {
 				},
 			},
 		},
-
-		{
-			name:        "Unauthorized",
-			phoneNumber: "01210930320",
-			setup: func() {
-				pact.
-					AddInteraction().
-					Given("User exists").
-					UponReceiving("A request to change my phone number without cookies").
-					WithRequest(dsl.Request{
-						Method: http.MethodPut,
-						Path:   dsl.String("/api/v1/users/47/updateTelephoneNumber"),
-						Headers: dsl.MapMatcher{
-							"OPG-Bypass-Membrane": dsl.String("1"),
-						},
-						Body: map[string]string{
-							"phoneNumber": "01210930320",
-						},
-					}).
-					WillRespondWith(dsl.Response{
-						Status: http.StatusUnauthorized,
-					})
-			},
-			expectedError: ErrUnauthorized,
-		},
 	}
 
 	for _, tc := range testCases {

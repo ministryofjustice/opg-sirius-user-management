@@ -111,28 +111,6 @@ func TestAddTeam(t *testing.T) {
 			teamType:   "INVESTIGATIONS",
 			expectedID: 123,
 		},
-
-		{
-			scenario: "Unauthorized",
-			setup: func() {
-				pact.
-					AddInteraction().
-					Given("An admin user").
-					UponReceiving("A request to add a new team without cookies").
-					WithRequest(dsl.Request{
-						Method: http.MethodPost,
-						Path:   dsl.String("/api/v1/teams"),
-						Headers: dsl.MapMatcher{
-							"OPG-Bypass-Membrane": dsl.String("1"),
-						},
-					}).
-					WillRespondWith(dsl.Response{
-						Status: http.StatusUnauthorized,
-					})
-			},
-			expectedError: ErrUnauthorized,
-		},
-
 		{
 			scenario: "Errors",
 			setup: func() {

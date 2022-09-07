@@ -63,28 +63,6 @@ func TestChangePassword(t *testing.T) {
 			password:         "Password1",
 			confirmPassword:  "Password1",
 		},
-
-		{
-			name: "Unauthorized",
-			setup: func() {
-				pact.
-					AddInteraction().
-					Given("User exists with password").
-					UponReceiving("A request to change password without cookies").
-					WithRequest(dsl.Request{
-						Method: http.MethodPost,
-						Path:   dsl.String("/auth/change-password"),
-						Headers: dsl.MapMatcher{
-							"OPG-Bypass-Membrane": dsl.String("1"),
-						},
-					}).
-					WillRespondWith(dsl.Response{
-						Status: http.StatusUnauthorized,
-					})
-			},
-			expectedError: ErrUnauthorized,
-		},
-
 		{
 			name: "Errors",
 			setup: func() {

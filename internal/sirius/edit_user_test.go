@@ -75,31 +75,6 @@ func TestEditUser(t *testing.T) {
 				{Name: "Other", Value: "other"},
 			},
 		},
-
-		{
-			name: "Unauthorized",
-			user: AuthUser{
-				ID: 123,
-			},
-			setup: func() {
-				pact.
-					AddInteraction().
-					Given("A user").
-					UponReceiving("A request edit the user without cookies").
-					WithRequest(dsl.Request{
-						Method: http.MethodPut,
-						Path:   dsl.String("/auth/user/123"),
-						Headers: dsl.MapMatcher{
-							"OPG-Bypass-Membrane": dsl.String("1"),
-						},
-					}).
-					WillRespondWith(dsl.Response{
-						Status: http.StatusUnauthorized,
-					})
-			},
-			expectedError: ErrUnauthorized,
-		},
-
 		{
 			name: "Validation Errors",
 			user: AuthUser{
