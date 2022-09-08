@@ -1,6 +1,7 @@
 package sirius
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -25,7 +26,6 @@ func TestTeam(t *testing.T) {
 		id               int
 		name             string
 		setup            func()
-		cookies          []*http.Cookie
 		expectedResponse Team
 		expectedError    error
 	}{
@@ -40,11 +40,6 @@ func TestTeam(t *testing.T) {
 					WithRequest(dsl.Request{
 						Method: http.MethodGet,
 						Path:   dsl.String("/api/v1/teams/65"),
-						Headers: dsl.MapMatcher{
-							"X-XSRF-TOKEN":        dsl.String("abcde"),
-							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
-							"OPG-Bypass-Membrane": dsl.String("1"),
-						},
 					}).
 					WillRespondWith(dsl.Response{
 						Status:  http.StatusOK,
@@ -63,10 +58,6 @@ func TestTeam(t *testing.T) {
 							}),
 						}),
 					})
-			},
-			cookies: []*http.Cookie{
-				{Name: "XSRF-TOKEN", Value: "abcde"},
-				{Name: "Other", Value: "other"},
 			},
 			expectedResponse: Team{
 				ID:          65,
@@ -93,11 +84,6 @@ func TestTeam(t *testing.T) {
 					WithRequest(dsl.Request{
 						Method: http.MethodGet,
 						Path:   dsl.String("/api/v1/teams/65"),
-						Headers: dsl.MapMatcher{
-							"X-XSRF-TOKEN":        dsl.String("abcde"),
-							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
-							"OPG-Bypass-Membrane": dsl.String("1"),
-						},
 					}).
 					WillRespondWith(dsl.Response{
 						Status:  http.StatusOK,
@@ -111,10 +97,6 @@ func TestTeam(t *testing.T) {
 							}, 1),
 						}),
 					})
-			},
-			cookies: []*http.Cookie{
-				{Name: "XSRF-TOKEN", Value: "abcde"},
-				{Name: "Other", Value: "other"},
 			},
 			expectedResponse: Team{
 				ID:          65,
@@ -137,7 +119,7 @@ func TestTeam(t *testing.T) {
 			assert.Nil(t, pact.Verify(func() error {
 				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
 
-				team, err := client.Team(getContext(tc.cookies), tc.id)
+				team, err := client.Team(Context{Context: context.Background()}, tc.id)
 				assert.Equal(t, tc.expectedResponse, team)
 				assert.Equal(t, tc.expectedError, err)
 				return nil
@@ -152,7 +134,7 @@ func TestTeamBadJSONResponse(t *testing.T) {
 
 	client, _ := NewClient(http.DefaultClient, s.URL)
 
-	_, err := client.Team(getContext(nil), 123)
+	_, err := client.Team(Context{Context: context.Background()}, 123)
 	assert.IsType(t, &json.UnmarshalTypeError{}, err)
 }
 
@@ -162,7 +144,7 @@ func TestTeamStatusError(t *testing.T) {
 
 	client, _ := NewClient(http.DefaultClient, s.URL)
 
-	_, err := client.Team(getContext(nil), 123)
+	_, err := client.Team(Context{Context: context.Background()}, 123)
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
 		URL:    s.URL + "/api/v1/teams/123",

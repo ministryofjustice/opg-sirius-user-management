@@ -1,6 +1,7 @@
 package sirius
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -31,7 +32,6 @@ func TestEditTeam(t *testing.T) {
 	testCases := []struct {
 		name          string
 		setup         func()
-		cookies       []*http.Cookie
 		team          Team
 		expectedError func(int) error
 	}{
@@ -52,12 +52,6 @@ func TestEditTeam(t *testing.T) {
 					WithRequest(dsl.Request{
 						Method: http.MethodPut,
 						Path:   dsl.String("/api/v1/teams/65"),
-						Headers: dsl.MapMatcher{
-							"X-XSRF-TOKEN":        dsl.String("abcde"),
-							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
-							"OPG-Bypass-Membrane": dsl.String("1"),
-							"Content-Type":        dsl.String("application/json"),
-						},
 						Body: map[string]interface{}{
 							"email":       "test.team@opgtest.com",
 							"name":        "Test team",
@@ -69,10 +63,6 @@ func TestEditTeam(t *testing.T) {
 					WillRespondWith(dsl.Response{
 						Status: http.StatusOK,
 					})
-			},
-			cookies: []*http.Cookie{
-				{Name: "XSRF-TOKEN", Value: "abcde"},
-				{Name: "Other", Value: "other"},
 			},
 			expectedError: func(port int) error { return nil },
 		},
@@ -100,12 +90,6 @@ func TestEditTeam(t *testing.T) {
 					WithRequest(dsl.Request{
 						Method: http.MethodPut,
 						Path:   dsl.String("/api/v1/teams/65"),
-						Headers: dsl.MapMatcher{
-							"X-XSRF-TOKEN":        dsl.String("abcde"),
-							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
-							"OPG-Bypass-Membrane": dsl.String("1"),
-							"Content-Type":        dsl.String("application/json"),
-						},
 						Body: map[string]interface{}{
 							"email":       "test.team@opgtest.com",
 							"name":        "Test team with members",
@@ -117,10 +101,6 @@ func TestEditTeam(t *testing.T) {
 					WillRespondWith(dsl.Response{
 						Status: http.StatusOK,
 					})
-			},
-			cookies: []*http.Cookie{
-				{Name: "XSRF-TOKEN", Value: "abcde"},
-				{Name: "Other", Value: "other"},
 			},
 			expectedError: func(port int) error { return nil },
 		},
@@ -139,12 +119,6 @@ func TestEditTeam(t *testing.T) {
 					WithRequest(dsl.Request{
 						Method: http.MethodPut,
 						Path:   dsl.String("/api/v1/teams/65"),
-						Headers: dsl.MapMatcher{
-							"X-XSRF-TOKEN":        dsl.String("abcde"),
-							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
-							"OPG-Bypass-Membrane": dsl.String("1"),
-							"Content-Type":        dsl.String("application/json"),
-						},
 						Body: map[string]interface{}{
 							"name":        "Test duplicate finance team",
 							"type":        "FINANCE",
@@ -157,10 +131,6 @@ func TestEditTeam(t *testing.T) {
 						Status: http.StatusBadRequest,
 						Body:   dsl.Match(editTeamErrorsResponse{}),
 					})
-			},
-			cookies: []*http.Cookie{
-				{Name: "XSRF-TOKEN", Value: "abcde"},
-				{Name: "Other", Value: "other"},
 			},
 			expectedError: func(port int) error {
 				return &ValidationError{
@@ -181,7 +151,7 @@ func TestEditTeam(t *testing.T) {
 			assert.Nil(t, pact.Verify(func() error {
 				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
 
-				err := client.EditTeam(getContext(tc.cookies), tc.team)
+				err := client.EditTeam(Context{Context: context.Background()}, tc.team)
 
 				assert.Equal(t, tc.expectedError(pact.Server.Port), err)
 				return nil
@@ -196,7 +166,7 @@ func TestEditTeamStatusError(t *testing.T) {
 
 	client, _ := NewClient(http.DefaultClient, s.URL)
 
-	err := client.EditTeam(getContext(nil), Team{ID: 65})
+	err := client.EditTeam(Context{Context: context.Background()}, Team{ID: 65})
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
 		URL:    s.URL + "/api/v1/teams/65",

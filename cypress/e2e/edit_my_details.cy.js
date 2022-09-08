@@ -1,7 +1,5 @@
 describe("Edit my details", () => {
   beforeEach(() => {
-    cy.setCookie("Other", "other");
-    cy.setCookie("XSRF-TOKEN", "abcde");
     cy.visit("/my-details/edit");
   });
 

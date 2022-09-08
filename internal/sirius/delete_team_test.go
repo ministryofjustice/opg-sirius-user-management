@@ -1,6 +1,7 @@
 package sirius
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -25,7 +26,6 @@ func TestDeleteTeam(t *testing.T) {
 		name          string
 		setup         func()
 		teamID        int
-		cookies       []*http.Cookie
 		expectedError error
 	}{
 		{
@@ -39,19 +39,10 @@ func TestDeleteTeam(t *testing.T) {
 					WithRequest(dsl.Request{
 						Method: http.MethodDelete,
 						Path:   dsl.String("/api/v1/teams/461"),
-						Headers: dsl.MapMatcher{
-							"X-XSRF-TOKEN":        dsl.String("abcde"),
-							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
-							"OPG-Bypass-Membrane": dsl.String("1"),
-						},
 					}).
 					WillRespondWith(dsl.Response{
 						Status: http.StatusNoContent,
 					})
-			},
-			cookies: []*http.Cookie{
-				{Name: "XSRF-TOKEN", Value: "abcde"},
-				{Name: "Other", Value: "other"},
 			},
 		},
 	}
@@ -63,7 +54,7 @@ func TestDeleteTeam(t *testing.T) {
 			assert.Nil(t, pact.Verify(func() error {
 				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
 
-				err := client.DeleteTeam(getContext(tc.cookies), tc.teamID)
+				err := client.DeleteTeam(Context{Context: context.Background()}, tc.teamID)
 
 				assert.Equal(t, tc.expectedError, err)
 				return nil
@@ -82,7 +73,7 @@ func TestDeleteTeamClientError(t *testing.T) {
 
 	client, _ := NewClient(http.DefaultClient, s.URL)
 
-	err := client.DeleteTeam(getContext(nil), 461)
+	err := client.DeleteTeam(Context{Context: context.Background()}, 461)
 	assert.Equal(t, ClientError("oops"), err)
 }
 
@@ -92,7 +83,7 @@ func TestDeleteTeamStatusError(t *testing.T) {
 
 	client, _ := NewClient(http.DefaultClient, s.URL)
 
-	err := client.DeleteTeam(getContext(nil), 461)
+	err := client.DeleteTeam(Context{Context: context.Background()}, 461)
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
 		URL:    s.URL + "/api/v1/teams/461",
