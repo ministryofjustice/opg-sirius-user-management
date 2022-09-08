@@ -76,28 +76,6 @@ func TestAddUser(t *testing.T) {
 			organisation: "COP User",
 			roles:        []string{"other1", "other2"},
 		},
-
-		{
-			name: "Unauthorized",
-			setup: func() {
-				pact.
-					AddInteraction().
-					Given("An admin user").
-					UponReceiving("A request to add a new user without cookies").
-					WithRequest(dsl.Request{
-						Method: http.MethodPost,
-						Path:   dsl.String("/auth/user"),
-						Headers: dsl.MapMatcher{
-							"OPG-Bypass-Membrane": dsl.String("1"),
-						},
-					}).
-					WillRespondWith(dsl.Response{
-						Status: http.StatusUnauthorized,
-					})
-			},
-			expectedError: ErrUnauthorized,
-		},
-
 		{
 			name: "Errors",
 			setup: func() {
