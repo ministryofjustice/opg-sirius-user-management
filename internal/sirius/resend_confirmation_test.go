@@ -38,6 +38,9 @@ func TestResendConfirmation(t *testing.T) {
 						Method: http.MethodPost,
 						Path:   dsl.String("/auth/resend-confirmation"),
 						Body: "email=system.admin@opgtest.com",
+						Headers: dsl.MapMatcher{
+							"Content-Type": dsl.String("application/x-www-form-urlencoded"),
+						},
 					}).
 					WillRespondWith(dsl.Response{
 						Status: http.StatusOK,
