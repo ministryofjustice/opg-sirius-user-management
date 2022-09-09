@@ -1,6 +1,7 @@
 package sirius
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -23,7 +24,6 @@ func TestAddTeam(t *testing.T) {
 	testCases := []struct {
 		scenario      string
 		setup         func()
-		cookies       []*http.Cookie
 		name          string
 		teamType      string
 		phone         string
@@ -41,12 +41,6 @@ func TestAddTeam(t *testing.T) {
 					WithRequest(dsl.Request{
 						Method: http.MethodPost,
 						Path:   dsl.String("/api/v1/teams"),
-						Headers: dsl.MapMatcher{
-							"X-XSRF-TOKEN":        dsl.String("abcde"),
-							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
-							"OPG-Bypass-Membrane": dsl.String("1"),
-							"Content-Type":        dsl.String("application/json"),
-						},
 						Body: map[string]interface{}{
 							"email":       "john.doe@example.com",
 							"name":        "testteam",
@@ -59,10 +53,6 @@ func TestAddTeam(t *testing.T) {
 							"id": dsl.Like(123),
 						}),
 					})
-			},
-			cookies: []*http.Cookie{
-				{Name: "XSRF-TOKEN", Value: "abcde"},
-				{Name: "Other", Value: "other"},
 			},
 			email:      "john.doe@example.com",
 			name:       "testteam",
@@ -81,12 +71,6 @@ func TestAddTeam(t *testing.T) {
 					WithRequest(dsl.Request{
 						Method: http.MethodPost,
 						Path:   dsl.String("/api/v1/teams"),
-						Headers: dsl.MapMatcher{
-							"X-XSRF-TOKEN":        dsl.String("abcde"),
-							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
-							"OPG-Bypass-Membrane": dsl.String("1"),
-							"Content-Type":        dsl.String("application/json"),
-						},
 						Body: map[string]interface{}{
 							"email":       "john.doe@example.com",
 							"name":        "supervisiontestteam",
@@ -100,10 +84,6 @@ func TestAddTeam(t *testing.T) {
 							"id": dsl.Like(123),
 						}),
 					})
-			},
-			cookies: []*http.Cookie{
-				{Name: "XSRF-TOKEN", Value: "abcde"},
-				{Name: "Other", Value: "other"},
 			},
 			email:      "john.doe@example.com",
 			name:       "supervisiontestteam",
@@ -121,12 +101,6 @@ func TestAddTeam(t *testing.T) {
 					WithRequest(dsl.Request{
 						Method: http.MethodPost,
 						Path:   dsl.String("/api/v1/teams"),
-						Headers: dsl.MapMatcher{
-							"X-XSRF-TOKEN":        dsl.String("abcde"),
-							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
-							"OPG-Bypass-Membrane": dsl.String("1"),
-							"Content-Type":        dsl.String("application/json"),
-						},
 						Body: map[string]interface{}{
 							"email":       "john.doehrfgjuerhujghejrhrgherjrghgjrehergeghrjkrghkerhgerjkhgerjkheghergkhgekrhgerherhjghkjerhgherghjkerhgekjherkjhgerhgjehherkjhgkjehrghrehgkjrehjkghrjkehgrehehgkjhrejghhehgkjerhegjrhegrjhrjkhgkrhrghrkjegrkjehrghjkerhgjkhergjhrjkerregjhrekjhrgrehjkg@example.com",
 							"name":        "testteam",
@@ -143,10 +117,6 @@ func TestAddTeam(t *testing.T) {
 							}),
 						}),
 					})
-			},
-			cookies: []*http.Cookie{
-				{Name: "XSRF-TOKEN", Value: "abcde"},
-				{Name: "Other", Value: "other"},
 			},
 			email:    "john.doehrfgjuerhujghejrhrgherjrghgjrehergeghrjkrghkerhgerjkhgerjkheghergkhgekrhgerherhjghkjerhgherghjkerhgekjherkjhgerhgjehherkjhgkjehrghrehgkjrehjkghrjkehgrehehgkjhrejghhehgkjerhegjrhegrjhrjkhgkrhrghrkjegrkjehrghjkerhgjkhergjhrjkerregjhrekjhrgrehjkg@example.com",
 			name:     "testteam",
@@ -169,7 +139,7 @@ func TestAddTeam(t *testing.T) {
 			assert.Nil(t, pact.Verify(func() error {
 				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
 
-				id, err := client.AddTeam(getContext(tc.cookies), tc.name, tc.teamType, tc.phone, tc.email)
+				id, err := client.AddTeam(Context{Context: context.Background()}, tc.name, tc.teamType, tc.phone, tc.email)
 				assert.Equal(t, tc.expectedError, err)
 				assert.Equal(t, tc.expectedID, id)
 				return nil
@@ -184,7 +154,7 @@ func TestAddTeamStatusError(t *testing.T) {
 
 	client, _ := NewClient(http.DefaultClient, s.URL)
 
-	_, err := client.AddTeam(getContext(nil), "", "", "", "")
+	_, err := client.AddTeam(Context{Context: context.Background()}, "", "", "", "")
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
 		URL:    s.URL + "/api/v1/teams",

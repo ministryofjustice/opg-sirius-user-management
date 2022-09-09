@@ -1,7 +1,5 @@
 describe("Unlock user", () => {
   beforeEach(() => {
-    cy.setCookie("Other", "other");
-    cy.setCookie("XSRF-TOKEN", "abcde");
     cy.visit("/unlock-user/123");
   });
 
