@@ -1,6 +1,7 @@
 package sirius
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -26,7 +27,6 @@ type editProPercentageBadRequestResponse struct {
 
 const UserExists = "User exists"
 const UrlRoute = "/api/v1/random-review-settings"
-const BypassMembrane = "OPG-Bypass-Membrane"
 
 func TestEditLayPercentage(t *testing.T) {
 	pact := &dsl.Pact{
@@ -46,7 +46,6 @@ func TestEditLayPercentage(t *testing.T) {
 		proPercentage string
 		reviewCycle   string
 		setup         func()
-		cookies       []*http.Cookie
 		expectedError error
 	}{
 		{
@@ -63,11 +62,6 @@ func TestEditLayPercentage(t *testing.T) {
 					WithRequest(dsl.Request{
 						Method: http.MethodPost,
 						Path:   dsl.String(UrlRoute),
-						Headers: dsl.MapMatcher{
-							"X-XSRF-TOKEN": dsl.String("abcde"),
-							"Cookie":       dsl.String("XSRF-TOKEN=abcde; Other=other"),
-							BypassMembrane: dsl.String("1"),
-						},
 						Body: map[string]interface{}{
 							"layPercentage": "200",
 							"paPercentage":  "10",
@@ -80,10 +74,6 @@ func TestEditLayPercentage(t *testing.T) {
 						Headers: dsl.MapMatcher{"Content-Type": dsl.String("application/problem+json")},
 						Body:    dsl.Match(editLayPercentageBadRequestResponse{}),
 					})
-			},
-			cookies: []*http.Cookie{
-				{Name: "XSRF-TOKEN", Value: "abcde"},
-				{Name: "Other", Value: "other"},
 			},
 			expectedError: ValidationError{
 				Message: "Enter a percentage between 0 and 100 for lay cases",
@@ -104,10 +94,7 @@ func TestEditLayPercentage(t *testing.T) {
 						Method: http.MethodPost,
 						Path:   dsl.String(UrlRoute),
 						Headers: dsl.MapMatcher{
-							"Content-type": dsl.String("application/json"),
-							"X-XSRF-TOKEN": dsl.String("abcde"),
-							"Cookie":       dsl.String("XSRF-TOKEN=abcde; Other=other"),
-							BypassMembrane: dsl.String("1"),
+							"Content-Type": dsl.String("application/json"),
 						},
 						Body: map[string]interface{}{
 							"layPercentage": "20",
@@ -119,10 +106,6 @@ func TestEditLayPercentage(t *testing.T) {
 					WillRespondWith(dsl.Response{
 						Status: http.StatusOK,
 					})
-			},
-			cookies: []*http.Cookie{
-				{Name: "XSRF-TOKEN", Value: "abcde"},
-				{Name: "Other", Value: "other"},
 			},
 			expectedError: nil,
 		},
@@ -140,11 +123,6 @@ func TestEditLayPercentage(t *testing.T) {
 					WithRequest(dsl.Request{
 						Method: http.MethodPost,
 						Path:   dsl.String(UrlRoute),
-						Headers: dsl.MapMatcher{
-							"X-XSRF-TOKEN": dsl.String("abcde"),
-							"Cookie":       dsl.String("XSRF-TOKEN=abcde; Other=other"),
-							BypassMembrane: dsl.String("1"),
-						},
 						Body: map[string]interface{}{
 							"layPercentage": "20",
 							"paPercentage":  "1000",
@@ -157,10 +135,6 @@ func TestEditLayPercentage(t *testing.T) {
 						Headers: dsl.MapMatcher{"Content-Type": dsl.String("application/problem+json")},
 						Body:    dsl.Match(editPaPercentageBadRequestResponse{}),
 					})
-			},
-			cookies: []*http.Cookie{
-				{Name: "XSRF-TOKEN", Value: "abcde"},
-				{Name: "Other", Value: "other"},
 			},
 			expectedError: ValidationError{
 				Message: "Enter a percentage between 0 and 100 for PA cases",
@@ -181,10 +155,7 @@ func TestEditLayPercentage(t *testing.T) {
 						Method: http.MethodPost,
 						Path:   dsl.String(UrlRoute),
 						Headers: dsl.MapMatcher{
-							"Content-type": dsl.String("application/json"),
-							"X-XSRF-TOKEN": dsl.String("abcde"),
-							"Cookie":       dsl.String("XSRF-TOKEN=abcde; Other=other"),
-							BypassMembrane: dsl.String("1"),
+							"Content-Type": dsl.String("application/json"),
 						},
 						Body: map[string]interface{}{
 							"layPercentage": "20",
@@ -196,10 +167,6 @@ func TestEditLayPercentage(t *testing.T) {
 					WillRespondWith(dsl.Response{
 						Status: http.StatusOK,
 					})
-			},
-			cookies: []*http.Cookie{
-				{Name: "XSRF-TOKEN", Value: "abcde"},
-				{Name: "Other", Value: "other"},
 			},
 			expectedError: nil,
 		},
@@ -217,11 +184,6 @@ func TestEditLayPercentage(t *testing.T) {
 					WithRequest(dsl.Request{
 						Method: http.MethodPost,
 						Path:   dsl.String(UrlRoute),
-						Headers: dsl.MapMatcher{
-							"X-XSRF-TOKEN": dsl.String("abcde"),
-							"Cookie":       dsl.String("XSRF-TOKEN=abcde; Other=other"),
-							BypassMembrane: dsl.String("1"),
-						},
 						Body: map[string]interface{}{
 							"layPercentage": "20",
 							"paPercentage":  "50",
@@ -234,10 +196,6 @@ func TestEditLayPercentage(t *testing.T) {
 						Headers: dsl.MapMatcher{"Content-Type": dsl.String("application/problem+json")},
 						Body:    dsl.Match(editProPercentageBadRequestResponse{}),
 					})
-			},
-			cookies: []*http.Cookie{
-				{Name: "XSRF-TOKEN", Value: "abcde"},
-				{Name: "Other", Value: "other"},
 			},
 			expectedError: ValidationError{
 				Message: "Enter a percentage between 0 and 100 for Pro cases",
@@ -258,10 +216,7 @@ func TestEditLayPercentage(t *testing.T) {
 						Method: http.MethodPost,
 						Path:   dsl.String(UrlRoute),
 						Headers: dsl.MapMatcher{
-							"Content-type": dsl.String("application/json"),
-							"X-XSRF-TOKEN": dsl.String("abcde"),
-							"Cookie":       dsl.String("XSRF-TOKEN=abcde; Other=other"),
-							BypassMembrane: dsl.String("1"),
+							"Content-Type": dsl.String("application/json"),
 						},
 						Body: map[string]interface{}{
 							"layPercentage": "20",
@@ -273,10 +228,6 @@ func TestEditLayPercentage(t *testing.T) {
 					WillRespondWith(dsl.Response{
 						Status: http.StatusOK,
 					})
-			},
-			cookies: []*http.Cookie{
-				{Name: "XSRF-TOKEN", Value: "abcde"},
-				{Name: "Other", Value: "other"},
 			},
 			expectedError: nil,
 		},
@@ -295,10 +246,7 @@ func TestEditLayPercentage(t *testing.T) {
 						Method: http.MethodPost,
 						Path:   dsl.String(UrlRoute),
 						Headers: dsl.MapMatcher{
-							"Content-type": dsl.String("application/json"),
-							"X-XSRF-TOKEN": dsl.String("abcde"),
-							"Cookie":       dsl.String("XSRF-TOKEN=abcde; Other=other"),
-							BypassMembrane: dsl.String("1"),
+							"Content-Type": dsl.String("application/json"),
 						},
 						Body: map[string]interface{}{
 							"layPercentage": "20",
@@ -310,10 +258,6 @@ func TestEditLayPercentage(t *testing.T) {
 					WillRespondWith(dsl.Response{
 						Status: http.StatusOK,
 					})
-			},
-			cookies: []*http.Cookie{
-				{Name: "XSRF-TOKEN", Value: "abcde"},
-				{Name: "Other", Value: "other"},
 			},
 			expectedError: nil,
 		},
@@ -327,7 +271,7 @@ func TestEditLayPercentage(t *testing.T) {
 				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
 				data := EditRandomReview{tc.layPercentage, tc.paPercentage, tc.proPercentage, tc.reviewCycle}
 
-				err := client.EditRandomReviewSettings(getContext(tc.cookies), data)
+				err := client.EditRandomReviewSettings(Context{Context: context.Background()}, data)
 
 				assert.Equal(t, tc.expectedError, err)
 				return nil
@@ -342,7 +286,7 @@ func TestEditLayPercentageStatusError(t *testing.T) {
 
 	client, _ := NewClient(http.DefaultClient, s.URL)
 
-	err := client.EditRandomReviewSettings(getContext(nil), EditRandomReview{"3", "10", "18", "20"})
+	err := client.EditRandomReviewSettings(Context{Context: context.Background()}, EditRandomReview{"3", "10", "18", "20"})
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
 		URL:    s.URL + UrlRoute,
