@@ -1,6 +1,7 @@
 package sirius
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -34,7 +35,6 @@ func TestEditMyDetails(t *testing.T) {
 		name          string
 		phoneNumber   string
 		setup         func()
-		cookies       []*http.Cookie
 		expectedError error
 	}{
 		{
@@ -49,10 +49,7 @@ func TestEditMyDetails(t *testing.T) {
 						Method: http.MethodPut,
 						Path:   dsl.String("/api/v1/users/47/updateTelephoneNumber"),
 						Headers: dsl.MapMatcher{
-							"Content-type":        dsl.String("application/json"),
-							"X-XSRF-TOKEN":        dsl.String("abcde"),
-							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
-							"OPG-Bypass-Membrane": dsl.String("1"),
+							"Content-Type": dsl.String("application/json"),
 						},
 						Body: map[string]string{
 							"phoneNumber": "01210930320",
@@ -62,10 +59,6 @@ func TestEditMyDetails(t *testing.T) {
 						Status:  http.StatusOK,
 						Headers: dsl.MapMatcher{"Content-Type": dsl.String("application/json")},
 					})
-			},
-			cookies: []*http.Cookie{
-				{Name: "XSRF-TOKEN", Value: "abcde"},
-				{Name: "Other", Value: "other"},
 			},
 		},
 
@@ -81,9 +74,7 @@ func TestEditMyDetails(t *testing.T) {
 						Method: http.MethodPut,
 						Path:   dsl.String("/api/v1/users/47/updateTelephoneNumber"),
 						Headers: dsl.MapMatcher{
-							"X-XSRF-TOKEN":        dsl.String("abcde"),
-							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
-							"OPG-Bypass-Membrane": dsl.String("1"),
+							"Content-Type": dsl.String("application/json"),
 						},
 						Body: map[string]string{
 							"phoneNumber": "85845984598649858684596849859549684568465894689498468495689645468384938743893892317571934751439574638753683761084565480713465618457365784613876481376457651471645463178546357843615971435645387364139756147361456145161587165477143576698764574569834659465974657946574569856896745229786",
@@ -94,10 +85,6 @@ func TestEditMyDetails(t *testing.T) {
 						Headers: dsl.MapMatcher{"Content-Type": dsl.String("application/problem+json")},
 						Body:    dsl.Match(editMyDetailsBadRequestResponse{}),
 					})
-			},
-			cookies: []*http.Cookie{
-				{Name: "XSRF-TOKEN", Value: "abcde"},
-				{Name: "Other", Value: "other"},
 			},
 			expectedError: &ValidationError{
 				Message: "Payload failed validation",
@@ -117,7 +104,7 @@ func TestEditMyDetails(t *testing.T) {
 			assert.Nil(t, pact.Verify(func() error {
 				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
 
-				err := client.EditMyDetails(getContext(tc.cookies), 47, tc.phoneNumber)
+				err := client.EditMyDetails(Context{Context: context.Background()}, 47, tc.phoneNumber)
 				assert.Equal(t, tc.expectedError, err)
 				return nil
 			}))
@@ -131,7 +118,7 @@ func TestEditMyDetailsStatusError(t *testing.T) {
 
 	client, _ := NewClient(http.DefaultClient, s.URL)
 
-	err := client.EditMyDetails(getContext(nil), 47, "")
+	err := client.EditMyDetails(Context{Context: context.Background()}, 47, "")
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
 		URL:    s.URL + "/api/v1/users/47/updateTelephoneNumber",

@@ -1,7 +1,5 @@
 describe("Change password", () => {
   beforeEach(() => {
-    cy.setCookie("Other", "other");
-    cy.setCookie("XSRF-TOKEN", "abcde");
     cy.visit("/change-password");
   });
 
