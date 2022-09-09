@@ -1,6 +1,7 @@
 package sirius
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -23,7 +24,6 @@ func TestPermissions(t *testing.T) {
 	testCases := []struct {
 		name             string
 		setup            func()
-		cookies          []*http.Cookie
 		expectedResponse PermissionSet
 		expectedError    error
 	}{
@@ -37,11 +37,6 @@ func TestPermissions(t *testing.T) {
 					WithRequest(dsl.Request{
 						Method: http.MethodGet,
 						Path:   dsl.String("/api/v1/permissions"),
-						Headers: dsl.MapMatcher{
-							"X-XSRF-TOKEN":        dsl.String("abcde"),
-							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
-							"OPG-Bypass-Membrane": dsl.String("1"),
-						},
 					}).
 					WillRespondWith(dsl.Response{
 						Status:  http.StatusOK,
@@ -55,10 +50,6 @@ func TestPermissions(t *testing.T) {
 							},
 						}),
 					})
-			},
-			cookies: []*http.Cookie{
-				{Name: "XSRF-TOKEN", Value: "abcde"},
-				{Name: "Other", Value: "other"},
 			},
 			expectedResponse: PermissionSet{
 				"v1-users": PermissionGroup{Permissions: []string{"PATCH"}},
@@ -74,7 +65,7 @@ func TestPermissions(t *testing.T) {
 			assert.Nil(t, pact.Verify(func() error {
 				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
 
-				myPermissions, err := client.MyPermissions(getContext(tc.cookies))
+				myPermissions, err := client.MyPermissions(Context{Context: context.Background()})
 				assert.Equal(t, tc.expectedResponse, myPermissions)
 				assert.Equal(t, tc.expectedError, err)
 				return nil
@@ -101,7 +92,6 @@ func TestPermissionsIgnoredPact(t *testing.T) {
 	testCases := []struct {
 		name             string
 		setup            func()
-		cookies          []*http.Cookie
 		expectedResponse PermissionSet
 		expectedError    error
 	}{
@@ -115,11 +105,6 @@ func TestPermissionsIgnoredPact(t *testing.T) {
 					WithRequest(dsl.Request{
 						Method: http.MethodGet,
 						Path:   dsl.String("/api/v1/permissions"),
-						Headers: dsl.MapMatcher{
-							"X-XSRF-TOKEN":        dsl.String("abcde"),
-							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
-							"OPG-Bypass-Membrane": dsl.String("1"),
-						},
 					}).
 					WillRespondWith(dsl.Response{
 						Status:  http.StatusOK,
@@ -140,10 +125,6 @@ func TestPermissionsIgnoredPact(t *testing.T) {
 						}),
 					})
 			},
-			cookies: []*http.Cookie{
-				{Name: "XSRF-TOKEN", Value: "abcde"},
-				{Name: "Other", Value: "other"},
-			},
 			expectedResponse: PermissionSet{
 				"v1-users-updatetelephonenumber": PermissionGroup{Permissions: []string{"PUT"}},
 				"v1-users":                       PermissionGroup{Permissions: []string{"PUT", "POST", "DELETE"}},
@@ -160,7 +141,7 @@ func TestPermissionsIgnoredPact(t *testing.T) {
 			assert.Nil(t, pact.Verify(func() error {
 				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
 
-				myPermissions, err := client.MyPermissions(getContext(tc.cookies))
+				myPermissions, err := client.MyPermissions(Context{Context: context.Background()})
 				assert.Equal(t, tc.expectedResponse, myPermissions)
 				assert.Equal(t, tc.expectedError, err)
 				return nil
@@ -175,7 +156,7 @@ func TestHasPermissionStatusError(t *testing.T) {
 
 	client, _ := NewClient(http.DefaultClient, s.URL)
 
-	_, err := client.MyPermissions(getContext(nil))
+	_, err := client.MyPermissions(Context{Context: context.Background()})
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
 		URL:    s.URL + "/api/v1/permissions",
