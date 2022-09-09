@@ -93,6 +93,9 @@ func TestEditLayPercentage(t *testing.T) {
 					WithRequest(dsl.Request{
 						Method: http.MethodPost,
 						Path:   dsl.String(UrlRoute),
+						Headers: dsl.MapMatcher{
+							"Content-Type": dsl.String("application/json"),
+						},
 						Body: map[string]interface{}{
 							"layPercentage": "20",
 							"paPercentage":  "10",
@@ -151,6 +154,9 @@ func TestEditLayPercentage(t *testing.T) {
 					WithRequest(dsl.Request{
 						Method: http.MethodPost,
 						Path:   dsl.String(UrlRoute),
+						Headers: dsl.MapMatcher{
+							"Content-Type": dsl.String("application/json"),
+						},
 						Body: map[string]interface{}{
 							"layPercentage": "20",
 							"paPercentage":  "50",
@@ -209,6 +215,9 @@ func TestEditLayPercentage(t *testing.T) {
 					WithRequest(dsl.Request{
 						Method: http.MethodPost,
 						Path:   dsl.String(UrlRoute),
+						Headers: dsl.MapMatcher{
+							"Content-Type": dsl.String("application/json"),
+						},
 						Body: map[string]interface{}{
 							"layPercentage": "20",
 							"paPercentage":  "50",
@@ -236,6 +245,9 @@ func TestEditLayPercentage(t *testing.T) {
 					WithRequest(dsl.Request{
 						Method: http.MethodPost,
 						Path:   dsl.String(UrlRoute),
+						Headers: dsl.MapMatcher{
+							"Content-Type": dsl.String("application/json"),
+						},
 						Body: map[string]interface{}{
 							"layPercentage": "20",
 							"paPercentage":  "50",

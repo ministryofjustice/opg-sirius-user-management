@@ -48,6 +48,9 @@ func TestEditMyDetails(t *testing.T) {
 					WithRequest(dsl.Request{
 						Method: http.MethodPut,
 						Path:   dsl.String("/api/v1/users/47/updateTelephoneNumber"),
+						Headers: dsl.MapMatcher{
+							"Content-Type": dsl.String("application/json"),
+						},
 						Body: map[string]string{
 							"phoneNumber": "01210930320",
 						},
@@ -70,6 +73,9 @@ func TestEditMyDetails(t *testing.T) {
 					WithRequest(dsl.Request{
 						Method: http.MethodPut,
 						Path:   dsl.String("/api/v1/users/47/updateTelephoneNumber"),
+						Headers: dsl.MapMatcher{
+							"Content-Type": dsl.String("application/json"),
+						},
 						Body: map[string]string{
 							"phoneNumber": "85845984598649858684596849859549684568465894689498468495689645468384938743893892317571934751439574638753683761084565480713465618457365784613876481376457651471645463178546357843615971435645387364139756147361456145161587165477143576698764574569834659465974657946574569856896745229786",
 						},

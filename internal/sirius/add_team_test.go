@@ -71,6 +71,9 @@ func TestAddTeam(t *testing.T) {
 					WithRequest(dsl.Request{
 						Method: http.MethodPost,
 						Path:   dsl.String("/api/v1/teams"),
+						Headers: dsl.MapMatcher{
+							"Content-Type": dsl.String("application/json"),
+						},
 						Body: map[string]interface{}{
 							"email":       "john.doe@example.com",
 							"name":        "supervisiontestteam",
@@ -101,6 +104,9 @@ func TestAddTeam(t *testing.T) {
 					WithRequest(dsl.Request{
 						Method: http.MethodPost,
 						Path:   dsl.String("/api/v1/teams"),
+						Headers: dsl.MapMatcher{
+							"Content-Type": dsl.String("application/json"),
+						},
 						Body: map[string]interface{}{
 							"email":       "john.doehrfgjuerhujghejrhrgherjrghgjrehergeghrjkrghkerhgerjkhgerjkheghergkhgekrhgerherhjghkjerhgherghjkerhgekjherkjhgerhgjehherkjhgkjehrghrehgkjrehjkghrjkehgrehehgkjhrejghhehgkjerhegjrhegrjhrjkhgkrhrghrkjegrkjehrghjkerhgjkhergjhrjkerregjhrekjhrgrehjkg@example.com",
 							"name":        "testteam",

@@ -52,6 +52,9 @@ func TestEditTeam(t *testing.T) {
 					WithRequest(dsl.Request{
 						Method: http.MethodPut,
 						Path:   dsl.String("/api/v1/teams/65"),
+						Headers: dsl.MapMatcher{
+							"Content-Type": dsl.String("application/json"),
+						},
 						Body: map[string]interface{}{
 							"email":       "test.team@opgtest.com",
 							"name":        "Test team",
@@ -90,6 +93,9 @@ func TestEditTeam(t *testing.T) {
 					WithRequest(dsl.Request{
 						Method: http.MethodPut,
 						Path:   dsl.String("/api/v1/teams/65"),
+						Headers: dsl.MapMatcher{
+							"Content-Type": dsl.String("application/json"),
+						},
 						Body: map[string]interface{}{
 							"email":       "test.team@opgtest.com",
 							"name":        "Test team with members",
@@ -119,6 +125,9 @@ func TestEditTeam(t *testing.T) {
 					WithRequest(dsl.Request{
 						Method: http.MethodPut,
 						Path:   dsl.String("/api/v1/teams/65"),
+						Headers: dsl.MapMatcher{
+							"Content-Type": dsl.String("application/json"),
+						},
 						Body: map[string]interface{}{
 							"name":        "Test duplicate finance team",
 							"type":        "FINANCE",

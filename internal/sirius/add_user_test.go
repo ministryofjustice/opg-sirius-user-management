@@ -49,6 +49,9 @@ func TestAddUser(t *testing.T) {
 					WithRequest(dsl.Request{
 						Method: http.MethodPost,
 						Path:   dsl.String("/auth/user"),
+						Headers: dsl.MapMatcher{
+							"Content-Type": dsl.String("application/json"),
+						},
 						Body: map[string]interface{}{
 							"firstname": "John",
 							"surname":   "Doe",
@@ -76,6 +79,9 @@ func TestAddUser(t *testing.T) {
 					WithRequest(dsl.Request{
 						Method: http.MethodPost,
 						Path:   dsl.String("/auth/user"),
+						Headers: dsl.MapMatcher{
+							"Content-Type": dsl.String("application/json"),
+						},
 						Body: map[string]interface{}{
 							"firstname": "John",
 							"surname":   "Doe",
