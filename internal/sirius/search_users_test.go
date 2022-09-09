@@ -1,6 +1,7 @@
 package sirius
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -23,7 +24,6 @@ func TestSearchUsers(t *testing.T) {
 	testCases := []struct {
 		name             string
 		setup            func()
-		cookies          []*http.Cookie
 		expectedResponse []User
 		expectedError    error
 	}{
@@ -40,11 +40,6 @@ func TestSearchUsers(t *testing.T) {
 						Query: dsl.MapMatcher{
 							"query": dsl.String("admin"),
 						},
-						Headers: dsl.MapMatcher{
-							"X-XSRF-TOKEN":        dsl.String("abcde"),
-							"Cookie":              dsl.String("XSRF-TOKEN=abcde; Other=other"),
-							"OPG-Bypass-Membrane": dsl.String("1"),
-						},
 					}).
 					WillRespondWith(dsl.Response{
 						Status:  http.StatusOK,
@@ -58,10 +53,6 @@ func TestSearchUsers(t *testing.T) {
 							"suspended":   dsl.Like(false),
 						}, 1),
 					})
-			},
-			cookies: []*http.Cookie{
-				{Name: "XSRF-TOKEN", Value: "abcde"},
-				{Name: "Other", Value: "other"},
 			},
 			expectedResponse: []User{
 				{
@@ -81,7 +72,7 @@ func TestSearchUsers(t *testing.T) {
 			assert.Nil(t, pact.Verify(func() error {
 				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
 
-				users, err := client.SearchUsers(getContext(tc.cookies), "admin")
+				users, err := client.SearchUsers(Context{Context: context.Background()}, "admin")
 				assert.Equal(t, tc.expectedResponse, users)
 				assert.Equal(t, tc.expectedError, err)
 				return nil
@@ -96,7 +87,7 @@ func TestSearchUsersStatusError(t *testing.T) {
 
 	client, _ := NewClient(http.DefaultClient, s.URL)
 
-	_, err := client.SearchUsers(getContext(nil), "abc")
+	_, err := client.SearchUsers(Context{Context: context.Background()}, "abc")
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
 		URL:    s.URL + "/api/v1/search/users?query=abc",
@@ -110,7 +101,7 @@ func TestSearchUsersEscapesQuery(t *testing.T) {
 
 	client, _ := NewClient(http.DefaultClient, s.URL)
 
-	_, err := client.SearchUsers(getContext(nil), "Maria Fernández")
+	_, err := client.SearchUsers(Context{Context: context.Background()}, "Maria Fernández")
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
 		URL:    s.URL + "/api/v1/search/users?query=Maria+Fern%C3%A1ndez",
@@ -121,7 +112,7 @@ func TestSearchUsersEscapesQuery(t *testing.T) {
 func TestSearchUsersTooShort(t *testing.T) {
 	client, _ := NewClient(http.DefaultClient, "")
 
-	users, err := client.SearchUsers(getContext(nil), "ad")
+	users, err := client.SearchUsers(Context{Context: context.Background()}, "ad")
 	assert.Nil(t, users)
 	assert.Equal(t, ClientError("Search term must be at least three characters"), err)
 }

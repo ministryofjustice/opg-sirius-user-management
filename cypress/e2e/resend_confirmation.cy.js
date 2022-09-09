@@ -1,7 +1,5 @@
 describe("Resend confirmation", () => {
   beforeEach(() => {
-    cy.setCookie("Other", "other");
-    cy.setCookie("XSRF-TOKEN", "abcde");
     cy.visit("/edit-user/123");
   });
 

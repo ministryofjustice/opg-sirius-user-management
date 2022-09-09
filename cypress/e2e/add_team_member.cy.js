@@ -1,7 +1,5 @@
 describe("Add team member", () => {
   beforeEach(() => {
-    cy.setCookie("Other", "other");
-    cy.setCookie("XSRF-TOKEN", "abcde");
     cy.visit("/teams/add-member/65");
   });
 

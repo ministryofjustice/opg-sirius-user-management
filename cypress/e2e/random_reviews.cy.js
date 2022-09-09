@@ -1,7 +1,5 @@
 describe("Random Reviews", () => {
   beforeEach(() => {
-    cy.setCookie("Other", "other");
-    cy.setCookie("XSRF-TOKEN", "abcde");
     cy.visit("/random-reviews");
   });
 
