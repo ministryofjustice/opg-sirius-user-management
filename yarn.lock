@@ -39,11 +39,12 @@
     debug "^3.1.0"
     lodash.once "^4.1.1"
 
-"@ministryofjustice/frontend@1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@ministryofjustice/frontend/-/frontend-1.0.1.tgz#c0f9cc3e2f10dbeaff90fe40439cd37a63de53cf"
-  integrity sha512-YpPxyo72z5Zx0igRmtTmLPM+z0LgR3WNODZBAss9ZSafGg2xXXRnyK1a3tBZhjEUIlWH7atn/1DXFQN6v2gk1A==
+"@ministryofjustice/frontend@1.6.3":
+  version "1.6.3"
+  resolved "https://registry.yarnpkg.com/@ministryofjustice/frontend/-/frontend-1.6.3.tgz#1ff157291d93dfc5896bc8ebba614f943aab1c0e"
+  integrity sha512-xbtK3cCAg+H2zY6S6foOjWwTf9Wh0PlMQ7cHaSJ8spj+88LBICEHG0qQ/5As/Xm3AEF4NhLiZR3xw0AvTUqvxA==
   dependencies:
+    govuk-frontend "^3.0.0 || ^4.0.0"
     moment "^2.27.0"
 
 "@types/node@*":
@@ -742,7 +743,7 @@ global-dirs@^3.0.0:
   dependencies:
     ini "2.0.0"
 
-govuk-frontend@^4.4.0:
+"govuk-frontend@^3.0.0 || ^4.0.0", govuk-frontend@^4.4.0:
   version "4.4.0"
   resolved "https://registry.yarnpkg.com/govuk-frontend/-/govuk-frontend-4.4.0.tgz#36531ae3b12798267e5a72409c7e4b3b10565102"
   integrity sha512-3Hg4GePCdlynd7F6a3YPOEJx0lDPPP6iBv1S893tv3+efYGWLGvsSFdCG0uob8Xc1O7ckL19dSsFpFhBWUkTNA==
