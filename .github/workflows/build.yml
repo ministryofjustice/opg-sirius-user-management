@@ -129,7 +129,7 @@ jobs:
           fail_ci_if_error: true
           verbose: true
       - name: Persist Pacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: pacts
           path: |
