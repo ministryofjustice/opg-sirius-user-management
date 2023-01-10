@@ -17,6 +17,9 @@ build:
 build-all:
 	docker-compose -f docker/docker-compose.ci.yml build --parallel app pact-stub puppeteer cypress
 
+up:
+	docker-compose -f docker/docker-compose.ci.yml up -d
+
 scan:
 	trivy sirius-user-management:latest
 
@@ -25,10 +28,6 @@ pa11y:
 
 lighthouse:
 	docker-compose -f docker/docker-compose.ci.yml run --entrypoint="lhci autorun" puppeteer
-
-.PHONY: cypress
-cypress:
-	docker-compose -f docker/docker-compose.ci.yml run cypress
 
 down:
 	docker-compose -f docker/docker-compose.ci.yml down

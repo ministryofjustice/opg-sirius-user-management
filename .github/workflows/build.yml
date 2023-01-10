@@ -199,9 +199,20 @@ jobs:
           docker load -i /tmp/images/app.tar
           docker load -i /tmp/images/pact-stub.tar
 
-      - name: Run cypress
-        run: |
-          make cypress
+      - name: Run app
+        run: make up
+
+      - name: Cypress Tests
+        uses: cypress-io/github-action@v5.0.2
+        with:
+          browser: chrome
+
+      - name: Upload Cypress screenshots
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: cypress-screenshots
+          path: cypress/screenshots
 
   push:
     name: "Build & Push Containers"
