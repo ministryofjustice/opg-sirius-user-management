@@ -8,7 +8,6 @@ User management frontend for Sirius. It provides a UI to the Sirius API for the
 following features:
 
 - view and edit your own details
-- change your password
 - manage teams
 - manage users
 
