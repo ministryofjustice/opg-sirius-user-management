@@ -54,7 +54,6 @@ func TestMyDetails(t *testing.T) {
 							"firstname":   dsl.Like("system"),
 							"surname":     dsl.Like("admin"),
 							"roles":       dsl.EachLike("System Admin", 1),
-							"locked":      dsl.Like(false),
 							"suspended":   dsl.Like(false),
 						}),
 					})
@@ -72,7 +71,6 @@ func TestMyDetails(t *testing.T) {
 				Firstname:   "system",
 				Surname:     "admin",
 				Roles:       []string{"System Admin"},
-				Locked:      false,
 				Suspended:   false,
 			},
 		},

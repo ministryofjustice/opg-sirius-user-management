@@ -40,7 +40,6 @@ func TestEditUser(t *testing.T) {
 				Surname:      "b",
 				Organisation: "d",
 				Roles:        []string{"e", "f"},
-				Locked:       false,
 				Suspended:    true,
 			},
 			setup: func() {
@@ -57,7 +56,6 @@ func TestEditUser(t *testing.T) {
 							"firstname": "a",
 							"surname":   "b",
 							"roles":     []string{"e", "f", "d"},
-							"locked":    false,
 							"suspended": true,
 						},
 					}).
@@ -85,7 +83,6 @@ func TestEditUser(t *testing.T) {
 							"firstname": "grehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjgergrehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjgergrehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjgergrehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjgergrehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjgergrehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjger",
 							"surname":   "",
 							"roles":     []string{""},
-							"locked":    false,
 							"suspended": false,
 						},
 					}).
