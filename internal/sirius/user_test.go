@@ -17,7 +17,6 @@ type exampleAuthUser struct {
 	Surname   string   `json:"surname" pact:"example=admin"`
 	Email     string   `json:"email" pact:"example=system.admin@opgtest.com"`
 	Roles     []string `json:"roles"`
-	Locked    bool     `json:"locked" pact:"example=true"`
 	Suspended bool     `json:"suspended" pact:"example=false"`
 }
 
@@ -62,7 +61,6 @@ func TestUser(t *testing.T) {
 				Email:        "system.admin@opgtest.com",
 				Organisation: "",
 				Roles:        []string{"string"},
-				Locked:       true,
 				Suspended:    false,
 			},
 		},
