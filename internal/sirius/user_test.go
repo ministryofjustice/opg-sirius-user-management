@@ -19,7 +19,6 @@ type exampleAuthUser struct {
 	Roles     []string `json:"roles"`
 	Locked    bool     `json:"locked" pact:"example=true"`
 	Suspended bool     `json:"suspended" pact:"example=false"`
-	Inactive  bool     `json:"inactive" pact:"example=true"`
 }
 
 func TestUser(t *testing.T) {
@@ -65,7 +64,6 @@ func TestUser(t *testing.T) {
 				Roles:        []string{"string"},
 				Locked:       true,
 				Suspended:    false,
-				Inactive:     true,
 			},
 		},
 	}
