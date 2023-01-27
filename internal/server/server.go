@@ -27,7 +27,6 @@ type Client interface {
 	ListTeamsClient
 	ListUsersClient
 	MyDetailsClient
-	UnlockUserClient
 	ViewTeamClient
 	RandomReviewsClient
 	EditRandomReviewSettingsClient
@@ -111,10 +110,6 @@ func New(logger Logger, client Client, templates map[string]*template.Template, 
 	mux.Handle("/edit-user/",
 		wrap(
 			editUser(client, templates["edit-user.gotmpl"])))
-
-	mux.Handle("/unlock-user/",
-		wrap(
-			unlockUser(client, templates["unlock-user.gotmpl"])))
 
 	mux.Handle("/delete-user/",
 		wrap(

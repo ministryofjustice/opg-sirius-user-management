@@ -49,7 +49,6 @@ func TestSearchUsers(t *testing.T) {
 							"displayName": dsl.String("system admin"),
 							"surname":     dsl.String("admin"),
 							"email":       dsl.String("system.admin@opgtest.com"),
-							"locked":      dsl.Like(false),
 							"suspended":   dsl.Like(false),
 						}, 1),
 					})
@@ -122,5 +121,4 @@ func TestUserStatus(t *testing.T) {
 
 	assert.Equal(t, "", UserStatus("string").TagColour())
 	assert.Equal(t, "govuk-tag--grey", UserStatus("Suspended").TagColour())
-	assert.Equal(t, "govuk-tag--orange", UserStatus("Locked").TagColour())
 }

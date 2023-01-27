@@ -17,8 +17,6 @@ func (us UserStatus) String() string {
 func (us UserStatus) TagColour() string {
 	if us == "Suspended" {
 		return "govuk-tag--grey"
-	} else if us == "Locked" {
-		return "govuk-tag--orange"
 	} else {
 		return ""
 	}
@@ -29,7 +27,6 @@ type apiUser struct {
 	DisplayName string `json:"displayName"`
 	Surname     string `json:"surname"`
 	Email       string `json:"email"`
-	Locked      bool   `json:"locked"`
 	Suspended   bool   `json:"suspended"`
 }
 
@@ -88,8 +85,6 @@ func (c *Client) SearchUsers(ctx Context, search string) ([]User, error) {
 
 		if u.Suspended {
 			user.Status = "Suspended"
-		} else if u.Locked {
-			user.Status = "Locked"
 		}
 
 		users = append(users, user)

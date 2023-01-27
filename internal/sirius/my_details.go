@@ -16,7 +16,6 @@ type MyDetails struct {
 	Firstname   string          `json:"firstname"`
 	Surname     string          `json:"surname"`
 	Roles       []string        `json:"roles"`
-	Locked      bool            `json:"locked"`
 	Suspended   bool            `json:"suspended"`
 }
 
