@@ -13,7 +13,6 @@ type AuthUser struct {
 	Email        string
 	Organisation string
 	Roles        []string
-	Locked       bool
 	Suspended    bool
 }
 
@@ -23,7 +22,6 @@ type authUserResponse struct {
 	Surname   string   `json:"surname"`
 	Email     string   `json:"email"`
 	Roles     []string `json:"roles"`
-	Locked    bool     `json:"locked"`
 	Suspended bool     `json:"suspended"`
 }
 
@@ -57,7 +55,6 @@ func (c *Client) User(ctx Context, id int) (AuthUser, error) {
 		Firstname: v.Firstname,
 		Surname:   v.Surname,
 		Email:     v.Email,
-		Locked:    v.Locked,
 		Suspended: v.Suspended,
 	}
 

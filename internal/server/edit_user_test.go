@@ -126,7 +126,7 @@ func TestPostEditUser(t *testing.T) {
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
-	r, _ := http.NewRequest("POST", "/edit-user/123", strings.NewReader("email=a&firstname=b&surname=c&organisation=d&roles=e&roles=f&locked=Yes&suspended=No"))
+	r, _ := http.NewRequest("POST", "/edit-user/123", strings.NewReader("email=a&firstname=b&surname=c&organisation=d&roles=e&roles=f&suspended=No"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
 	err := editUser(client, template)(client.requiredPermissions(), w, r)
@@ -144,7 +144,6 @@ func TestPostEditUser(t *testing.T) {
 		Surname:      "c",
 		Organisation: "d",
 		Roles:        []string{"e", "f"},
-		Locked:       true,
 		Suspended:    false,
 	}, client.editUser.lastUser)
 
@@ -163,7 +162,6 @@ func TestPostEditUser(t *testing.T) {
 			Surname:      "c",
 			Organisation: "d",
 			Roles:        []string{"e", "f"},
-			Locked:       true,
 			Suspended:    false,
 		},
 	}, template.lastVars)
@@ -177,7 +175,7 @@ func TestPostEditUserClientError(t *testing.T) {
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
-	r, _ := http.NewRequest("POST", "/edit-user/123", strings.NewReader("email=a&firstname=b&surname=c&organisation=d&roles=e&roles=f&locked=Yes&suspended=No"))
+	r, _ := http.NewRequest("POST", "/edit-user/123", strings.NewReader("email=a&firstname=b&surname=c&organisation=d&roles=e&roles=f&suspended=No"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
 	err := editUser(client, template)(client.requiredPermissions(), w, r)
@@ -199,7 +197,6 @@ func TestPostEditUserClientError(t *testing.T) {
 			Surname:      "c",
 			Organisation: "d",
 			Roles:        []string{"e", "f"},
-			Locked:       true,
 			Suspended:    false,
 		},
 		Errors: sirius.ValidationErrors{
