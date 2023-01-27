@@ -7,7 +7,7 @@ import (
 )
 
 func (c *Client) DeleteUser(ctx Context, userID int) error {
-	req, err := c.newRequest(ctx, http.MethodDelete, fmt.Sprintf("/auth/user/%d", userID), nil)
+	req, err := c.newRequest(ctx, http.MethodDelete, fmt.Sprintf("/api/v1/users/%d", userID), nil)
 	if err != nil {
 		return err
 	}

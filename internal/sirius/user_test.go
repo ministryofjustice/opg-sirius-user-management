@@ -46,7 +46,7 @@ func TestUser(t *testing.T) {
 					UponReceiving("A request for the user").
 					WithRequest(dsl.Request{
 						Method: http.MethodGet,
-						Path:   dsl.String("/auth/user/123"),
+						Path:   dsl.String("/api/v1/users/123"),
 					}).
 					WillRespondWith(dsl.Response{
 						Status:  http.StatusOK,
@@ -101,7 +101,7 @@ func TestUserStatusError(t *testing.T) {
 	_, err := client.User(Context{Context: context.Background()}, 123)
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
-		URL:    s.URL + "/auth/user/123",
+		URL:    s.URL + "/api/v1/users/123",
 		Method: http.MethodGet,
 	}, err)
 }
