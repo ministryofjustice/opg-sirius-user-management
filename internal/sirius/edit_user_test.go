@@ -11,7 +11,11 @@ import (
 )
 
 type editUserErrorsResponse struct {
-	Message string `json:"message" pact:"example=oops"`
+	Errors *struct {
+		Firstname *struct {
+			TooLong string `json:"tooLong" pact:"example=First name must be 255 characters or fewer"`
+		} `json:"firstname"`
+	} `json:"validation_errors"`
 }
 
 func TestEditUser(t *testing.T) {
@@ -49,7 +53,7 @@ func TestEditUser(t *testing.T) {
 					UponReceiving("A request to edit the user").
 					WithRequest(dsl.Request{
 						Method: http.MethodPut,
-						Path:   dsl.String("/auth/user/123"),
+						Path:   dsl.String("/api/v1/users/123"),
 						Body: map[string]interface{}{
 							"id":        123,
 							"email":     "c@opgtest.com",
@@ -77,7 +81,7 @@ func TestEditUser(t *testing.T) {
 					UponReceiving("A request to edit the user errors on validation").
 					WithRequest(dsl.Request{
 						Method: http.MethodPut,
-						Path:   dsl.String("/auth/user/123"),
+						Path:   dsl.String("/api/v1/users/123"),
 						Body: map[string]interface{}{
 							"id":        123,
 							"firstname": "grehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjgergrehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjgergrehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjgergrehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjgergrehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjgergrehjreghjerghjerghjgerhjegrhjgrehgrehjgjherbhjger",
@@ -91,7 +95,13 @@ func TestEditUser(t *testing.T) {
 						Body:   dsl.Match(editUserErrorsResponse{}),
 					})
 			},
-			expectedError: ClientError("oops"),
+			expectedError: ValidationError{
+				Errors: ValidationErrors{
+					"firstname": {
+						"tooLong": "First name must be 255 characters or fewer",
+					},
+				},
+			},
 		},
 	}
 
@@ -120,7 +130,7 @@ func TestEditUserStatusError(t *testing.T) {
 	err := client.EditUser(Context{Context: context.Background()}, AuthUser{ID: 123})
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
-		URL:    s.URL + "/auth/user/123",
+		URL:    s.URL + "/api/v1/users/123",
 		Method: http.MethodPut,
 	}, err)
 }
