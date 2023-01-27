@@ -66,7 +66,6 @@ func editUser(client EditUserClient, tmpl Template) Handler {
 				Organisation: r.PostFormValue("organisation"),
 				Roles:        r.PostForm["roles"],
 				Suspended:    r.PostFormValue("suspended") == "Yes",
-				Locked:       r.PostFormValue("locked") == "Yes",
 			}
 			err := client.EditUser(ctx, vars.User)
 
