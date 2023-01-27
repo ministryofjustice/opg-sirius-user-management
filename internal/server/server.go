@@ -18,7 +18,6 @@ type Logger interface {
 type Client interface {
 	AddTeamClient
 	AddUserClient
-	ChangePasswordClient
 	DeleteTeamClient
 	DeleteUserClient
 	EditMyDetailsClient
@@ -105,10 +104,6 @@ func New(logger Logger, client Client, templates map[string]*template.Template, 
 	mux.Handle("/random-reviews/edit/review-cycle",
 		wrap(
 			editRandomReviewSettings(client, templates["random-reviews-edit-review-cycle.gotmpl"])))
-
-	mux.Handle("/change-password",
-		wrap(
-			changePassword(client, templates["change-password.gotmpl"])))
 
 	mux.Handle("/add-user",
 		wrap(
