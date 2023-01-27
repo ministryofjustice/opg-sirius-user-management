@@ -27,7 +27,6 @@ type Client interface {
 	ListTeamsClient
 	ListUsersClient
 	MyDetailsClient
-	ResendConfirmationClient
 	UnlockUserClient
 	ViewTeamClient
 	RandomReviewsClient
@@ -120,10 +119,6 @@ func New(logger Logger, client Client, templates map[string]*template.Template, 
 	mux.Handle("/delete-user/",
 		wrap(
 			deleteUser(client, templates["delete-user.gotmpl"])))
-
-	mux.Handle("/resend-confirmation",
-		wrap(
-			resendConfirmation(client, templates["resend-confirmation.gotmpl"])))
 
 	static := http.FileServer(http.Dir(webDir + "/static"))
 	mux.Handle("/assets/", static)

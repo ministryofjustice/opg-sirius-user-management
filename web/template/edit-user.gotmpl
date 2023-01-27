@@ -17,16 +17,6 @@
         {{ template "success-banner" "You have successfully edited a user." }}
       {{ end }}
 
-      {{ if .User.Inactive }}
-        <div class="moj-banner">
-          <svg class="moj-banner__icon" fill="currentColor" role="presentation" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25" height="25" width="25">
-            <path d="M13.7,18.5h-2.4v-2.4h2.4V18.5z M12.5,13.7c-0.7,0-1.2-0.5-1.2-1.2V7.7c0-0.7,0.5-1.2,1.2-1.2s1.2,0.5,1.2,1.2v4.8
-	                   C13.7,13.2,13.2,13.7,12.5,13.7z M12.5,0.5c-6.6,0-12,5.4-12,12s5.4,12,12,12s12-5.4,12-12S19.1,0.5,12.5,0.5z"></path>
-          </svg>
-
-          <div class="moj-banner__message">User has not activated their account yet.</div>
-        </div>
-      {{ end }}
       {{ if .User.Locked }}
         <div class="moj-banner">
           <svg class="moj-banner__icon" fill="currentColor" role="presentation" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25" height="25" width="25"><path d="M13.7,18.5h-2.4v-2.4h2.4V18.5z M12.5,13.7c-0.7,0-1.2-0.5-1.2-1.2V7.7c0-0.7,0.5-1.2,1.2-1.2s1.2,0.5,1.2,1.2v4.8
@@ -47,14 +37,6 @@
         <div class="moj-page-header-actions__actions">
           <div class="moj-button-menu">
             <div class="moj-button-menu__wrapper">
-              {{ if .User.Inactive }}
-                <form method="POST" action="{{ prefix "/resend-confirmation" }}" class="moj-button-menu__item">
-                  <input type="hidden" name="xsrfToken" value="{{ .XSRFToken }}" />
-                  <input type="hidden" name="id" value="{{ .User.ID }}">
-                  <input type="hidden" name="email" value="{{ .User.Email }}">
-                  <button class="govuk-button govuk-button--secondary moj-page-header-actions__action">Resend activation email</button>
-                </form>
-              {{ end }}
                <a class="govuk-button moj-button-menu__item govuk-button--warning moj-page-header-actions__action" href="{{ prefix (printf "/delete-user/%d" .User.ID) }}">Delete user</a>
             </div>
           </div>
