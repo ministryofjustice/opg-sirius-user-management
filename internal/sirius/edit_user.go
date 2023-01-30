@@ -30,7 +30,7 @@ func (c *Client) EditUser(ctx Context, user AuthUser) error {
 		return err
 	}
 
-	requestURL := fmt.Sprintf("/auth/user/%d", user.ID)
+	requestURL := fmt.Sprintf("/api/v1/users/%d", user.ID)
 
 	req, err := c.newRequest(ctx, http.MethodPut, requestURL, &body)
 	if err != nil {
@@ -50,11 +50,13 @@ func (c *Client) EditUser(ctx Context, user AuthUser) error {
 
 	if resp.StatusCode != http.StatusOK {
 		var v struct {
-			Message string `json:"message"`
+			ValidationErrors ValidationErrors `json:"validation_errors"`
 		}
 
 		if err := json.NewDecoder(resp.Body).Decode(&v); err == nil {
-			return ClientError(v.Message)
+			return ValidationError{
+				Errors: v.ValidationErrors,
+			}
 		}
 
 		return newStatusError(resp)

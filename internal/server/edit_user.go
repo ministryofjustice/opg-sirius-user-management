@@ -69,12 +69,8 @@ func editUser(client EditUserClient, tmpl Template) Handler {
 			}
 			err := client.EditUser(ctx, vars.User)
 
-			if _, ok := err.(sirius.ClientError); ok {
-				vars.Errors = sirius.ValidationErrors{
-					"firstname": {
-						"": err.Error(),
-					},
-				}
+			if e, ok := err.(sirius.ValidationError); ok {
+				vars.Errors = e.Errors
 
 				w.WriteHeader(http.StatusBadRequest)
 				return tmpl.ExecuteTemplate(w, "page", vars)

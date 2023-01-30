@@ -167,11 +167,15 @@ func TestPostEditUser(t *testing.T) {
 	}, template.lastVars)
 }
 
-func TestPostEditUserClientError(t *testing.T) {
+func TestPostEditUserValidationError(t *testing.T) {
 	assert := assert.New(t)
 
 	client := &mockEditUserClient{}
-	client.editUser.err = sirius.ClientError("something")
+	client.editUser.err = sirius.ValidationError{
+		Errors: sirius.ValidationErrors{
+			"firstname": {"": "something"},
+		},
+	}
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
