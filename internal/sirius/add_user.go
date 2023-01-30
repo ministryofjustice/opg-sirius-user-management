@@ -25,7 +25,7 @@ func (c *Client) AddUser(ctx Context, email, firstName, lastName, organisation s
 		return err
 	}
 
-	req, err := c.newRequest(ctx, http.MethodPost, "/auth/user", &body)
+	req, err := c.newRequest(ctx, http.MethodPost, "/api/v1/users", &body)
 	if err != nil {
 		return err
 	}
@@ -43,10 +43,13 @@ func (c *Client) AddUser(ctx Context, email, firstName, lastName, organisation s
 
 	if resp.StatusCode != http.StatusCreated {
 		var v struct {
-			ErrorMessages ValidationErrors `json:"errorMessages"`
+			ValidationErrors ValidationErrors `json:"validation_errors"`
 		}
+
 		if err := json.NewDecoder(resp.Body).Decode(&v); err == nil {
-			return ValidationError{Errors: v.ErrorMessages}
+			return ValidationError{
+				Errors: v.ValidationErrors,
+			}
 		}
 
 		return newStatusError(resp)

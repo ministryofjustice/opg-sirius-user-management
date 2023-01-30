@@ -39,7 +39,7 @@ func TestDeleteUser(t *testing.T) {
 					UponReceiving("A request to delete the user").
 					WithRequest(dsl.Request{
 						Method: http.MethodDelete,
-						Path:   dsl.String("/auth/user/123"),
+						Path:   dsl.String("/api/v1/users/123"),
 					}).
 					WillRespondWith(dsl.Response{
 						Status: http.StatusOK,
@@ -87,7 +87,7 @@ func TestDeleteUserStatusError(t *testing.T) {
 	err := client.DeleteUser(Context{Context: context.Background()}, 123)
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
-		URL:    s.URL + "/auth/user/123",
+		URL:    s.URL + "/api/v1/users/123",
 		Method: http.MethodDelete,
 	}, err)
 }
