@@ -55,12 +55,8 @@ func deleteUser(client DeleteUserClient, tmpl Template) Handler {
 		if r.Method == http.MethodPost {
 			err := client.DeleteUser(ctx, id)
 
-			if _, ok := err.(sirius.ClientError); ok {
-				vars.Errors = sirius.ValidationErrors{
-					"": {
-						"": err.Error(),
-					},
-				}
+			if e, ok := err.(sirius.ValidationError); ok {
+				vars.Errors = e.Errors
 
 				w.WriteHeader(http.StatusBadRequest)
 			} else if err != nil {

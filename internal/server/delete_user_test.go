@@ -154,11 +154,15 @@ func TestPostDeleteUser(t *testing.T) {
 	}, template.lastVars)
 }
 
-func TestPostDeleteUserClientError(t *testing.T) {
+func TestPostDeleteUserValidationError(t *testing.T) {
 	assert := assert.New(t)
 
 	client := &mockDeleteUserClient{}
-	client.deleteUser.err = sirius.ClientError("problem")
+	client.deleteUser.err = sirius.ValidationError{
+		Errors: sirius.ValidationErrors{
+			"something": {"": "something"},
+		},
+	}
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
@@ -176,8 +180,8 @@ func TestPostDeleteUserClientError(t *testing.T) {
 		Path: "/delete-user/123",
 		User: client.user.data,
 		Errors: sirius.ValidationErrors{
-			"": {
-				"": "problem",
+			"something": {
+				"": "something",
 			},
 		},
 	}, template.lastVars)
