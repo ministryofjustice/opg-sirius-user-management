@@ -15,7 +15,7 @@ type addUserBadRequestResponse struct {
 		Email *struct {
 			EmailAddressLengthExceeded string `json:"emailAddressLengthExceeded" pact:"example=The input is more than 255 characters long"`
 		} `json:"email"`
-	} `json:"errorMessages"`
+	} `json:"validation_errors"`
 }
 
 func TestAddUser(t *testing.T) {
@@ -48,7 +48,7 @@ func TestAddUser(t *testing.T) {
 					UponReceiving("A request to add a new user").
 					WithRequest(dsl.Request{
 						Method: http.MethodPost,
-						Path:   dsl.String("/auth/user"),
+						Path:   dsl.String("/api/v1/users"),
 						Headers: dsl.MapMatcher{
 							"Content-Type": dsl.String("application/json"),
 						},
@@ -78,7 +78,7 @@ func TestAddUser(t *testing.T) {
 					UponReceiving("A request to add a new user errors").
 					WithRequest(dsl.Request{
 						Method: http.MethodPost,
-						Path:   dsl.String("/auth/user"),
+						Path:   dsl.String("/api/v1/users"),
 						Headers: dsl.MapMatcher{
 							"Content-Type": dsl.String("application/json"),
 						},
@@ -133,7 +133,7 @@ func TestAddUserStatusError(t *testing.T) {
 	err := client.AddUser(Context{Context: context.Background()}, "", "", "", "", nil)
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
-		URL:    s.URL + "/auth/user",
+		URL:    s.URL + "/api/v1/users",
 		Method: http.MethodPost,
 	}, err)
 }
