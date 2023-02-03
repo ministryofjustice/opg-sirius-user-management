@@ -13,11 +13,11 @@
   },
   "dependencies": {
     "@ministryofjustice/frontend": "1.6.4",
-    "cypress": "12.3.0",
+    "cypress": "12.5.0",
     "govuk-frontend": "^4.4.0"
   },
   "devDependencies": {
-    "esbuild": "^0.16.0",
+    "esbuild": "^0.17.0",
     "prettier": "^2.6.0",
     "sass": "^1.26.11"
   },
