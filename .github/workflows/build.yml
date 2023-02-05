@@ -203,7 +203,7 @@ jobs:
         run: make up
 
       - name: Cypress Tests
-        uses: cypress-io/github-action@v5.0.5
+        uses: cypress-io/github-action@v5.0.7
         with:
           browser: chrome
 
