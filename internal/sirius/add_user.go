@@ -35,7 +35,7 @@ func (c *Client) AddUser(ctx Context, email, firstName, lastName, organisation s
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //#nosec G307 false positive
 
 	if resp.StatusCode == http.StatusUnauthorized {
 		return ErrUnauthorized

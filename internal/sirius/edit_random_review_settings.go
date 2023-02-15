@@ -31,7 +31,7 @@ func (c *Client) EditRandomReviewSettings(ctx Context, reviewSettings EditRandom
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //#nosec G307 false positive
 
 	if resp.StatusCode == http.StatusUnauthorized {
 		return ErrUnauthorized
