@@ -88,13 +88,6 @@ jobs:
           check_name: "Unit Test Results"
           files: test-results/unit-tests.xml
 
-      - name: Scan with SonarQube
-        uses: sonarsource/sonarqube-scan-action@master
-        if: ${{ always() && github.actor != 'dependabot[bot]' }}
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-
       - name: Define Pact tag
         id: pact_tag
         run: |
