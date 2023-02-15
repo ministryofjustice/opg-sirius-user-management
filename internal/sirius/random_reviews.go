@@ -24,7 +24,7 @@ func (c *Client) RandomReviews(ctx Context) (RandomReviews, error) {
 	if err != nil {
 		return data, err
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //#nosec G307 false positive
 
 	if resp.StatusCode == http.StatusUnauthorized {
 		return data, ErrUnauthorized

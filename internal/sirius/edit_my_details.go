@@ -26,7 +26,7 @@ func (c *Client) EditMyDetails(ctx Context, id int, phoneNumber string) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //#nosec G307 false positive
 
 	if resp.StatusCode == http.StatusUnauthorized {
 		return ErrUnauthorized
