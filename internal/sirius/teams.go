@@ -47,7 +47,7 @@ func (c *Client) Teams(ctx Context) ([]Team, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //#nosec G307 false positive
 
 	if resp.StatusCode == http.StatusUnauthorized {
 		return nil, ErrUnauthorized

@@ -16,7 +16,7 @@ func (c *Client) Team(ctx Context, id int) (Team, error) {
 	if err != nil {
 		return Team{}, err
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //#nosec G307 false positive
 
 	if resp.StatusCode == http.StatusUnauthorized {
 		return Team{}, ErrUnauthorized
