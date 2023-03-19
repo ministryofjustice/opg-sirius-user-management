@@ -149,10 +149,10 @@
   resolved "https://registry.yarnpkg.com/@esbuild/win32-x64/-/win32-x64-0.17.11.tgz#9be796d93ae27b636da32d960899a4912bca27a1"
   integrity sha512-N9vXqLP3eRL8BqSy8yn4Y98cZI2pZ8fyuHx6lKjiG2WABpT2l01TXdzq5Ma2ZUBzfB7tx5dXVhge8X9u0S70ZQ==
 
-"@ministryofjustice/frontend@1.6.4":
-  version "1.6.4"
-  resolved "https://registry.yarnpkg.com/@ministryofjustice/frontend/-/frontend-1.6.4.tgz#396ffdc1699253671c8bc93ffa879735b8d4e8da"
-  integrity sha512-+tL1FolgPxo1jYw6zDcvqyVA0zHigW0QAn4NQbfHKwOb/rhny49iVud6PhzK4zguZds+sQQ0yzHpanROsmWLOw==
+"@ministryofjustice/frontend@1.6.5":
+  version "1.6.5"
+  resolved "https://registry.yarnpkg.com/@ministryofjustice/frontend/-/frontend-1.6.5.tgz#ac4d900fcb1dd162039aaffc9ad9f82b5cc31687"
+  integrity sha512-dCJKMh8ctTF9ENiTkFcVATXI40wq+JsBIGTx60vAZ9dVRUQnYemAcOcREm3I6w3aUjVyqYcfHJvtEUNeCIw7Qg==
   dependencies:
     govuk-frontend "^3.0.0 || ^4.0.0"
     moment "^2.27.0"
@@ -469,10 +469,10 @@ cross-spawn@^7.0.0:
     shebang-command "^2.0.0"
     which "^2.0.1"
 
-cypress@12.6.0:
-  version "12.6.0"
-  resolved "https://registry.yarnpkg.com/cypress/-/cypress-12.6.0.tgz#d71a82639756173c0682b3d467eb9f0523460e91"
-  integrity sha512-WdHSVaS1lumSd5XpVTslZd8ui9GIGphrzvXq9+3DtVhqjRZC5M70gu5SW/Y/SLPq3D1wiXGZoHC6HJ7ESVE2lw==
+cypress@12.8.1:
+  version "12.8.1"
+  resolved "https://registry.yarnpkg.com/cypress/-/cypress-12.8.1.tgz#0c6e67f34554d553138697aaf349b637d80004eb"
+  integrity sha512-lIFbKdaSYAOarNLHNFa2aPZu6YSF+8UY4VRXMxJrFUnk6RvfG0AWsZ7/qle/aIz30TNUD4aOihz2ZgS4vuQVSA==
   dependencies:
     "@cypress/request" "^2.88.10"
     "@cypress/xvfb" "^1.2.4"
@@ -1227,9 +1227,9 @@ safer-buffer@^2.0.2, safer-buffer@^2.1.0, safer-buffer@~2.1.0:
   integrity sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==
 
 sass@^1.26.11:
-  version "1.59.2"
-  resolved "https://registry.yarnpkg.com/sass/-/sass-1.59.2.tgz#537f6d11614d4f20f97696f23ad358ee398b1937"
-  integrity sha512-jJyO6SmbzkJexF8MUorHx5tAilcgabioYxT/BHbY4+OvoqmbHxsYlrjZ8Adhqcgl6Zqwie0TgMXLCAmPFxXOuw==
+  version "1.59.3"
+  resolved "https://registry.yarnpkg.com/sass/-/sass-1.59.3.tgz#a1ddf855d75c70c26b4555df4403e1bbf8e4403f"
+  integrity sha512-QCq98N3hX1jfTCoUAsF3eyGuXLsY7BCnCEg9qAact94Yc21npG2/mVOqoDvE0fCbWDqiM4WlcJQla0gWG2YlxQ==
   dependencies:
     chokidar ">=3.0.0 <4.0.0"
     immutable "^4.0.0"
