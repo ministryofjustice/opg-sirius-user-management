@@ -23,11 +23,12 @@ func (us UserStatus) TagColour() string {
 }
 
 type apiUser struct {
-	ID          int    `json:"id"`
-	DisplayName string `json:"displayName"`
-	Surname     string `json:"surname"`
-	Email       string `json:"email"`
-	Suspended   bool   `json:"suspended"`
+	ID          int       `json:"id"`
+	DisplayName string    `json:"displayName"`
+	Surname     string    `json:"surname"`
+	Email       string    `json:"email"`
+	Suspended   bool      `json:"suspended"`
+	Teams       []apiTeam `json:"teams"`
 }
 
 type User struct {
@@ -35,6 +36,7 @@ type User struct {
 	DisplayName string `json:"displayName"`
 	Email       string `json:"email"`
 	Status      UserStatus
+	Team        string `json:"team"`
 }
 
 func (c *Client) SearchUsers(ctx Context, search string) ([]User, error) {
@@ -48,6 +50,7 @@ func (c *Client) SearchUsers(ctx Context, search string) ([]User, error) {
 	}
 
 	resp, err := c.http.Do(req)
+
 	if err != nil {
 		return nil, err
 	}
@@ -81,6 +84,7 @@ func (c *Client) SearchUsers(ctx Context, search string) ([]User, error) {
 			DisplayName: u.DisplayName,
 			Email:       u.Email,
 			Status:      "Active",
+			Team:        u.Teams[0].DisplayName,
 		}
 
 		if u.Suspended {
