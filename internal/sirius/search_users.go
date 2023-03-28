@@ -79,12 +79,17 @@ func (c *Client) SearchUsers(ctx Context, search string) ([]User, error) {
 
 	var users []User
 	for _, u := range v {
+		var teamName string
+		if len(u.Teams) > 0 {
+			teamName = u.Teams[0].DisplayName
+		}
+
 		user := User{
 			ID:          u.ID,
 			DisplayName: u.DisplayName,
 			Email:       u.Email,
 			Status:      "Active",
-			Team:        u.Teams[0].DisplayName,
+			Team:        teamName,
 		}
 
 		if u.Suspended {
