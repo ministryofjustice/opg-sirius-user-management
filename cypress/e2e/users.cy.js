@@ -13,6 +13,7 @@ describe("Users", () => {
 
     const expected = [
       "system admin",
+      "",
       "system.admin@opgtest.com",
       "Active",
       "Edit",

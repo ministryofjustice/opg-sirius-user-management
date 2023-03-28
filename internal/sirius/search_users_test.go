@@ -50,6 +50,9 @@ func TestSearchUsers(t *testing.T) {
 							"surname":     dsl.String("admin"),
 							"email":       dsl.String("system.admin@opgtest.com"),
 							"suspended":   dsl.Like(false),
+							"teams": dsl.EachLike(map[string]interface{}{
+								"displayName": dsl.Like("my friendly team"),
+							}, 1),
 						}, 1),
 					})
 			},
@@ -59,6 +62,7 @@ func TestSearchUsers(t *testing.T) {
 					DisplayName: "system admin",
 					Email:       "system.admin@opgtest.com",
 					Status:      "Active",
+					Team:        "my friendly team",
 				},
 			},
 		},
