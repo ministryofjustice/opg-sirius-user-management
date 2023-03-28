@@ -54,11 +54,7 @@
       {{ range .Users }}
         <tr class="govuk-table__row">
           <th scope="row" class="govuk-table__header">{{ .DisplayName }}</th>
-          {{ if .Team }}
           <td class="govuk-table__cell">{{ .Team }}</td>
-          {{ else }}
-          <td class="govuk-table__cell"> </td>
-          {{ end }}
           <td class="govuk-table__cell">{{ .Email }}</td>
           <td class="govuk-table__cell">
             <strong class="govuk-tag {{ .Status.TagColour }}">
