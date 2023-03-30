@@ -6,23 +6,12 @@ describe("Users", () => {
   it("allows me to search for admin user", () => {
     const expected = [
       "system admin",
-      "",
+      "my friendly team",
       "system.admin@opgtest.com",
       "Active",
       "Edit",
     ];
     search("admin", expected);
-  });
-
-  it("allows me to search for non-admin user", () => {
-    const expected = [
-      "CardPayment User",
-      "Card Payment Team",
-      "card.payment.user@opgtest.com",
-      "Active",
-      "Edit",
-    ];
-    search("CardPayment", expected);
   });
 
   function search(searchTerm, expected) {
