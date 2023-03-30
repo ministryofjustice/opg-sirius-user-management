@@ -60,6 +60,12 @@ docker-compose -f docker/docker-compose.cypress.yml up -d --build
 yarn && yarn cypress
 ```
 
+Note that tests can get cached, causing the pacts not to get regenerated when they should. If the pacts are not behaving as expected, its recommended to force a rebuild by doing: 
+
+```
+go test ./... -count=1
+```
+
 ## Development
 
 On CI we lint using [golangci-lint](https://golangci-lint.run/). It may be
