@@ -24,11 +24,52 @@ func TestSearchUsers(t *testing.T) {
 	testCases := []struct {
 		name             string
 		setup            func()
+		searchTerm       string
 		expectedResponse []User
 		expectedError    error
 	}{
 		{
-			name: "OK",
+			name: "User in a team",
+			setup: func() {
+				pact.
+					AddInteraction().
+					Given("A user called Anton exists who is in a team").
+					UponReceiving("A search for Anton").
+					WithRequest(dsl.Request{
+						Method: http.MethodGet,
+						Path:   dsl.String("/api/v1/search/users"),
+						Query: dsl.MapMatcher{
+							"query": dsl.String("anton"),
+						},
+					}).
+					WillRespondWith(dsl.Response{
+						Status:  http.StatusOK,
+						Headers: dsl.MapMatcher{"Content-Type": dsl.String("application/json")},
+						Body: dsl.EachLike(map[string]interface{}{
+							"id":          dsl.Like(47),
+							"displayName": dsl.String("Anton Mccoy"),
+							"surname":     dsl.String("Mccoy"),
+							"email":       dsl.String("anton.mccoy@opgtest.com"),
+							"suspended":   dsl.Like(false),
+							"teams": dsl.EachLike(map[string]interface{}{
+								"displayName": dsl.Like("my friendly team"),
+							}, 1),
+						}, 1),
+					})
+			},
+			searchTerm: "anton",
+			expectedResponse: []User{
+				{
+					ID:          47,
+					DisplayName: "Anton Mccoy",
+					Email:       "anton.mccoy@opgtest.com",
+					Status:      "Active",
+					Team:        "my friendly team",
+				},
+			},
+		},
+		{
+			name: "User not in a team",
 			setup: func() {
 				pact.
 					AddInteraction().
@@ -53,6 +94,7 @@ func TestSearchUsers(t *testing.T) {
 						}, 1),
 					})
 			},
+			searchTerm: "admin",
 			expectedResponse: []User{
 				{
 					ID:          47,
@@ -71,7 +113,7 @@ func TestSearchUsers(t *testing.T) {
 			assert.Nil(t, pact.Verify(func() error {
 				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
 
-				users, err := client.SearchUsers(Context{Context: context.Background()}, "admin")
+				users, err := client.SearchUsers(Context{Context: context.Background()}, tc.searchTerm)
 				assert.Equal(t, tc.expectedResponse, users)
 				assert.Equal(t, tc.expectedError, err)
 				return nil
