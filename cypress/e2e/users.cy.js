@@ -3,15 +3,26 @@ describe("Users", () => {
     cy.visit("/users");
   });
 
-  it("allows me to search for admin user", () => {
+  it("allows me to search for not in a team", () => {
     const expected = [
       "system admin",
-      "my friendly team",
+      "",
       "system.admin@opgtest.com",
       "Active",
       "Edit",
     ];
     search("admin", expected);
+  });
+
+  it("allows me to search for a user in a team", () => {
+    const expected = [
+      "Anton Mccoy",
+      "my friendly team",
+      "anton.mccoy@opgtest.com",
+      "Active",
+      "Edit",
+    ];
+    search("anton", expected);
   });
 
   function search(searchTerm, expected) {
