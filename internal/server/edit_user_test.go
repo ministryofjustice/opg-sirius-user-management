@@ -89,6 +89,35 @@ func TestGetEditUser(t *testing.T) {
 	}, template.lastVars)
 }
 
+func TestGetEditUserWithHiddenRole(t *testing.T) {
+	assert := assert.New(t)
+
+	client := &mockEditUserClient{}
+	client.user.data = sirius.AuthUser{Firstname: "test", Roles: []string{"System Admin", "private-hidden"}}
+	template := &mockTemplate{}
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("GET", "/edit-user/123", nil)
+
+	err := editUser(client, template)(client.requiredPermissions(), w, r)
+	assert.Nil(err)
+
+	assert.Equal(1, client.roles.count)
+	assert.Equal(getContext(r), client.roles.lastCtx)
+	assert.Equal(1, client.user.count)
+	assert.Equal(123, client.user.lastID)
+	assert.Equal(0, client.editUser.count)
+
+	assert.Equal(1, template.count)
+	assert.Equal("page", template.lastName)
+	assert.Equal(editUserVars{
+		Path:        "/edit-user/123",
+		User:        client.user.data,
+		Roles:       []string{"System Admin", "Manager"},
+		HiddenRoles: []string{"private-hidden"},
+	}, template.lastVars)
+}
+
 func TestGetEditUserNoPermission(t *testing.T) {
 	assert := assert.New(t)
 
@@ -126,7 +155,7 @@ func TestPostEditUser(t *testing.T) {
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
-	r, _ := http.NewRequest("POST", "/edit-user/123", strings.NewReader("email=a&firstname=b&surname=c&organisation=d&roles=e&roles=f&suspended=No"))
+	r, _ := http.NewRequest("POST", "/edit-user/123", strings.NewReader("email=a&firstname=b&surname=c&organisation=d&roles=System+Admin&roles=Manager&suspended=No"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
 	err := editUser(client, template)(client.requiredPermissions(), w, r)
@@ -143,7 +172,7 @@ func TestPostEditUser(t *testing.T) {
 		Firstname:    "b",
 		Surname:      "c",
 		Organisation: "d",
-		Roles:        []string{"e", "f"},
+		Roles:        []string{"System Admin", "Manager"},
 		Suspended:    false,
 	}, client.editUser.lastUser)
 
@@ -161,7 +190,7 @@ func TestPostEditUser(t *testing.T) {
 			Firstname:    "b",
 			Surname:      "c",
 			Organisation: "d",
-			Roles:        []string{"e", "f"},
+			Roles:        []string{"System Admin", "Manager"},
 			Suspended:    false,
 		},
 	}, template.lastVars)
@@ -179,7 +208,7 @@ func TestPostEditUserValidationError(t *testing.T) {
 	template := &mockTemplate{}
 
 	w := httptest.NewRecorder()
-	r, _ := http.NewRequest("POST", "/edit-user/123", strings.NewReader("email=a&firstname=b&surname=c&organisation=d&roles=e&roles=f&suspended=No"))
+	r, _ := http.NewRequest("POST", "/edit-user/123", strings.NewReader("email=a&firstname=b&surname=c&organisation=d&roles=System+Admin&suspended=No"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
 	err := editUser(client, template)(client.requiredPermissions(), w, r)
@@ -200,7 +229,42 @@ func TestPostEditUserValidationError(t *testing.T) {
 			Firstname:    "b",
 			Surname:      "c",
 			Organisation: "d",
-			Roles:        []string{"e", "f"},
+			Roles:        []string{"System Admin"},
+			Suspended:    false,
+		},
+		Errors: sirius.ValidationErrors{
+			"firstname": {
+				"": "something",
+			},
+		},
+	}, template.lastVars)
+}
+
+func TestPostEditUserWithHiddenRole(t *testing.T) {
+	assert := assert.New(t)
+
+	client := &mockEditUserClient{}
+	client.editUser.err = sirius.ValidationError{
+		Errors: sirius.ValidationErrors{
+			"firstname": {"": "something"},
+		},
+	}
+	template := &mockTemplate{}
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("POST", "/edit-user/123", strings.NewReader("roles=Manager&roles=private-hidden"))
+	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	err := editUser(client, template)(client.requiredPermissions(), w, r)
+	assert.Nil(err)
+
+	assert.Equal(editUserVars{
+		Path:        "/edit-user/123",
+		Roles:       []string{"System Admin", "Manager"},
+		HiddenRoles: []string{"private-hidden"},
+		User: sirius.AuthUser{
+			ID:           123,
+			Roles:        []string{"Manager", "private-hidden"},
 			Suspended:    false,
 		},
 		Errors: sirius.ValidationErrors{

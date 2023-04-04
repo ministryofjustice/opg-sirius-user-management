@@ -15,12 +15,13 @@ type EditUserClient interface {
 }
 
 type editUserVars struct {
-	Path      string
-	XSRFToken string
-	Roles     []string
-	User      sirius.AuthUser
-	Success   bool
-	Errors    sirius.ValidationErrors
+	Path        string
+	XSRFToken   string
+	Roles       []string
+	HiddenRoles []string
+	User        sirius.AuthUser
+	Success     bool
+	Errors      sirius.ValidationErrors
 }
 
 func editUser(client EditUserClient, tmpl Template) Handler {
@@ -55,6 +56,8 @@ func editUser(client EditUserClient, tmpl Template) Handler {
 			}
 			vars.User = user
 
+			vars.HiddenRoles = getUserHiddenRoles(user.Roles, vars.Roles)
+
 			return tmpl.ExecuteTemplate(w, "page", vars)
 
 		case http.MethodPost:
@@ -68,6 +71,8 @@ func editUser(client EditUserClient, tmpl Template) Handler {
 				Suspended:    r.PostFormValue("suspended") == "Yes",
 			}
 			err := client.EditUser(ctx, vars.User)
+
+			vars.HiddenRoles = getUserHiddenRoles(r.PostForm["roles"], vars.Roles)
 
 			if e, ok := err.(sirius.ValidationError); ok {
 				vars.Errors = e.Errors
@@ -86,5 +91,29 @@ func editUser(client EditUserClient, tmpl Template) Handler {
 		default:
 			return StatusError(http.StatusMethodNotAllowed)
 		}
+	}
+}
+
+func getUserHiddenRoles(userRoles []string, visibleRoles []string) []string {
+	hiddenRoles := []string{}
+
+	for _, userRole := range userRoles {
+		hiddenRole := true
+		for _, visibleRole := range visibleRoles {
+			if userRole == visibleRole {
+				hiddenRole = false
+				break
+			}
+		}
+
+		if hiddenRole {
+			hiddenRoles = append(hiddenRoles, userRole)
+		}
+	}
+
+	if len(hiddenRoles) > 0 {
+		return hiddenRoles
+	} else {
+		return nil
 	}
 }
