@@ -39,7 +39,8 @@ func TestSearchUsers(t *testing.T) {
 						Method: http.MethodGet,
 						Path:   dsl.String("/api/v1/search/users"),
 						Query: dsl.MapMatcher{
-							"query": dsl.String("anton"),
+							"includeSuspended": dsl.String("1"),
+							"query":            dsl.String("anton"),
 						},
 					}).
 					WillRespondWith(dsl.Response{
@@ -79,7 +80,8 @@ func TestSearchUsers(t *testing.T) {
 						Method: http.MethodGet,
 						Path:   dsl.String("/api/v1/search/users"),
 						Query: dsl.MapMatcher{
-							"query": dsl.String("admin"),
+							"includeSuspended": dsl.String("1"),
+							"query":            dsl.String("admin"),
 						},
 					}).
 					WillRespondWith(dsl.Response{
