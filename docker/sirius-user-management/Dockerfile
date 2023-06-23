@@ -1,4 +1,4 @@
-FROM node:20.3.0-alpine3.17 as asset-env
+FROM node:20.3.1-alpine3.17 as asset-env
 
 WORKDIR /app
 
@@ -25,7 +25,7 @@ COPY internal internal
 
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o /go/bin/opg-sirius-user-management
 
-FROM alpine:3.18.0
+FROM alpine:3.18.2
 
 WORKDIR /go/bin
 
