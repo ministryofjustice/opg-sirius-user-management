@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@ministryofjustice/frontend": "1.8.0",
-    "cypress": "12.17.2",
+    "cypress": "12.17.3",
     "govuk-frontend": "^4.4.0"
   },
   "devDependencies": {
