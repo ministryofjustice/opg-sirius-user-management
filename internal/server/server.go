@@ -170,7 +170,7 @@ func errorHandler(logger Logger, client ErrorHandlerClient, tmplError Template, 
 
 			if err != nil {
 				if err == sirius.ErrUnauthorized {
-					http.Redirect(w, r, siriusURL+"/auth", http.StatusFound)
+					http.Redirect(w, r, fmt.Sprintf("%s/auth?redirect=%s", siriusURL, url.QueryEscape(prefix+r.URL.Path)), http.StatusFound)
 					return
 				}
 
