@@ -222,7 +222,7 @@ jobs:
         run: make up
 
       - name: Cypress Tests
-        uses: cypress-io/github-action@v5.8.3
+        uses: cypress-io/github-action@v6.0.0
         with:
           browser: chrome
 
