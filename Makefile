@@ -1,33 +1,40 @@
 export DOCKER_BUILDKIT=1
 
-all: lint go-test build scan pa11y lighthouse cypress down
+all: lint unit-test build scan pa11y lighthouse cypress down
 
 lint:
-	docker run --rm -v $(PWD):/app -w /app golangci/golangci-lint:latest golangci-lint run -v
+	docker compose run --rm go-lint
 
-create-results-directory:
-	mkdir -p test-results
+test-results:
+	mkdir -p -m 0777 test-results .gocache pacts logs cypress/screenshots .trivy-cache
 
-go-test: create-results-directory
-	gotestsum --junitfile test-results/unit-tests.xml -- ./... -coverprofile=test-results/test-coverage.txt
+setup-directories: test-results
+
+unit-test: setup-directories
+	docker compose run --rm test-runner
 
 build:
-	docker-compose -f docker/docker-compose.ci.yml build --parallel app pact-stub
+	docker compose build --parallel user-management pact-stub
 
 build-all:
-	docker-compose -f docker/docker-compose.ci.yml build --parallel app pact-stub puppeteer cypress
+	docker compose build --parallel user-management pact-stub puppeteer
 
 up:
-	docker-compose -f docker/docker-compose.ci.yml up -d
+	docker compose up -d --build user-management
 
-scan:
-	trivy sirius-user-management:latest
+scan: setup-directories
+	docker compose run --rm trivy image --format table --exit-code 0 311462405659.dkr.ecr.eu-west-1.amazonaws.com/sirius-user-management:latest
+	docker compose run --rm trivy image --format sarif --output /test-results/trivy.sarif --exit-code 1 311462405659.dkr.ecr.eu-west-1.amazonaws.com/sirius-user-management:latest
+
+cypress: setup-directories
+	docker compose up -d --wait user-management
+	docker compose run --rm cypress
 
 pa11y:
-	docker-compose -f docker/docker-compose.ci.yml run --entrypoint="pa11y-ci" puppeteer
+	docker compose run --entrypoint="pa11y-ci" puppeteer
 
 lighthouse:
-	docker-compose -f docker/docker-compose.ci.yml run --entrypoint="lhci autorun" puppeteer
+	docker compose run --entrypoint="lhci autorun" puppeteer
 
 down:
-	docker-compose -f docker/docker-compose.ci.yml down
+	docker compose down
