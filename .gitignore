@@ -10,3 +10,6 @@ test-results
 .idea
 .vscode
 .yarn-error.log
+.cache
+.gocache
+.trivy-cache

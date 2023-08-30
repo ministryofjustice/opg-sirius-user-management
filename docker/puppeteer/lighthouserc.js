@@ -1,7 +1,7 @@
 module.exports = {
   ci: {
     collect: {
-      url: ["http://app:8888/my-details"],
+      url: ["http://user-management:8888/my-details"],
       settings: {
         extraHeaders: JSON.stringify({
           Cookie: "XSRF-TOKEN=abcde; Other=other",
