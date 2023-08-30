@@ -23,13 +23,12 @@ following features:
 ### Running the application
 
 ```
-docker-compose -f docker/docker-compose.yml up -d --build
+make up
 ```
 
-This will run the application at http://localhost:8888/, and assumes that Sirius
-is running at http://localhost:8080/.
+This will run the application at http://localhost:8888/ and will be running againt the pact-stub, ensure you have ran the unit tests first to generate the pact files.
 
-Alternatively the application can be run without the use of Docker
+To run the application against local Sirius `make build` and then in the Sirius repo `make dev-up`
 
 ```
 yarn && yarn build
@@ -38,17 +37,8 @@ SIRIUS_PUBLIC_URL=http://localhost:8080 SIRIUS_URL=http://localhost:8080 PORT=88
 
 ### Testing
 
-Make sure that `pact` is available before running the tests, on a Mac with Homebrew you can do:
-
 ```
-brew tap pact-foundation/pact-ruby-standalone
-brew install pact-ruby-standalone
-```
-
-Then to run the tests:
-
-```
-go test ./...
+make unit-test
 ```
 
 The tests will produce a `./pacts` directory which is then used to provide a
@@ -56,14 +46,13 @@ stub service for the Cypress tests. To start the application in a way that uses
 the stub service, and open Cypress in the current project run the following:
 
 ```
-docker-compose -f docker/docker-compose.cypress.yml up -d --build
-yarn && yarn cypress
+make cypress
 ```
 
 Note that tests can get cached, causing the pacts not to get regenerated when they should. If the pacts are not behaving as expected, its recommended to force a rebuild by doing: 
 
 ```
-go test ./... -count=1
+docker compose restart pact-stub
 ```
 
 ## Development
@@ -107,3 +96,11 @@ depend on.
 
 The prototype for this repo is part of
 [ministryofjustice/opg-sirius-prototypes](https://github.com/ministryofjustice/opg-sirius-prototypes).
+
+## Local CI
+
+To run the full CI suite locally run:
+
+```
+make
+```
