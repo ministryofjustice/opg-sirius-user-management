@@ -1,0 +1,71 @@
+version: "3.6"
+
+services:
+  user-management:
+    image: 311462405659.dkr.ecr.eu-west-1.amazonaws.com/sirius-user-management:latest
+    build:
+      dockerfile: docker/sirius-user-management/Dockerfile
+    depends_on:
+      - pact-stub
+    ports: ["8888:8888"]
+    environment:
+      PORT: 8888
+      SIRIUS_URL: http://pact-stub:8080
+      SIRIUS_PUBLIC_URL: http://localhost:8080
+
+  cypress:
+    image: cypress/included:12.17.3
+    command: run --browser chrome
+    entrypoint: cypress
+    depends_on:
+      - pact-stub
+      - user-management
+    environment:
+      - CYPRESS_BASE_URL=http://user-management:8888
+      - CYPRESS_VIDEO=false
+    working_dir: /e2e
+    volumes:
+      - ./:/e2e
+
+  go-lint:
+    image: golangci/golangci-lint:v1.53.3
+    working_dir: /go/src/app
+    volumes:
+      - ./:/go/src/app
+      - ./.cache/golangci-lint/v1.53.3:/root/.cache
+    command: golangci-lint run -v --timeout 5m
+
+  pact-stub:
+    build: docker/pact-stub
+    ports: ["8080:8080"]
+    environment:
+      PACT_DIR: ./pacts
+      PORT: 8080
+    volumes:
+      - ./pacts:/app/pacts
+
+  puppeteer:
+    build: docker/puppeteer
+    depends_on:
+      - user-management
+      - pact-stub
+    environment:
+      - LHCI_BUILD_CONTEXT__CURRENT_HASH=$GITHUB_SHA
+      - LHCI_BUILD_CONTEXT__GITHUB_REPO_SLUG=ministryofjustice/opg-sirius-user-management
+      - LHCI_GITHUB_APP_TOKEN
+
+  test-runner:
+    build:
+      context: docker/test-runner/
+    command: gotestsum --junitfile test-results/unit-tests.xml -- ./... -coverprofile=test-results/test-coverage.txt
+    working_dir: /go/src/app
+    volumes:
+      - ./:/go/src/app
+      - ./.gocache:/go/pkg/mod
+
+  trivy:
+    image: aquasec/trivy:latest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./.trivy-cache:/root/.cache
+      - ./test-results:/test-results
