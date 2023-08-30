@@ -16,19 +16,19 @@
     "runners": ["axe", "htmlcs"]
   },
   "urls": [
-    "http://app:8888/users",
-    "http://app:8888/users?search=admin",
-    "http://app:8888/my-details",
-    "http://app:8888/my-details/edit",
-    "http://app:8888/add-user",
-    "http://app:8888/delete-user/123",
-    "http://app:8888/edit-user/123",
-    "http://app:8888/teams",
-    "http://app:8888/teams/delete/65",
-    "http://app:8888/teams/edit/65",
-    "http://app:8888/teams/65",
-    "http://app:8888/random-reviews",
-    "http://app:8888/random-reviews/edit/lay-percentage",
-    "http://app:8888/random-reviews/edit/lay-review-cycle"
+    "http://user-management:8888/users",
+    "http://user-management:8888/users?search=admin",
+    "http://user-management:8888/my-details",
+    "http://user-management:8888/my-details/edit",
+    "http://user-management:8888/add-user",
+    "http://user-management:8888/delete-user/123",
+    "http://user-management:8888/edit-user/123",
+    "http://user-management:8888/teams",
+    "http://user-management:8888/teams/delete/65",
+    "http://user-management:8888/teams/edit/65",
+    "http://user-management:8888/teams/65",
+    "http://user-management:8888/random-reviews",
+    "http://user-management:8888/random-reviews/edit/lay-percentage",
+    "http://user-management:8888/random-reviews/edit/lay-review-cycle"
   ]
 }
