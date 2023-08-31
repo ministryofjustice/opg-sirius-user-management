@@ -14,7 +14,7 @@ services:
       SIRIUS_PUBLIC_URL: http://localhost:8080
 
   cypress:
-    image: cypress/included:12.17.3
+    image: cypress/included:13.0.0
     command: run --browser chrome
     entrypoint: cypress
     depends_on:
