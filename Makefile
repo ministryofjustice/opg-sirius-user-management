@@ -1,6 +1,6 @@
 export DOCKER_BUILDKIT=1
 
-all: lint unit-test build scan pa11y lighthouse cypress down
+all: lint unit-test build scan cypress down
 
 lint:
 	docker compose run --rm go-lint
@@ -17,7 +17,7 @@ build:
 	docker compose build --parallel user-management pact-stub
 
 build-all:
-	docker compose build --parallel user-management pact-stub puppeteer
+	docker compose build --parallel user-management pact-stub
 
 up:
 	docker compose up -d --build user-management
@@ -29,12 +29,6 @@ scan: setup-directories
 cypress: setup-directories
 	docker compose up -d --wait user-management
 	docker compose run --rm cypress
-
-pa11y:
-	docker compose run --entrypoint="pa11y-ci" puppeteer
-
-lighthouse:
-	docker compose run --entrypoint="lhci autorun" puppeteer
 
 down:
 	docker compose down

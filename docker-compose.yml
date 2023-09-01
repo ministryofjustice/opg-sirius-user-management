@@ -14,7 +14,8 @@ services:
       SIRIUS_PUBLIC_URL: http://localhost:8080
 
   cypress:
-    image: cypress/included:12.17.3
+    image: deputy-hub-cypress:latest
+    build: docker/cypress
     command: run --browser chrome
     entrypoint: cypress
     depends_on:
@@ -43,16 +44,6 @@ services:
       PORT: 8080
     volumes:
       - ./pacts:/app/pacts
-
-  puppeteer:
-    build: docker/puppeteer
-    depends_on:
-      - user-management
-      - pact-stub
-    environment:
-      - LHCI_BUILD_CONTEXT__CURRENT_HASH=$GITHUB_SHA
-      - LHCI_BUILD_CONTEXT__GITHUB_REPO_SLUG=ministryofjustice/opg-sirius-user-management
-      - LHCI_GITHUB_APP_TOKEN
 
   test-runner:
     build:
