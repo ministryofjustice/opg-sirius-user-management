@@ -1,0 +1,7 @@
+[
+    ["Firm details", "/supervision/deputies/firm/1"],
+    ["Change ECM", "/supervision/deputies/firm/1/change-ecm"],
+    ["Deputies", "/supervision/deputies/firm/1/deputies"],
+    ["Manage pii", "/supervision/deputies/firm/1/manage-pii-details"],
+    ["Request pii", "/supervision/deputies/firm/1/request-pii-details"]
+]
