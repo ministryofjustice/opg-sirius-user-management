@@ -14,7 +14,6 @@ services:
       SIRIUS_PUBLIC_URL: http://localhost:8080
 
   cypress:
-    image: deputy-hub-cypress:latest
     build: docker/cypress
     command: run --browser chrome
     entrypoint: cypress
