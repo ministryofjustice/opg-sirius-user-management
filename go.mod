@@ -3,7 +3,7 @@ module github.com/ministryofjustice/opg-sirius-user-management
 go 1.19
 
 require (
-	github.com/ministryofjustice/opg-go-common v0.0.0-20220816144329-763497f29f90
+	github.com/ministryofjustice/opg-go-common v0.0.0-20230927143549-86931d77c086
 	github.com/pact-foundation/pact-go v1.7.0
 	github.com/pact-foundation/pact-go/v2 v2.0.1
 	github.com/stretchr/testify v1.8.4
