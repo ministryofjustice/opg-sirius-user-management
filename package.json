@@ -16,13 +16,16 @@
     "govuk-frontend": "^4.4.0"
   },
   "devDependencies": {
+    "@cypress/webpack-preprocessor": "^6.0.0",
     "axe-core": "^4.3.5",
+    "cypress": "13.6.0",
     "cypress-axe": "^1.0.0",
     "cypress-failed-log": "^2.10.0",
-    "cypress": "13.4.0",
     "esbuild": "^0.19.0",
+    "path-browserify": "^1.0.1",
     "prettier": "^3.0.0",
-    "sass": "^1.26.11"
+    "sass": "^1.26.11",
+    "webpack": "^5.89.0"
   },
   "resolutions": {
     "colors": "1.4.0"
