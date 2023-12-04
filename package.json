@@ -15,7 +15,8 @@
     "@cypress/webpack-preprocessor": "^6.0.0",
     "@ministryofjustice/frontend": "1.8.0",
     "govuk-frontend": "^4.4.0",
-    "path-browserify": "^1.0.1"
+    "path-browserify": "^1.0.1",
+    "webpack": "^5.89.0"
   },
   "devDependencies": {
     "axe-core": "^4.3.5",
