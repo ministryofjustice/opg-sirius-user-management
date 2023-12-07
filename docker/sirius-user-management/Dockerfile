@@ -1,4 +1,4 @@
-FROM node:21.1.0-alpine3.17 as asset-env
+FROM node:21.3.0-alpine3.17 as asset-env
 
 WORKDIR /app
 
@@ -11,7 +11,7 @@ RUN yarn
 COPY web/assets web/assets
 RUN yarn build
 
-FROM golang:1.21.2-alpine as build-env
+FROM golang:1.21.4-alpine as build-env
 
 WORKDIR /app
 
@@ -25,7 +25,7 @@ COPY internal internal
 
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o /go/bin/opg-sirius-user-management
 
-FROM alpine:3.18.4
+FROM alpine:3.18.5
 
 WORKDIR /go/bin
 
