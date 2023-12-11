@@ -4,6 +4,7 @@
         "config:base"
     ],
     "branchPrefix": "renovate-",
+    "branchNameStrict": true,
     "commitMessageAction": "Renovate Update",
     "labels": [
         "Dependencies",
