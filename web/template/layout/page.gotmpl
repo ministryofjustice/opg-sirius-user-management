@@ -17,9 +17,12 @@
       <link rel="apple-touch-icon" href="{{ prefix "/assets/images/govuk-apple-touch-icon.png" }}">
 
       <link href="{{ prefix "/stylesheets/all.css" }}" rel="stylesheet">
+
+      <script src="{{ prefix "/javascript/main.js" }}" type="module"></script>
     </head>
 
-    <body class="govuk-template__body app-body-class" data-test="My value" data-other="report:details">
+    <body class="govuk-template__body app-body-class">
+      <script src="{{ prefix "/javascript/load-classes.js" }}"></script>
       <a href="#main-content" class="govuk-skip-link" data-module="govuk-skip-link">Skip to main content</a>
 
       {{ template "header" . }}
@@ -34,8 +37,6 @@
       </div>
 
       <footer class="govuk-footer" role="contentinfo"> </footer>
-
-      <script src="{{ prefix "/javascript/all.js" }}"></script>
     </body>
   </html>
 {{ end }}
