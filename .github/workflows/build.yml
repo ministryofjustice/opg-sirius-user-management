@@ -120,7 +120,7 @@ jobs:
           verbose: true
 
       - name: Persist Pacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: pacts
           path: |
@@ -149,7 +149,7 @@ jobs:
           path: /tmp/images
           key: ${{ runner.os }}-images-${{ github.run_id }}-${{ github.run_number }}
       - name: Download Artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: pacts
           path: ./pacts
@@ -163,7 +163,7 @@ jobs:
         run: make cypress
 
       - name: Upload Cypress screenshots
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: cypress-screenshots
