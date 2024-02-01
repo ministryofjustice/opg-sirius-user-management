@@ -28,6 +28,6 @@ describe("My details", () => {
   });
 
   it("allows me to edit my phone number", () => {
-    cy.contains(".govuk-link", "Change phone number");
+    cy.contains(".govuk-link", "Change phone nomber");
   });
 });
