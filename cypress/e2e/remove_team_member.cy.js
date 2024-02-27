@@ -4,7 +4,7 @@ describe("Team", () => {
   });
 
   it("allows me to remove a member", () => {
-    cy.get("input[type=checkbox]").eq(0).check();
+    cy.get("label[for=f-select-user-0]").click();
     cy.get("button[type=submit]").click();
 
     cy.url().should("include", "/teams/remove-member/65");
