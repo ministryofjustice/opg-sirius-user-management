@@ -6,11 +6,14 @@ import (
 	"fmt"
 	"html/template"
 	"io"
+	"log/slog"
 	"net/http"
 	"net/url"
 
 	"github.com/ministryofjustice/opg-go-common/securityheaders"
+	"github.com/ministryofjustice/opg-go-common/telemetry"
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 type Logger interface {
@@ -38,8 +41,8 @@ type Template interface {
 	ExecuteTemplate(io.Writer, string, interface{}) error
 }
 
-func New(logger Logger, client Client, templates map[string]*template.Template, prefix, siriusPublicURL, webDir string) http.Handler {
-	wrap := errorHandler(logger, client, templates["error.gotmpl"], prefix, siriusPublicURL)
+func New(logger *slog.Logger, client Client, templates map[string]*template.Template, prefix, siriusPublicURL, webDir string) http.Handler {
+	wrap := errorHandler(client, templates["error.gotmpl"], prefix, siriusPublicURL)
 
 	mux := http.NewServeMux()
 	mux.Handle("/", http.RedirectHandler(prefix+"/my-details", http.StatusFound))
@@ -122,7 +125,9 @@ func New(logger Logger, client Client, templates map[string]*template.Template, 
 	mux.Handle("/javascript/", static)
 	mux.Handle("/stylesheets/", static)
 
-	return http.StripPrefix(prefix, securityheaders.Use(mux))
+	middleware := telemetry.Middleware(logger)
+
+	return otelhttp.NewHandler(http.StripPrefix(prefix, securityheaders.Use(middleware(mux))), "user-management")
 }
 
 type RedirectError string
@@ -161,7 +166,7 @@ type ErrorHandlerClient interface {
 	MyPermissions(sirius.Context) (sirius.PermissionSet, error)
 }
 
-func errorHandler(logger Logger, client ErrorHandlerClient, tmplError Template, prefix, siriusURL string) func(next Handler) http.Handler {
+func errorHandler(client ErrorHandlerClient, tmplError Template, prefix, siriusURL string) func(next Handler) http.Handler {
 	return func(next Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			myPermissions, err := client.MyPermissions(getContext(r))
@@ -186,13 +191,16 @@ func errorHandler(logger Logger, client ErrorHandlerClient, tmplError Template, 
 					return
 				}
 
-				logger.Request(r, err)
-
 				code := http.StatusInternalServerError
 				if status, ok := err.(StatusError); ok {
 					if status.Code() == http.StatusForbidden || status.Code() == http.StatusNotFound {
 						code = status.Code()
 					}
+				}
+
+				logger := telemetry.LoggerFromContext(r.Context())
+				if code == http.StatusInternalServerError {
+					logger.Error(err.Error())
 				}
 
 				w.WriteHeader(code)
@@ -204,7 +212,7 @@ func errorHandler(logger Logger, client ErrorHandlerClient, tmplError Template, 
 				})
 
 				if err != nil {
-					logger.Request(r, err)
+					logger.Error("could not generate error template", slog.Any("err", err.Error()))
 					http.Error(w, "Could not generate error template", http.StatusInternalServerError)
 				}
 			}
