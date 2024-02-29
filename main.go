@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"html/template"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -11,19 +12,30 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/ministryofjustice/opg-go-common/logging"
+	"github.com/ministryofjustice/opg-go-common/env"
+	"github.com/ministryofjustice/opg-go-common/telemetry"
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/server"
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 func main() {
-	logger := logging.New(os.Stdout, "opg-sirius-user-management")
+	ctx := context.Background()
+	logger := telemetry.NewLogger("opg-sirius-user-management")
 
+	if err := run(ctx, logger); err != nil {
+		logger.Error("fatal startup error", slog.Any("err", err.Error()))
+		os.Exit(1)
+	}
+}
+
+func run(ctx context.Context, logger *slog.Logger) error {
 	port := getEnv("PORT", "8080")
 	webDir := getEnv("WEB_DIR", "web")
 	siriusURL := getEnv("SIRIUS_URL", "http://localhost:9001")
 	siriusPublicURL := getEnv("SIRIUS_PUBLIC_URL", "")
 	prefix := getEnv("PREFIX", "")
+	exportTraces := env.Get("TRACING_ENABLED", "0") == "1"
 
 	layouts, _ := template.
 		New("").
@@ -56,37 +68,45 @@ func main() {
 		tmpls[filepath.Base(file)] = template.Must(template.Must(layouts.Clone()).ParseFiles(file))
 	}
 
-	client, err := sirius.NewClient(http.DefaultClient, siriusURL)
+	shutdown, err := telemetry.StartTracerProvider(ctx, logger, exportTraces)
+	defer shutdown()
 	if err != nil {
-		logger.Fatal(err)
+		return err
+	}
+
+	httpClient := http.DefaultClient
+	httpClient.Transport = otelhttp.NewTransport(httpClient.Transport)
+
+	client, err := sirius.NewClient(httpClient, siriusURL)
+	if err != nil {
+		return err
 	}
 
 	server := &http.Server{
-		Addr:    ":" + port,
-		Handler: server.New(logger, client, tmpls, prefix, siriusPublicURL, webDir),
+		Addr:              ":" + port,
+		Handler:           server.New(logger, client, tmpls, prefix, siriusPublicURL, webDir),
 		ReadHeaderTimeout: 10 * time.Second,
 	}
 
 	go func() {
 		if err := server.ListenAndServe(); err != nil {
-			logger.Fatal(err)
+			logger.Error("listen and server error", slog.Any("err", err.Error()))
+			os.Exit(1)
 		}
 	}()
 
-	logger.Print("Running at :" + port)
+	logger.Info("Running at :" + port)
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
 
 	sig := <-c
-	logger.Print("signal received: ", sig)
+	logger.Info("signal received: ", sig)
 
 	tc, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	if err := server.Shutdown(tc); err != nil {
-		logger.Print(err)
-	}
+	return server.Shutdown(tc)
 }
 
 func getEnv(key, def string) string {
