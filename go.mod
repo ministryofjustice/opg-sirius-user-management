@@ -7,6 +7,7 @@ toolchain go1.22.0
 require (
 	github.com/ministryofjustice/opg-go-common v0.0.0-20240227144553-d506200e53d5
 	github.com/pact-foundation/pact-go v1.8.0
+	github.com/pact-foundation/pact-go/v2 v2.0.4
 	github.com/stretchr/testify v1.9.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.49.0
 )
