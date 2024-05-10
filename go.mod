@@ -2,7 +2,7 @@ module github.com/ministryofjustice/opg-sirius-user-management
 
 go 1.22
 
-toolchain go1.22.2
+toolchain go1.22.3
 
 require (
 	github.com/ministryofjustice/opg-go-common v1.2.0
