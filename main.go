@@ -101,7 +101,8 @@ func run(ctx context.Context, logger *slog.Logger) error {
 	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
 
 	sig := <-c
-	logger.Info("signal received: ", sig)
+	// codecov:miss:next
+	logger.Info("signal received: ", "sig", sig)
 
 	tc, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
