@@ -3,7 +3,6 @@ package sirius
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/model"
 	"net/http"
 )
@@ -17,9 +16,7 @@ func (c *Client) SubmitFeedback(ctx Context, form model.FeedbackForm) error {
 	if err != nil {
 		return err
 	}
-	fmt.Print("submitting feedback in the client side")
-	fmt.Println("form")
-	fmt.Println(form)
+
 	req, err := c.newRequest(ctx, http.MethodPost, "/api/supervision-feedback", &body)
 
 	if err != nil {
