@@ -20,9 +20,9 @@ type feedbackFormVars struct {
 
 func feedbackForm(client FeedbackFormClient, tmpl Template) Handler {
 	return func(perm sirius.PermissionSet, w http.ResponseWriter, r *http.Request) error {
-		//if r.Method != http.MethodGet && r.Method != http.MethodPost {
-		//	return StatusError(http.StatusMethodNotAllowed)
-		//}
+		if r.Method != http.MethodGet && r.Method != http.MethodPost {
+			return StatusError(http.StatusMethodNotAllowed)
+		}
 		ctx := getContext(r)
 		vars := feedbackFormVars{}
 
