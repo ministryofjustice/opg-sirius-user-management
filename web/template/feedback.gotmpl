@@ -1,12 +1,9 @@
 {{ template "page" . }}
-
 {{ define "title" }}Feedback{{ end }}
-
 {{ define "main" }}
 
     <a href="#main-content" class="govuk-skip-link" data-module="govuk-skip-link">Skip to main content</a>
     <main role="main" class="new govuk-main-wrapper" data-form-type="contact">
-    <br>
     <h1 class="govuk-heading-l">Feedback</h1>
     {{ if eq .SuccessMessage "" }}
         <form class="form" method="post">
@@ -71,7 +68,7 @@
 
             <div class="govuk-button-group">
                 <button id="submit-feedback" class="govuk-button" type="submit">Send Feedback</button>
-                <button type="button" data-module="moj-close-tab" onclick="closeTab()">Cancel</button>
+                <button id="cancel-feedback" type="button" class="govuk-button govuk-button--secondary close-tab" data-module="moj-close-tab">Cancel</button>
             </div>
         </form>
     {{ else }}
@@ -91,7 +88,7 @@
                         <p class="govuk-body">We may be in touch if we need further information around your feedback.</p>
                     </div>
                 </div>
-                <p class="govuk-body" data-module="moj-close-tab" type="button" onclick="closeTab()">You can now <a href="#"> close this tab </a></p>
+                <p id="close-tab-link" class="govuk-body close-tab" data-module="moj-close-tab-2" type="button">You can now <a href="#"> close this tab </a></p>
             </div>
         </div>
     {{ end }}

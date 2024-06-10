@@ -12,6 +12,7 @@ type FeedbackFormClient interface {
 }
 
 type feedbackFormVars struct {
+	Path           string
 	ID             int
 	SuccessMessage string
 	Error          sirius.ValidationError
@@ -24,7 +25,9 @@ func feedbackForm(client FeedbackFormClient, tmpl Template) Handler {
 			return StatusError(http.StatusMethodNotAllowed)
 		}
 		ctx := getContext(r)
-		vars := feedbackFormVars{}
+		vars := feedbackFormVars{
+			Path: "/feedback",
+		}
 
 		if r.Method == http.MethodGet {
 

@@ -121,7 +121,7 @@ func New(logger *slog.Logger, client Client, templates map[string]*template.Temp
 		wrap(
 			deleteUser(client, templates["delete-user.gotmpl"])))
 
-	mux.Handle("/feedback",
+	mux.Handle("/supervision/feedback",
 		wrap(
 			feedbackForm(client, templates["feedback.gotmpl"])))
 
