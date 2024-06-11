@@ -8,7 +8,7 @@ export default class CloseTab {
     });
   }
 
-    _closeTab(event) {
-        window.location.href = window.close();
-    }
+  _closeTab(event) {
+     window.location.href = window.close();
+  }
 };
