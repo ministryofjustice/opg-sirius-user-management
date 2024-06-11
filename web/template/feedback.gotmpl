@@ -32,15 +32,15 @@
                 <label class="govuk-label" for="more-detail">
                     Feedback
                 </label>
-                <div class="govuk-form-group {{ if eq .Error.Message "no-feedback" }}govuk-form-group--error {{end}}">
+                <div class="govuk-form-group {{ if eq .Error.Message "isEmpty" }}govuk-form-group--error {{end}}">
                     <div id="feedback-box-hint" class="govuk-hint">
                         Please let us know about your experience of using Sirius.
-                        {{ if eq .Error.Message "no-feedback" }}
+                        {{ if eq .Error.Message "isEmpty" }}
                             <p id="feedback-error" class="govuk-error-message">
                                 <span class="govuk-visually-hidden">Error:</span> Please submit your feedback or press cancel
                             </p>
                         {{ end }}
-                        {{ if eq .Error.Message "feedback-too-long" }}
+                        {{ if eq .Error.Message "stringLengthTooLong" }}
                             <p id="feedback-error" class="govuk-error-message">
                                 <span class="govuk-visually-hidden">Error:</span> Your feedback must be 900 characters or fewer
                             </p>
@@ -51,7 +51,7 @@
                         data-module="govuk-character-count"
                         data-maxlength="900">
                         <textarea
-                            class="govuk-textarea govuk-js-character-count{{ if eq .Error.Message "feedback-too-long" }} govuk-input--error{{ end }}"
+                            class="govuk-textarea govuk-js-character-count{{ if eq .Error.Message "stringLengthTooLong" }} govuk-input--error{{ end }}"
                             id="more-detail"
                             name="more-detail"
                             rows="10"
