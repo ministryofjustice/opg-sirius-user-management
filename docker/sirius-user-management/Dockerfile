@@ -4,11 +4,11 @@ WORKDIR /app
 
 RUN mkdir -p web/static
 
-COPY web/assets web/assets
 COPY package.json .
 COPY yarn.lock .
+RUN yarn
 
-RUN yarn install
+COPY web/assets web/assets
 RUN yarn build
 
 FROM golang:1.22-alpine as build-env
@@ -20,12 +20,10 @@ COPY go.sum .
 
 RUN go mod download
 
-COPY . .
 COPY main.go main.go
 COPY internal internal
 
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o /go/bin/opg-sirius-user-management
-RUN go build -a -installsuffix cgo -o /go/bin/opg-sirius-user-management
 
 FROM alpine:3.19.1
 
