@@ -4,12 +4,13 @@ describe("Feedback", () => {
   });
 
   it("allows me to add a feedback", () => {
-    cy.get("#f-name").clear().type("New team");
-    cy.contains("label[for=f-service-conditional]", "Supervision").click();
-    cy.get("#f-supervision-type").select("Allocations");
-    cy.get("#f-phone").clear().type("0123045067");
+    cy.get("#name").type("Mr Toad");
+    cy.get("#email").type("toad@toadmail.com");
+    cy.get("#case-number").type("123456");
+    cy.get("#more-detail").type("I have some thoughts to feedback");
     cy.get("button[type=submit]").click();
+    cy.url().should("include", "/supervision/feedback");
 
-    cy.url().should("include", "/teams/123");
+    cy.get("#govuk-notification-banner-title").should("be.visible");
   });
 });
