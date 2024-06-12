@@ -24,7 +24,6 @@ func (c *Client) AddFeedback(ctx Context, form model.FeedbackForm) error {
 	}
 
 	err = json.NewEncoder(&body).Encode(form)
-
 	if err != nil {
 		return err
 	}

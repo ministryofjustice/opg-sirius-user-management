@@ -26,6 +26,46 @@ func TestAddFeedbackCanPost(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+func TestAddFeedbackCanHandleValidationError(t *testing.T) {
+	svr := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusBadRequest)
+	}))
+	defer svr.Close()
+
+	client, _ := NewClient(http.DefaultClient, svr.URL)
+
+	err := client.AddFeedback(Context{Context: context.Background()}, model.FeedbackForm{
+		IsSupervisionFeedback: true,
+		Name:                  "Toad",
+		Email:                 "toad@toadhall.com",
+		CaseNumber:            "123",
+		Message:               "content",
+	})
+	assert.Equal(t, StatusError{
+		Code:   http.StatusBadRequest,
+		URL:    svr.URL + "/api/supervision-feedback",
+		Method: http.MethodPost,
+	}, err)
+}
+
+func TestAddFeedbackCanHandleUnauthorizedError(t *testing.T) {
+	svr := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusUnauthorized)
+	}))
+	defer svr.Close()
+
+	client, _ := NewClient(http.DefaultClient, svr.URL)
+
+	err := client.AddFeedback(Context{Context: context.Background()}, model.FeedbackForm{
+		IsSupervisionFeedback: true,
+		Name:                  "Toad",
+		Email:                 "toad@toadhall.com",
+		CaseNumber:            "123",
+		Message:               "content",
+	})
+	assert.Equal(t, ClientError("unauthorized"), err)
+}
+
 func TestGetCaseloadListCanThrow500Error(t *testing.T) {
 	svr := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
