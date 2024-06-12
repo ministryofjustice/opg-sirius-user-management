@@ -1,2 +1,4 @@
 ignore:
   - "./main.go"
+  - "./internal/model/feedback.go"
+  -"./web/"
