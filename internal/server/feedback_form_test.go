@@ -11,10 +11,11 @@ import (
 )
 
 type mockFeedbackFormClient struct {
-	count   int
-	lastCtx sirius.Context
-	err     error
-	form    model.FeedbackForm
+	count     int
+	lastCtx   sirius.Context
+	err       error
+	form      model.FeedbackForm
+	clientErr sirius.ValidationError
 }
 
 func (m *mockFeedbackFormClient) AddFeedback(ctx sirius.Context, form model.FeedbackForm) error {
@@ -42,8 +43,8 @@ func TestGetFeedbackForm(t *testing.T) {
 	assert.Nil(err)
 	assert.Equal(1, template.count)
 	assert.Equal(feedbackFormVars{
-		Path:    "/feedback",
-		Success: true,
+		Path:    "/supervision/feedback",
+		Success: false,
 		Form:    model.FeedbackForm{},
 	}, template.lastVars)
 }
@@ -70,7 +71,7 @@ func TestConfirmPostFeedbackForm(t *testing.T) {
 	assert.Nil(err)
 	assert.Equal(1, template.count)
 	assert.Equal(feedbackFormVars{
-		Path:    "/feedback",
+		Path:    "/supervision/feedback",
 		Success: true,
 		Form:    model.FeedbackForm{},
 	}, template.lastVars)
@@ -108,14 +109,6 @@ func TestDeputies_MethodNotAllowed(t *testing.T) {
 			err := feedbackForm(client, template)(sirius.PermissionSet{}, w, r)
 			assert.Equal(StatusError(http.StatusMethodNotAllowed), err)
 			assert.Equal(0, template.count)
-			assert.Equal(feedbackFormVars{
-				Path:    "/feedback",
-				Success: false,
-				Form: model.FeedbackForm{
-					IsSupervisionFeedback: true,
-					Message:               "Im not happy with this service",
-				},
-			}, template.lastVars)
 		})
 	}
 }
@@ -139,12 +132,32 @@ func TestGetFeedbackFormMethodNotAllowed(t *testing.T) {
 
 	assert.Equal(StatusError(http.StatusMethodNotAllowed), err)
 	assert.Equal(0, template.count)
-	assert.Equal(feedbackFormVars{
-		Path:    "/feedback",
-		Success: false,
-		Form: model.FeedbackForm{
-			IsSupervisionFeedback: true,
-			Message:               "Im not happy with this service",
+}
+
+func TestHandlesValidationErrorIfReturnedByAddFeedback(t *testing.T) {
+	assert := assert.New(t)
+
+	client := &mockFeedbackFormClient{
+		form: model.FeedbackForm{
+			Message: "test",
 		},
+	}
+	client.clientErr = sirius.ValidationError{
+		Message: "isEmpty",
+	}
+	template := &mockTemplate{}
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("POST", "/feedback-form", strings.NewReader("more-detail=test"))
+
+	handler := feedbackForm(client, template)
+	err := handler(sirius.PermissionSet{}, w, r)
+	assert.Nil(err)
+
+	assert.Equal(1, template.count)
+	assert.Equal(feedbackFormVars{
+		Path:    "/supervision/feedback",
+		Success: true,
+		Error:   sirius.ValidationError{},
 	}, template.lastVars)
 }
