@@ -24,14 +24,14 @@ func feedbackForm(client FeedbackFormClient, tmpl Template) Handler {
 		}
 		ctx := getContext(r)
 		vars := feedbackFormVars{
-			Path: "/feedback",
+			Path: "/supervision/feedback",
 		}
 
 		if r.Method == http.MethodPost {
 			err := r.ParseForm()
-			if err != nil {
-				return err
-			}
+			//if err != nil {
+			//	return err
+			//}
 
 			err = client.AddFeedback(ctx, model.FeedbackForm{
 				IsSupervisionFeedback: true,
@@ -46,8 +46,9 @@ func feedbackForm(client FeedbackFormClient, tmpl Template) Handler {
 				return tmpl.ExecuteTemplate(w, "page", vars)
 			} else if err != nil {
 				return err
+			} else {
+				vars.Success = true
 			}
-			vars.Success = true
 		}
 		return tmpl.ExecuteTemplate(w, "page", vars)
 	}
