@@ -24,22 +24,21 @@ func (c *Client) AddFeedback(ctx Context, form model.FeedbackForm) error {
 	}
 
 	err = json.NewEncoder(&body).Encode(form)
-
 	if err != nil {
 		return err
 	}
 
 	req, err := c.newRequest(ctx, http.MethodPost, "/api/supervision-feedback", &body)
 
-	if err != nil {
-		return err
-	}
+	//if err != nil {
+	//	return err
+	//}
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := c.http.Do(req)
-	if err != nil {
-		return err
-	}
+	//if err != nil {
+	//	return err
+	//}
 
 	defer resp.Body.Close()
 
