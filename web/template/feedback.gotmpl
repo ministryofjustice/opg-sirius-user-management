@@ -1,0 +1,95 @@
+{{ template "page" . }}
+{{ define "title" }}Feedback{{ end }}
+{{ define "main" }}
+
+    <a href="#main-content" class="govuk-skip-link" data-module="govuk-skip-link">Skip to main content</a>
+    <main role="main" class="new govuk-main-wrapper" data-form-type="contact">
+    <h1 class="govuk-heading-l">Feedback</h1>
+    {{ if ne .SuccessMessage true }}
+        <form class="form" method="post">
+            <div class="govuk-form-group">
+                <label class="govuk-label" for="name">
+                    Name (optional)
+                </label>
+                <input class="govuk-input govuk-input--width-20" id="name" name="name" type="text" data-form-type="name" value="{{ .Form.Name }}">
+            </div>
+
+            <div class="govuk-form-group">
+                <label class="govuk-label" for="email">
+                    Email (optional)
+                </label>
+                <input class="govuk-input govuk-input--width-20" id="email" name="email" type="text" data-form-type="email" value="{{ .Form.Email }}">
+            </div>
+
+            <div class="govuk-form-group">
+                <label class="govuk-label" for="case-number">
+                    Case number (optional)
+                </label>
+                <input class="govuk-input govuk-input--width-20" id="case-number" name="case-number" type="text" data-form-type="other" value="{{ .Form.CaseNumber }}">
+            </div>
+
+            <div class="govuk-form-group">
+                <label class="govuk-label" for="more-detail">
+                    Feedback
+                </label>
+                <div class="govuk-form-group {{ if eq .Error.Message "isEmpty" }}govuk-form-group--error {{end}}">
+                    <div id="feedback-box-hint" class="govuk-hint">
+                        Please let us know about your experience of using Sirius.
+                        {{ if eq .Error.Message "isEmpty" }}
+                            <p id="feedback-error" class="govuk-error-message">
+                                <span class="govuk-visually-hidden">Error:</span> Please submit your feedback or press cancel
+                            </p>
+                        {{ end }}
+                        {{ if eq .Error.Message "stringLengthTooLong" }}
+                            <p id="feedback-error" class="govuk-error-message">
+                                <span class="govuk-visually-hidden">Error:</span> Your feedback must be 900 characters or fewer
+                            </p>
+                        {{ end }}
+                    </div>
+                    <div
+                        class="govuk-character-count"
+                        data-module="govuk-character-count"
+                        data-maxlength="900">
+                        <textarea
+                            class="govuk-textarea govuk-js-character-count{{ if eq .Error.Message "stringLengthTooLong" }} govuk-input--error{{ end }}"
+                            id="more-detail"
+                            name="more-detail"
+                            rows="10"
+                            value="{{ .Form.Message }}"
+                        ></textarea>
+                        <div
+                            id="more-detail-info"
+                            class="govuk-hint govuk-character-count__message"
+                            aria-live="polite">
+                            You have 900 characters remaining
+                        </div>
+                    </div>
+                </div>
+
+            <div class="govuk-button-group">
+                <button id="submit-feedback" class="govuk-button" type="submit">Send Feedback</button>
+                <button id="cancel-feedback" type="button" class="govuk-button govuk-button--secondary close-tab" data-module="moj-close-tab">Cancel</button>
+            </div>
+        </form>
+    {{ else }}
+        <br><br>
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                <div class="govuk-notification-banner govuk-notification-banner--success" role="alert" data-module="govuk-notification-banner">
+                    <div class="govuk-notification-banner__header">
+                        <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
+                        Success
+                        </h2>
+                    </div>
+                    <div class="govuk-notification-banner__content">
+                        <h3 class="govuk-notification-banner__heading">
+                            Your feedback has been successfully sent to the team
+                        </h3>
+                        <p class="govuk-body">We may be in touch if we need further information around your feedback.</p>
+                    </div>
+                </div>
+                <p id="close-tab-link" class="govuk-body close-tab" data-module="moj-close-tab-2" type="button">You can now <a href="#"> close this tab </a></p>
+            </div>
+        </div>
+    {{ end }}
+{{ end }}
