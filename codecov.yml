@@ -2,5 +2,4 @@ ignore:
   - "./main.go"
   - "./internal/model/feedback.go"
   - "./web/"
-  - "./internal/sirius/add_feedback.go"
   - "./internal/server/feedback-form.go"

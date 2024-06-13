@@ -14,6 +14,7 @@ type feedbackFormVars struct {
 	Path    string
 	Success bool
 	Error   sirius.ValidationError
+	Errors  sirius.ValidationErrors
 	Form    model.FeedbackForm
 }
 
