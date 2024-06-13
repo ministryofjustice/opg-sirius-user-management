@@ -13,7 +13,8 @@ type FeedbackFormClient interface {
 type feedbackFormVars struct {
 	Path    string
 	Success bool
-	Error   sirius.ValidationError
+	Errors  sirius.ValidationErrors
+	Error   string
 	Form    model.FeedbackForm
 }
 
@@ -28,21 +29,19 @@ func feedbackForm(client FeedbackFormClient, tmpl Template) Handler {
 		}
 
 		if r.Method == http.MethodPost {
-			err := r.ParseForm()
-			if err != nil {
-				return err
-			}
-
-			err = client.AddFeedback(ctx, model.FeedbackForm{
+			feedbackForm := model.FeedbackForm{
 				IsSupervisionFeedback: true,
 				Name:                  r.FormValue("name"),
 				Email:                 r.FormValue("email"),
 				CaseNumber:            r.FormValue("case-number"),
 				Message:               r.FormValue("more-detail"),
-			})
+			}
+			err := client.AddFeedback(ctx, feedbackForm)
 
 			if verr, ok := err.(sirius.ValidationError); ok {
-				vars.Error.Message = verr.Message
+				vars.Errors = verr.Errors
+				vars.Error = verr.Message
+				vars.Form = feedbackForm
 				return tmpl.ExecuteTemplate(w, "page", vars)
 			} else if err != nil {
 				return err
