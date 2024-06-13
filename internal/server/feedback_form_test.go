@@ -1,6 +1,7 @@
 package server
 
 import (
+	"errors"
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/model"
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
 	"github.com/stretchr/testify/assert"
@@ -13,6 +14,7 @@ import (
 type mockFeedbackFormClient struct {
 	count       int
 	lastCtx     sirius.Context
+	err         error
 	form        model.FeedbackForm
 	clientErr   sirius.ValidationError
 	addFeedback struct {
@@ -165,5 +167,27 @@ func TestAddFeedbackFormError(t *testing.T) {
 
 	err := feedbackForm(client, template)(sirius.PermissionSet{}, w, r)
 	assert.Equal(expectedError, err)
+	assert.Equal(0, template.count)
+}
+
+func TestHandlesErrorIfReturned(t *testing.T) {
+	assert := assert.New(t)
+	expectedError := errors.New("oops")
+
+	client := &mockFeedbackFormClient{
+		form: model.FeedbackForm{
+			Message: "test",
+		},
+	}
+	client.err = expectedError
+	template := &mockTemplate{}
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("POST", "/feedback-form", strings.NewReader("more-detail=test"))
+
+	handler := feedbackForm(client, template)
+	err := handler(sirius.PermissionSet{}, w, r)
+	assert.Equal(expectedError, err)
+	assert.Equal(1, client.count)
 	assert.Equal(0, template.count)
 }
