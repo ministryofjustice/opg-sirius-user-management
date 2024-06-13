@@ -85,3 +85,11 @@ func (c *Client) newRequest(ctx Context, method, path string, body io.Reader) (*
 
 	return req, err
 }
+
+func getContext(cookies []*http.Cookie) Context {
+	return Context{
+		Context:   context.Background(),
+		Cookies:   cookies,
+		XSRFToken: "abcde",
+	}
+}
