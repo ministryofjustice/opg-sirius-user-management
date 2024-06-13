@@ -1,6 +1,7 @@
 package server
 
 import (
+	"errors"
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/model"
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/sirius"
 	"github.com/stretchr/testify/assert"
@@ -52,7 +53,7 @@ func TestGetFeedbackForm(t *testing.T) {
 	}, template.lastVars)
 }
 
-func TestConfirmPostFeedbackForm(t *testing.T) {
+func TestPostFeedbackForm(t *testing.T) {
 	assert := assert.New(t)
 
 	client := &mockFeedbackFormClient{
@@ -119,6 +120,42 @@ func TestDeputies_MethodNotAllowed(t *testing.T) {
 func TestHandlesValidationErrorIfReturnedByAddFeedback(t *testing.T) {
 	assert := assert.New(t)
 
+	errors := sirius.ValidationErrors{
+		"x": {
+			"y": "z",
+		},
+	}
+
+	client := &mockFeedbackFormClient{
+		form: model.FeedbackForm{
+			Message: "test",
+		},
+	}
+	client.addFeedback.err = sirius.ValidationError{
+		Errors: errors,
+	}
+	template := &mockTemplate{}
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("POST", "/feedback-form", strings.NewReader("more-detail=test"))
+
+	handler := feedbackForm(client, template)
+	err := handler(sirius.PermissionSet{}, w, r)
+	assert.Nil(err)
+
+	//resp := w.Result()
+	//assert.Equal(http.StatusBadRequest, resp.StatusCode)
+
+	assert.Equal(1, template.count)
+	assert.Equal(feedbackFormVars{
+		Path:    "/feedback",
+		Success: false,
+	}, template.lastVars)
+}
+
+func TestHandlesErrorIfReturnedByAddFeedback(t *testing.T) {
+	assert := assert.New(t)
+
 	client := &mockFeedbackFormClient{
 		form: model.FeedbackForm{
 			Message: "test",
@@ -169,24 +206,25 @@ func TestAddFeedbackFormError(t *testing.T) {
 	assert.Equal(0, template.count)
 }
 
-//func TestHandlesErrorIfReturned(t *testing.T) {
-//	assert := assert.New(t)
-//	expectedError := errors.New("oops")
-//
-//	client := &mockFeedbackFormClient{
-//		form: model.FeedbackForm{
-//			Message: "test",
-//		},
-//	}
-//	client.err = expectedError
-//	template := &mockTemplate{}
-//
-//	w := httptest.NewRecorder()
-//	r, _ := http.NewRequest("POST", "/feedback-form", strings.NewReader("more-detail=test"))
-//
-//	handler := feedbackForm(client, template)
-//	err := handler(sirius.PermissionSet{}, w, r)
-//	assert.Equal(expectedError, err)
-//	assert.Equal(1, client.count)
-//	assert.Equal(0, template.count)
-//}
+func TestHandlesErrorIfReturned(t *testing.T) {
+	assert := assert.New(t)
+	expectedError := errors.New("oops")
+
+	client := &mockFeedbackFormClient{
+		form: model.FeedbackForm{
+			Message: "test",
+		},
+	}
+	client.addFeedback.err = expectedError
+	template := &mockTemplate{}
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("POST", "/feedback-form", strings.NewReader("more-detail=test"))
+
+	handler := feedbackForm(client, template)
+	err := handler(sirius.PermissionSet{}, w, r)
+
+	assert.Equal(expectedError, err)
+	assert.Equal(1, client.count)
+	assert.Equal(0, template.count)
+}
