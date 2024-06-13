@@ -11,8 +11,9 @@ import (
 )
 
 type mockFeedbackFormClient struct {
-	count       int
-	lastCtx     sirius.Context
+	count   int
+	lastCtx sirius.Context
+	//err         error
 	form        model.FeedbackForm
 	clientErr   sirius.ValidationError
 	addFeedback struct {
@@ -45,7 +46,7 @@ func TestGetFeedbackForm(t *testing.T) {
 	assert.Nil(err)
 	assert.Equal(1, template.count)
 	assert.Equal(feedbackFormVars{
-		Path:    "/supervision/feedback",
+		Path:    "/feedback",
 		Success: false,
 		Form:    model.FeedbackForm{},
 	}, template.lastVars)
@@ -73,7 +74,7 @@ func TestConfirmPostFeedbackForm(t *testing.T) {
 	assert.Nil(err)
 	assert.Equal(1, template.count)
 	assert.Equal(feedbackFormVars{
-		Path:    "/supervision/feedback",
+		Path:    "/feedback",
 		Success: true,
 		Form:    model.FeedbackForm{},
 	}, template.lastVars)
@@ -137,7 +138,7 @@ func TestHandlesValidationErrorIfReturnedByAddFeedback(t *testing.T) {
 
 	assert.Equal(1, template.count)
 	assert.Equal(feedbackFormVars{
-		Path:    "/supervision/feedback",
+		Path:    "/feedback",
 		Success: true,
 		Error:   sirius.ValidationError{},
 	}, template.lastVars)
@@ -167,3 +168,25 @@ func TestAddFeedbackFormError(t *testing.T) {
 	assert.Equal(expectedError, err)
 	assert.Equal(0, template.count)
 }
+
+//func TestHandlesErrorIfReturned(t *testing.T) {
+//	assert := assert.New(t)
+//	expectedError := errors.New("oops")
+//
+//	client := &mockFeedbackFormClient{
+//		form: model.FeedbackForm{
+//			Message: "test",
+//		},
+//	}
+//	client.err = expectedError
+//	template := &mockTemplate{}
+//
+//	w := httptest.NewRecorder()
+//	r, _ := http.NewRequest("POST", "/feedback-form", strings.NewReader("more-detail=test"))
+//
+//	handler := feedbackForm(client, template)
+//	err := handler(sirius.PermissionSet{}, w, r)
+//	assert.Equal(expectedError, err)
+//	assert.Equal(1, client.count)
+//	assert.Equal(0, template.count)
+//}

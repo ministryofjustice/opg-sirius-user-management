@@ -24,7 +24,7 @@ func feedbackForm(client FeedbackFormClient, tmpl Template) Handler {
 		}
 		ctx := getContext(r)
 		vars := feedbackFormVars{
-			Path: "/supervision/feedback",
+			Path: "/feedback",
 		}
 
 		if r.Method == http.MethodPost {
