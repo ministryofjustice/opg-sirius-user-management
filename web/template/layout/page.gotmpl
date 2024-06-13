@@ -20,11 +20,11 @@
     <body class="govuk-template__body app-body-class">
       <a href="#main-content" class="govuk-skip-link" data-module="govuk-skip-link">Skip to main content</a>
 
-      {{ if ne .Path "/supervision/feedback" }}
+      {{ if ne .Path "/feedback" }}
           {{ template "header" . }}
           {{ template "navigation" . }}
       {{ end }}
-      {{ if eq .Path "/supervision/feedback" }}
+      {{ if eq .Path "/feedback" }}
         {{ template "feedback-header"}}
       {{ end }}
 
@@ -32,7 +32,7 @@
         {{ block "backlink" . }}{{ end }}
 
         <main class="govuk-main-wrapper app-main-class" id="main-content" role="main">
-          {{ if eq .Path "/supervision/feedback" }}
+          {{ if eq .Path "/feedback" }}
            <div data-module="moj-close-tab">
                 {{ block "main" . }}{{ end }}
             </div>

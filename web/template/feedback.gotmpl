@@ -5,7 +5,7 @@
     <a href="#main-content" class="govuk-skip-link" data-module="govuk-skip-link">Skip to main content</a>
     <main role="main" class="new govuk-main-wrapper" data-form-type="contact">
     <h1 class="govuk-heading-l">Feedback</h1>
-    {{ if ne .SuccessMessage true }}
+    {{ if eq .Success false }}
         <form class="form" method="post">
             <div class="govuk-form-group">
                 <label class="govuk-label" for="name">
