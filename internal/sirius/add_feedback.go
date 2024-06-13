@@ -45,6 +45,18 @@ func (c *Client) AddFeedback(ctx Context, form model.FeedbackForm) error {
 	if resp.StatusCode == http.StatusUnauthorized {
 		return ErrUnauthorized
 	}
+	if resp.StatusCode == http.StatusForbidden {
+		return ErrUnauthorized
+	}
+	if resp.StatusCode == http.StatusCreated {
+		return ClientError("created")
+	}
+	if resp.StatusCode == http.StatusInternalServerError {
+		return ClientError("internal server")
+	}
+	if resp.StatusCode == http.StatusOK {
+		return ClientError("200")
+	}
 
 	if resp.StatusCode != http.StatusOK {
 		var v struct {
