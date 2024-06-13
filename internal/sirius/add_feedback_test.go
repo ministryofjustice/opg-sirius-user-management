@@ -60,6 +60,39 @@ func TestAddFeedback(t *testing.T) {
 				return StatusError{Code: 403, URL: fmt.Sprintf("http://localhost:%d/api/supervision-feedback", port), Method: http.MethodPost}
 			},
 		},
+		{
+			name: "OK",
+			form: model.FeedbackForm{
+				IsSupervisionFeedback: true,
+				Message:               "some feedback",
+			},
+			setup: func() {
+				pact.
+					AddInteraction().
+					Given("Supervision team with members exists").
+					UponReceiving("A request to add feedback that is successful").
+					WithRequest(dsl.Request{
+						Method: http.MethodPost,
+						Path:   dsl.String("/api/supervision-feedback"),
+						Headers: dsl.MapMatcher{
+							"Content-Type": dsl.String("application/json"),
+						},
+						Body: map[string]interface{}{
+							"isSupervisionFeedback": true,
+							"name":                  "",
+							"email":                 "",
+							"caseNumber":            "",
+							"message":               "some feedback",
+						},
+					}).
+					WillRespondWith(dsl.Response{
+						Status: http.StatusOK,
+					})
+			},
+			expectedError: func(port int) error {
+				return nil
+			},
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
