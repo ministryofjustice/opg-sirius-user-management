@@ -29,12 +29,11 @@ func (c *Client) AddFeedback(ctx Context, form model.FeedbackForm) error {
 	}
 
 	req, err := c.newRequest(ctx, http.MethodPost, "/api/supervision-feedback", &body)
-
 	if err != nil {
 		return err
 	}
-	req.Header.Set("Content-Type", "application/json")
 
+	req.Header.Set("Content-Type", "application/json")
 	resp, err := c.http.Do(req)
 	if err != nil {
 		return err
@@ -51,8 +50,11 @@ func (c *Client) AddFeedback(ctx Context, form model.FeedbackForm) error {
 			ValidationErrors ValidationErrors `json:"validation_errors"`
 		}
 
-		if err := json.NewDecoder(resp.Body).Decode(&v); err == nil && len(v.ValidationErrors) > 0 {
-			return &ValidationError{
+		//if err := json.NewDecoder(resp.Body).Decode(&v); err != nil {
+		//	return err
+		//}
+		if err := json.NewDecoder(resp.Body).Decode(&v); err == nil {
+			return ValidationError{
 				Errors: v.ValidationErrors,
 			}
 		}
