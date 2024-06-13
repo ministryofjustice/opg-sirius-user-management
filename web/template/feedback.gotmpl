@@ -2,8 +2,6 @@
 {{ define "title" }}Feedback{{ end }}
 {{ define "main" }}
 
-    <a href="#main-content" class="govuk-skip-link" data-module="govuk-skip-link">Skip to main content</a>
-    <main role="main" class="new govuk-main-wrapper" data-form-type="contact">
     <h1 class="govuk-heading-l">Feedback</h1>
     {{ if eq .Success false }}
         <form class="form" method="post">
@@ -32,15 +30,15 @@
                 <label class="govuk-label" for="more-detail">
                     Feedback
                 </label>
-                <div class="govuk-form-group {{ if eq .Error.Message "isEmpty" }}govuk-form-group--error {{end}}">
+                <div class="govuk-form-group {{ if eq .Error "isEmpty" }}govuk-form-group--error {{end}}">
                     <div id="feedback-box-hint" class="govuk-hint">
                         Please let us know about your experience of using Sirius.
-                        {{ if eq .Error.Message "isEmpty" }}
+                        {{ if eq .Error "isEmpty" }}
                             <p id="feedback-error" class="govuk-error-message">
                                 <span class="govuk-visually-hidden">Error:</span> Please submit your feedback or press cancel
                             </p>
                         {{ end }}
-                        {{ if eq .Error.Message "stringLengthTooLong" }}
+                        {{ if eq .Error "stringLengthTooLong" }}
                             <p id="feedback-error" class="govuk-error-message">
                                 <span class="govuk-visually-hidden">Error:</span> Your feedback must be 900 characters or fewer
                             </p>
@@ -51,7 +49,7 @@
                         data-module="govuk-character-count"
                         data-maxlength="900">
                         <textarea
-                            class="govuk-textarea govuk-js-character-count{{ if eq .Error.Message "stringLengthTooLong" }} govuk-input--error{{ end }}"
+                            class="govuk-textarea govuk-js-character-count{{ if eq .Error "stringLengthTooLong" }} govuk-input--error{{ end }}"
                             id="more-detail"
                             name="more-detail"
                             rows="10"
