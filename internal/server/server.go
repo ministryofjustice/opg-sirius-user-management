@@ -35,6 +35,7 @@ type Client interface {
 	ViewTeamClient
 	RandomReviewsClient
 	EditRandomReviewSettingsClient
+	FeedbackFormClient
 }
 
 type Template interface {
@@ -119,6 +120,10 @@ func New(logger *slog.Logger, client Client, templates map[string]*template.Temp
 	mux.Handle("/delete-user/",
 		wrap(
 			deleteUser(client, templates["delete-user.gotmpl"])))
+
+	mux.Handle("/feedback",
+		wrap(
+			feedbackForm(client, templates["feedback.gotmpl"])))
 
 	static := http.FileServer(http.Dir(webDir + "/static"))
 	mux.Handle("/assets/", static)
