@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 )
 
 const ErrUnauthorized ClientError = "unauthorized"
@@ -90,10 +91,20 @@ func (c *Client) newRequest(ctx Context, method, path string, body io.Reader) (*
 	return req, err
 }
 
-func getContext(cookies []*http.Cookie) Context {
+func getContext(r *http.Request) Context {
+	token := ""
+
+	if r.Method == http.MethodGet {
+		if cookie, err := r.Cookie("XSRF-TOKEN"); err == nil {
+			token, _ = url.QueryUnescape(cookie.Value)
+		}
+	} else {
+		token = r.FormValue("xsrfToken")
+	}
+
 	return Context{
-		Context:   context.Background(),
-		Cookies:   cookies,
-		XSRFToken: "abcde",
+		Context:   r.Context(),
+		Cookies:   r.Cookies(),
+		XSRFToken: token,
 	}
 }
