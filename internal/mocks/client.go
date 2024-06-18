@@ -1,6 +1,8 @@
 package mocks
 
-import "net/http"
+import (
+	"net/http"
+)
 
 // MockClient is the mock client
 type MockClient struct {

@@ -10,6 +10,7 @@ import (
 func (c *Client) AddFeedback(ctx Context, form model.FeedbackForm) error {
 	var body bytes.Buffer
 	var err error
+	MaximumFormStringLength := 900
 
 	if len(form.Message) == 0 {
 		return ValidationError{
@@ -17,7 +18,7 @@ func (c *Client) AddFeedback(ctx Context, form model.FeedbackForm) error {
 		}
 	}
 
-	if len(form.Message) > 900 {
+	if len(form.Message) > MaximumFormStringLength {
 		return ValidationError{
 			Message: "stringLengthTooLong",
 		}

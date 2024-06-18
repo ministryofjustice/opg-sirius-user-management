@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
 )
 
 const ErrUnauthorized ClientError = "unauthorized"
@@ -89,22 +88,4 @@ func (c *Client) newRequest(ctx Context, method, path string, body io.Reader) (*
 	req.Header.Add("X-XSRF-TOKEN", ctx.XSRFToken)
 
 	return req, err
-}
-
-func getContext(r *http.Request) Context {
-	token := ""
-
-	if r.Method == http.MethodGet {
-		if cookie, err := r.Cookie("XSRF-TOKEN"); err == nil {
-			token, _ = url.QueryUnescape(cookie.Value)
-		}
-	} else {
-		token = r.FormValue("xsrfToken")
-	}
-
-	return Context{
-		Context:   r.Context(),
-		Cookies:   r.Cookies(),
-		XSRFToken: token,
-	}
 }

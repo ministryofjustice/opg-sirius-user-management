@@ -160,7 +160,6 @@ func TestGetCaseloadListCanThrow500Error(t *testing.T) {
 		URL:    svr.URL + "/api/supervision-feedback",
 		Method: http.MethodPost,
 	}, err)
-
 }
 
 func TestCanThrowReqErrors(t *testing.T) {
@@ -185,7 +184,7 @@ func TestCanThrowReqErrors(t *testing.T) {
 		}, nil
 	}
 
-	err := client.AddFeedback(getContext(nil), model.FeedbackForm{
+	err := client.AddFeedback(getContextForMock(nil), model.FeedbackForm{
 		IsSupervisionFeedback: true,
 		Name:                  "",
 		Email:                 "",
@@ -258,7 +257,7 @@ func TestValidationErrorUnmarshalled(t *testing.T) {
 
 	expectedResponse := ValidationError{Message: "", Errors: ValidationErrors{"feedback": map[string]string{"isEmpty": "Message is required and can not be empty"}}}
 
-	err := client.AddFeedback(getContext(nil), model.FeedbackForm{
+	err := client.AddFeedback(getContextForMock(nil), model.FeedbackForm{
 		IsSupervisionFeedback: true,
 		Name:                  "",
 		Email:                 "",
@@ -266,4 +265,12 @@ func TestValidationErrorUnmarshalled(t *testing.T) {
 		Message:               "feedback message",
 	})
 	assert.Equal(t, expectedResponse, err)
+}
+
+func getContextForMock(cookies []*http.Cookie) Context {
+	return Context{
+		Context:   context.Background(),
+		Cookies:   cookies,
+		XSRFToken: "abcde",
+	}
 }
