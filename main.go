@@ -30,9 +30,9 @@ func main() {
 }
 
 func run(ctx context.Context, logger *slog.Logger) error {
-	port := getEnv("PORT", "8888")
+	port := getEnv("PORT", "8080")
 	webDir := getEnv("WEB_DIR", "web")
-	siriusURL := getEnv("SIRIUS_URL", "http://localhost:8080")
+	siriusURL := getEnv("SIRIUS_URL", "http://localhost:9001")
 	siriusPublicURL := getEnv("SIRIUS_PUBLIC_URL", "")
 	prefix := getEnv("PREFIX", "")
 	exportTraces := env.Get("TRACING_ENABLED", "0") == "1"
