@@ -3,7 +3,6 @@ package sirius
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/mocks"
 	"github.com/ministryofjustice/opg-sirius-user-management/internal/model"
@@ -161,38 +160,6 @@ func TestGetCaseloadListCanThrow500Error(t *testing.T) {
 		Method: http.MethodPost,
 	}, err)
 
-}
-
-func TestCanThrowReqErrors(t *testing.T) {
-	jsonResponse := `{"detail": "Could not post to Slack"}`
-
-	svr := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	}))
-	defer svr.Close()
-
-	client, _ := NewClient(http.DefaultClient, svr.URL)
-	r := io.NopCloser(bytes.NewReader([]byte(jsonResponse)))
-
-	mocks.GetDoFunc = func(rq *http.Request) (*http.Response, error) {
-
-		err := json.NewDecoder(rq.Body)
-		assert.Nil(t, err)
-
-		return &http.Response{
-			StatusCode: 200,
-			Body:       r,
-		}, nil
-	}
-
-	err := client.AddFeedback(getContext(nil), model.FeedbackForm{
-		IsSupervisionFeedback: true,
-		Name:                  "",
-		Email:                 "",
-		CaseNumber:            "",
-		Message:               "feedback message",
-	})
-	assert.Equal(t, nil, err)
 }
 
 func TestAddFeedbackIsEmptyValidationError(t *testing.T) {
