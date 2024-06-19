@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 )
 
 const ErrUnauthorized ClientError = "unauthorized"
@@ -58,7 +59,7 @@ type Context struct {
 	XSRFToken string
 }
 
-func NewClient(httpClient *http.Client, baseURL string) (*Client, error) {
+func NewClient(httpClient HTTPClient, baseURL string) (*Client, error) {
 	return &Client{
 		http:    httpClient,
 		baseURL: baseURL,
@@ -66,8 +67,12 @@ func NewClient(httpClient *http.Client, baseURL string) (*Client, error) {
 }
 
 type Client struct {
-	http    *http.Client
+	http    HTTPClient
 	baseURL string
+}
+
+type HTTPClient interface {
+	Do(req *http.Request) (*http.Response, error)
 }
 
 func (c *Client) newRequest(ctx Context, method, path string, body io.Reader) (*http.Request, error) {
@@ -84,4 +89,22 @@ func (c *Client) newRequest(ctx Context, method, path string, body io.Reader) (*
 	req.Header.Add("X-XSRF-TOKEN", ctx.XSRFToken)
 
 	return req, err
+}
+
+func getContext(r *http.Request) Context {
+	token := ""
+
+	if r.Method == http.MethodGet {
+		if cookie, err := r.Cookie("XSRF-TOKEN"); err == nil {
+			token, _ = url.QueryUnescape(cookie.Value)
+		}
+	} else {
+		token = r.FormValue("xsrfToken")
+	}
+
+	return Context{
+		Context:   r.Context(),
+		Cookies:   r.Cookies(),
+		XSRFToken: token,
+	}
 }
