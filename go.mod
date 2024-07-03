@@ -2,11 +2,11 @@ module github.com/ministryofjustice/opg-sirius-user-management
 
 go 1.22
 
-toolchain go1.22.4
+toolchain go1.22.5
 
 require (
 	github.com/ministryofjustice/opg-go-common v1.4.0
-	github.com/pact-foundation/pact-go v1.9.0
+	github.com/pact-foundation/pact-go v1.10.0
 	github.com/stretchr/testify v1.9.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.52.0
 )

@@ -1,4 +1,4 @@
-FROM node:22.3.0-alpine3.19 as asset-env
+FROM node:22.4.0-alpine3.19 as asset-env
 
 WORKDIR /app
 
