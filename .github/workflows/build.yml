@@ -111,7 +111,7 @@ jobs:
           (diff <(jq --sort-keys . ${PACT_DIR}/sirius-user-management-sirius.json) <(jq --sort-keys . /tmp/latest-pact.json) || true) | (! grep '<')
 
       - name: Upload Code Coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
