@@ -1,4 +1,4 @@
-FROM cypress/included:13.16.1
+FROM cypress/included:13.17.0
 
 RUN yarn add cypress-failed-log
 RUN yarn add axe-core
