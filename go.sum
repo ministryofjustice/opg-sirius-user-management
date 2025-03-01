@@ -88,6 +88,8 @@ github.com/ministryofjustice/opg-go-common v1.62.0 h1:dpULKPm4Tru7NwsRNTkklhXn21
 github.com/ministryofjustice/opg-go-common v1.62.0/go.mod h1:ChMNWq0LXn5CexlllRmuMxiWlCcIB0+msrPNJ8mXktQ=
 github.com/ministryofjustice/opg-go-common v1.68.0 h1:kMInK2Nanm4sdG9Zwi8IcK8HLlhHScKt9YWpHr0ZUkw=
 github.com/ministryofjustice/opg-go-common v1.68.0/go.mod h1:bv26jCs0dMeEHIrDCxOiVayHjv3BGyPgEEQTjbWgEV0=
+github.com/ministryofjustice/opg-go-common v1.71.0 h1:D9mlEB/FAN7jOMWvHtZSnWeKestS9352ymaLzh0aFN0=
+github.com/ministryofjustice/opg-go-common v1.71.0/go.mod h1:U05ee2M4ps5QWnQAk8ETQyOCYTyJZvL43N1WWVVmVBk=
 github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421/go.mod h1:6dJC0mAP4ikYIbvyc7fijjWJddQyLn8Ig3JB5CqoB9Q=
 github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd/go.mod h1:6dJC0mAP4ikYIbvyc7fijjWJddQyLn8Ig3JB5CqoB9Q=
 github.com/modern-go/reflect2 v0.0.0-20180701023420-4b7aa43c6742/go.mod h1:bx2lNnkwVCuqBIxFjflWJWanXIb3RllmbCylyMrvgv0=
