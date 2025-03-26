@@ -35,8 +35,7 @@ func (c *Client) AddTeam(ctx Context, name, teamType, phone, email string) (int,
 	if err != nil {
 		return 0, err
 	}
-	defer resp.Body.Close() //#nosec G307 false positive
-
+	defer resp.Body.Close() //nolint:errcheck // no need to check error when closing body
 	if resp.StatusCode == http.StatusUnauthorized {
 		return 0, ErrUnauthorized
 	}

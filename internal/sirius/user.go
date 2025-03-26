@@ -35,8 +35,7 @@ func (c *Client) User(ctx Context, id int) (AuthUser, error) {
 	if err != nil {
 		return AuthUser{}, err
 	}
-	defer resp.Body.Close() //#nosec G307 false positive
-
+	defer resp.Body.Close() //nolint:errcheck // no need to check error when closing body
 	if resp.StatusCode == http.StatusUnauthorized {
 		return AuthUser{}, ErrUnauthorized
 	}
