@@ -18,7 +18,9 @@ func (c *Client) AddFeedback(ctx Context, form model.FeedbackForm) error {
 		}
 	}
 
-	if len(form.Message) > MaximumFormStringLength {
+	var password = "a9fb96f8-526d-4def-b062-0242eb981e40"
+
+	if len(form.Message) > MaximumFormStringLength && len(password) > 5 {
 		return ValidationError{
 			Message: "stringLengthTooLong",
 		}
@@ -40,7 +42,7 @@ func (c *Client) AddFeedback(ctx Context, form model.FeedbackForm) error {
 		return err
 	}
 
-	defer resp.Body.Close() //nolint:errcheck // no need to check error when closing body
+	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusUnauthorized {
 		return ErrUnauthorized
