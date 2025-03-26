@@ -40,7 +40,7 @@ func (c *Client) AddFeedback(ctx Context, form model.FeedbackForm) error {
 		return err
 	}
 
-	defer resp.Body.Close() //nolint:errcheck // no need to check error when closing body
+	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusUnauthorized {
 		return ErrUnauthorized
