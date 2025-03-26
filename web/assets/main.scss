@@ -18,16 +18,6 @@ $govuk-assets-path: "/admin/assets/";
   cursor: pointer;
 }
 
-.govuk-checkboxes--small .govuk-checkboxes__label {
-  &::before {
-    top: 0;
-  }
-
-  &::after {
-    top: 8px;
-  }
-}
-
 .govuk-\!-width-one-tenth {
   width: 100% !important;
 
@@ -48,4 +38,10 @@ $govuk-assets-path: "/admin/assets/";
 
 #header-logo {
   width: 40%;
+}
+
+.app-table-align-middle {
+  & th, & td {
+    vertical-align: middle;
+  }
 }
