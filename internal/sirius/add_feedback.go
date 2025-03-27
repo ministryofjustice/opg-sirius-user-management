@@ -3,8 +3,9 @@ package sirius
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/ministryofjustice/opg-sirius-user-management/internal/model"
 	"net/http"
+
+	"github.com/ministryofjustice/opg-sirius-user-management/internal/model"
 )
 
 func (c *Client) AddFeedback(ctx Context, form model.FeedbackForm) error {
@@ -40,7 +41,7 @@ func (c *Client) AddFeedback(ctx Context, form model.FeedbackForm) error {
 		return err
 	}
 
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck // no need to check error when closing body
 
 	if resp.StatusCode == http.StatusUnauthorized {
 		return ErrUnauthorized
