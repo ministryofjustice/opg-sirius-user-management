@@ -18,7 +18,7 @@ func (c *Client) Roles(ctx Context) ([]string, error) {
 	if err != nil {
 		return v, err
 	}
-	defer resp.Body.Close() //#nosec G307 false positive
+	defer resp.Body.Close() //nolint:errcheck // no need to check error when closing body
 
 	if resp.StatusCode == http.StatusUnauthorized {
 		return v, ErrUnauthorized
