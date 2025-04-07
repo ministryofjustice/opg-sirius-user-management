@@ -26,7 +26,7 @@ following features:
 make up
 ```
 
-This will run the application at http://localhost:8888/ and will be running againt the pact-stub, ensure you have ran the unit tests first to generate the pact files.
+This will run the application at http://localhost:8888/ and will be running against the pact-stub, ensure you have ran the unit tests first to generate the pact files.
 
 To run the application against local Sirius `make build` and then in the Sirius repo `make dev-up`
 
