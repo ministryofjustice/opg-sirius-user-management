@@ -7,20 +7,14 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/pact-foundation/pact-go/dsl"
+	"github.com/pact-foundation/pact-go/v2/consumer"
+	"github.com/pact-foundation/pact-go/v2/matchers"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestTeam(t *testing.T) {
-	pact := &dsl.Pact{
-		Consumer:          "sirius-user-management",
-		Provider:          "sirius",
-		Host:              "localhost",
-		PactFileWriteMode: "merge",
-		LogDir:            "../../logs",
-		PactDir:           "../../pacts",
-	}
-	defer pact.Teardown()
+	pact, err := newPact()
+	assert.NoError(t, err)
 
 	testCases := []struct {
 		id               int
@@ -37,23 +31,23 @@ func TestTeam(t *testing.T) {
 					AddInteraction().
 					Given("Supervision team with members exists").
 					UponReceiving("A request for a team").
-					WithRequest(dsl.Request{
+					WithCompleteRequest(consumer.Request{
 						Method: http.MethodGet,
-						Path:   dsl.String("/api/v1/teams/65"),
+						Path:   matchers.String("/api/v1/teams/65"),
 					}).
-					WillRespondWith(dsl.Response{
+					WithCompleteResponse(consumer.Response{
 						Status:  http.StatusOK,
-						Headers: dsl.MapMatcher{"Content-Type": dsl.String("application/json")},
-						Body: dsl.Like(map[string]interface{}{
-							"id":          dsl.Like(65),
-							"displayName": dsl.Like("Cool Team"),
-							"email":       dsl.Like("coolteam@opgtest.com"),
-							"phoneNumber": dsl.Like("01818118181"),
-							"members": dsl.EachLike(map[string]interface{}{
-								"displayName": dsl.Like("John"),
-								"email":       dsl.Like("john@opgtest.com"),
+						Headers: matchers.MapMatcher{"Content-Type": matchers.String("application/json")},
+						Body: matchers.Like(map[string]interface{}{
+							"id":          matchers.Like(65),
+							"displayName": matchers.Like("Cool Team"),
+							"email":       matchers.Like("coolteam@opgtest.com"),
+							"phoneNumber": matchers.Like("01818118181"),
+							"members": matchers.EachLike(map[string]interface{}{
+								"displayName": matchers.Like("John"),
+								"email":       matchers.Like("john@opgtest.com"),
 							}, 1),
-							"teamType": dsl.Like(map[string]interface{}{
+							"teamType": matchers.Like(map[string]interface{}{
 								"handle": "ALLOCATIONS",
 							}),
 						}),
@@ -81,19 +75,19 @@ func TestTeam(t *testing.T) {
 					AddInteraction().
 					Given("LPA team with members exists").
 					UponReceiving("A request for an LPA team").
-					WithRequest(dsl.Request{
+					WithCompleteRequest(consumer.Request{
 						Method: http.MethodGet,
-						Path:   dsl.String("/api/v1/teams/65"),
+						Path:   matchers.String("/api/v1/teams/65"),
 					}).
-					WillRespondWith(dsl.Response{
+					WithCompleteResponse(consumer.Response{
 						Status:  http.StatusOK,
-						Headers: dsl.MapMatcher{"Content-Type": dsl.String("application/json")},
-						Body: dsl.Like(map[string]interface{}{
-							"id":          dsl.Like(65),
-							"displayName": dsl.Like("Cool Team"),
-							"members": dsl.EachLike(map[string]interface{}{
-								"displayName": dsl.Like("Carline"),
-								"email":       dsl.Like("carline@opgtest.com"),
+						Headers: matchers.MapMatcher{"Content-Type": matchers.String("application/json")},
+						Body: matchers.Like(map[string]interface{}{
+							"id":          matchers.Like(65),
+							"displayName": matchers.Like("Cool Team"),
+							"members": matchers.EachLike(map[string]interface{}{
+								"displayName": matchers.Like("Carline"),
+								"email":       matchers.Like("carline@opgtest.com"),
 							}, 1),
 						}),
 					})
@@ -116,8 +110,8 @@ func TestTeam(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			tc.setup()
 
-			assert.Nil(t, pact.Verify(func() error {
-				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
+			assert.Nil(t, pact.ExecuteTest(t, func(config consumer.MockServerConfig) error {
+				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://127.0.0.1:%d", config.Port))
 
 				team, err := client.Team(Context{Context: context.Background()}, tc.id)
 				assert.Equal(t, tc.expectedResponse, team)

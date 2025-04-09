@@ -6,28 +6,14 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/pact-foundation/pact-go/dsl"
+	"github.com/pact-foundation/pact-go/v2/consumer"
+	"github.com/pact-foundation/pact-go/v2/matchers"
 	"github.com/stretchr/testify/assert"
 )
 
-type editUserErrorsResponse struct {
-	Errors *struct {
-		Firstname *struct {
-			TooLong string `json:"stringLengthTooLong" pact:"example=First name must be 255 characters or fewer"`
-		} `json:"firstname"`
-	} `json:"validation_errors"`
-}
-
 func TestEditUser(t *testing.T) {
-	pact := &dsl.Pact{
-		Consumer:          "sirius-user-management",
-		Provider:          "sirius",
-		Host:              "localhost",
-		PactFileWriteMode: "merge",
-		LogDir:            "../../logs",
-		PactDir:           "../../pacts",
-	}
-	defer pact.Teardown()
+	pact, err := newPact()
+	assert.NoError(t, err)
 
 	testCases := []struct {
 		name          string
@@ -51,11 +37,11 @@ func TestEditUser(t *testing.T) {
 					AddInteraction().
 					Given("User exists").
 					UponReceiving("A request to edit the user").
-					WithRequest(dsl.Request{
+					WithCompleteRequest(consumer.Request{
 						Method: http.MethodPut,
-						Path:   dsl.String("/api/v1/users/123"),
-						Headers: dsl.MapMatcher{
-							"Content-Type": dsl.String("application/json"),
+						Path:   matchers.String("/api/v1/users/123"),
+						Headers: matchers.MapMatcher{
+							"Content-Type": matchers.String("application/json"),
 						},
 						Body: map[string]interface{}{
 							"id":        123,
@@ -66,7 +52,7 @@ func TestEditUser(t *testing.T) {
 							"suspended": true,
 						},
 					}).
-					WillRespondWith(dsl.Response{
+					WithCompleteResponse(consumer.Response{
 						Status: http.StatusOK,
 					})
 			},
@@ -82,11 +68,11 @@ func TestEditUser(t *testing.T) {
 					AddInteraction().
 					Given("User exists").
 					UponReceiving("A request to edit the user errors on validation").
-					WithRequest(dsl.Request{
+					WithCompleteRequest(consumer.Request{
 						Method: http.MethodPut,
-						Path:   dsl.String("/api/v1/users/123"),
-						Headers: dsl.MapMatcher{
-							"Content-Type": dsl.String("application/json"),
+						Path:   matchers.String("/api/v1/users/123"),
+						Headers: matchers.MapMatcher{
+							"Content-Type": matchers.String("application/json"),
 						},
 						Body: map[string]interface{}{
 							"id":        123,
@@ -96,9 +82,15 @@ func TestEditUser(t *testing.T) {
 							"suspended": false,
 						},
 					}).
-					WillRespondWith(dsl.Response{
+					WithCompleteResponse(consumer.Response{
 						Status: http.StatusBadRequest,
-						Body:   dsl.Match(editUserErrorsResponse{}),
+						Body: matchers.Like(map[string]interface{}{
+							"validation_errors": matchers.Like(map[string]interface{}{
+								"firstname": matchers.Like(map[string]interface{}{
+									"stringLengthTooLong": matchers.Like("First name must be 255 characters or fewer"),
+								}),
+							}),
+						}),
 					})
 			},
 			expectedError: ValidationError{
@@ -115,8 +107,8 @@ func TestEditUser(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			tc.setup()
 
-			assert.Nil(t, pact.Verify(func() error {
-				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
+			assert.Nil(t, pact.ExecuteTest(t, func(config consumer.MockServerConfig) error {
+				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://127.0.0.1:%d", config.Port))
 
 				err := client.EditUser(Context{Context: context.Background()}, tc.user)
 

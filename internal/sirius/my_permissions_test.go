@@ -6,20 +6,14 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/pact-foundation/pact-go/dsl"
+	"github.com/pact-foundation/pact-go/v2/consumer"
+	"github.com/pact-foundation/pact-go/v2/matchers"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestPermissions(t *testing.T) {
-	pact := &dsl.Pact{
-		Consumer:          "sirius-user-management",
-		Provider:          "sirius",
-		Host:              "localhost",
-		PactFileWriteMode: "merge",
-		LogDir:            "../../logs",
-		PactDir:           "../../pacts",
-	}
-	defer pact.Teardown()
+	pact, err := newPact()
+	assert.NoError(t, err)
 
 	testCases := []struct {
 		name             string
@@ -34,19 +28,19 @@ func TestPermissions(t *testing.T) {
 					AddInteraction().
 					Given("User exists").
 					UponReceiving("A request to get my permissions").
-					WithRequest(dsl.Request{
+					WithCompleteRequest(consumer.Request{
 						Method: http.MethodGet,
-						Path:   dsl.String("/api/v1/permissions"),
+						Path:   matchers.String("/api/v1/permissions"),
 					}).
-					WillRespondWith(dsl.Response{
+					WithCompleteResponse(consumer.Response{
 						Status:  http.StatusOK,
-						Headers: dsl.MapMatcher{"Content-Type": dsl.String("application/json")},
-						Body: dsl.Like(map[string]interface{}{
+						Headers: matchers.MapMatcher{"Content-Type": matchers.String("application/json")},
+						Body: matchers.Like(map[string]interface{}{
 							"v1-users": map[string]interface{}{
-								"permissions": dsl.EachLike("PATCH", 1),
+								"permissions": matchers.EachLike("PATCH", 1),
 							},
 							"v1-teams": map[string]interface{}{
-								"permissions": dsl.EachLike("POST", 1),
+								"permissions": matchers.EachLike("POST", 1),
 							},
 						}),
 					})
@@ -62,8 +56,8 @@ func TestPermissions(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			tc.setup()
 
-			assert.Nil(t, pact.Verify(func() error {
-				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
+			assert.Nil(t, pact.ExecuteTest(t, func(config consumer.MockServerConfig) error {
+				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://127.0.0.1:%d", config.Port))
 
 				myPermissions, err := client.MyPermissions(Context{Context: context.Background()})
 				assert.Equal(t, tc.expectedResponse, myPermissions)
@@ -77,17 +71,10 @@ func TestPermissions(t *testing.T) {
 func TestPermissionsIgnoredPact(t *testing.T) {
 	// We need this test to produce a specific array of permissions in the
 	// response so that Cypress tests will pass. Since Pact won't let us return
-	// multiple array entries from `dsl.EachLike` we have to write a separate
+	// multiple array entries from `matchers.EachLike` we have to write a separate
 	// test with the specific output.
-	pact := &dsl.Pact{
-		Consumer:          "ignored",
-		Provider:          "ignored",
-		Host:              "localhost",
-		PactFileWriteMode: "merge",
-		LogDir:            "../../logs",
-		PactDir:           "../../pacts",
-	}
-	defer pact.Teardown()
+	pact, err := newIgnoredPact()
+	assert.NoError(t, err)
 
 	testCases := []struct {
 		name             string
@@ -102,14 +89,14 @@ func TestPermissionsIgnoredPact(t *testing.T) {
 					AddInteraction().
 					Given("User exists").
 					UponReceiving("A request to get all the permissions I need").
-					WithRequest(dsl.Request{
+					WithCompleteRequest(consumer.Request{
 						Method: http.MethodGet,
-						Path:   dsl.String("/api/v1/permissions"),
+						Path:   matchers.String("/api/v1/permissions"),
 					}).
-					WillRespondWith(dsl.Response{
+					WithCompleteResponse(consumer.Response{
 						Status:  http.StatusOK,
-						Headers: dsl.MapMatcher{"Content-Type": dsl.String("application/json")},
-						Body: dsl.Like(map[string]interface{}{
+						Headers: matchers.MapMatcher{"Content-Type": matchers.String("application/json")},
+						Body: matchers.Like(map[string]interface{}{
 							"v1-users-updatetelephonenumber": map[string]interface{}{
 								"permissions": []string{"PUT"},
 							},
@@ -138,8 +125,8 @@ func TestPermissionsIgnoredPact(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			tc.setup()
 
-			assert.Nil(t, pact.Verify(func() error {
-				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
+			assert.Nil(t, pact.ExecuteTest(t, func(config consumer.MockServerConfig) error {
+				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://127.0.0.1:%d", config.Port))
 
 				myPermissions, err := client.MyPermissions(Context{Context: context.Background()})
 				assert.Equal(t, tc.expectedResponse, myPermissions)
