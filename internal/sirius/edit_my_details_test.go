@@ -6,30 +6,14 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/pact-foundation/pact-go/dsl"
+	"github.com/pact-foundation/pact-go/v2/consumer"
+	"github.com/pact-foundation/pact-go/v2/matchers"
 	"github.com/stretchr/testify/assert"
 )
 
-type editMyDetailsBadRequestResponse struct {
-	Status           int    `json:"status" pact:"example=400"`
-	Detail           string `json:"detail" pact:"example=Payload failed validation"`
-	ValidationErrors *struct {
-		PhoneNumber *struct {
-			StringLengthTooLong string `json:"stringLengthTooLong" pact:"example=The input is more than 255 characters long"`
-		} `json:"phoneNumber"`
-	} `json:"validation_errors"`
-}
-
 func TestEditMyDetails(t *testing.T) {
-	pact := &dsl.Pact{
-		Consumer:          "sirius-user-management",
-		Provider:          "sirius",
-		Host:              "localhost",
-		PactFileWriteMode: "merge",
-		LogDir:            "../../logs",
-		PactDir:           "../../pacts",
-	}
-	defer pact.Teardown()
+	pact, err := newPact()
+	assert.NoError(t, err)
 
 	testCases := []struct {
 		name          string
@@ -45,19 +29,19 @@ func TestEditMyDetails(t *testing.T) {
 					AddInteraction().
 					Given("User exists").
 					UponReceiving("A request to change my phone number").
-					WithRequest(dsl.Request{
+					WithCompleteRequest(consumer.Request{
 						Method: http.MethodPut,
-						Path:   dsl.String("/api/v1/users/47/updateTelephoneNumber"),
-						Headers: dsl.MapMatcher{
-							"Content-Type": dsl.String("application/json"),
+						Path:   matchers.String("/api/v1/users/47/updateTelephoneNumber"),
+						Headers: matchers.MapMatcher{
+							"Content-Type": matchers.String("application/json"),
 						},
 						Body: map[string]string{
 							"phoneNumber": "01210930320",
 						},
 					}).
-					WillRespondWith(dsl.Response{
+					WithCompleteResponse(consumer.Response{
 						Status:  http.StatusOK,
-						Headers: dsl.MapMatcher{"Content-Type": dsl.String("application/json")},
+						Headers: matchers.MapMatcher{"Content-Type": matchers.String("application/json")},
 					})
 			},
 		},
@@ -70,20 +54,27 @@ func TestEditMyDetails(t *testing.T) {
 					AddInteraction().
 					Given("User exists").
 					UponReceiving("An invalid request to change my phone number").
-					WithRequest(dsl.Request{
+					WithCompleteRequest(consumer.Request{
 						Method: http.MethodPut,
-						Path:   dsl.String("/api/v1/users/47/updateTelephoneNumber"),
-						Headers: dsl.MapMatcher{
-							"Content-Type": dsl.String("application/json"),
+						Path:   matchers.String("/api/v1/users/47/updateTelephoneNumber"),
+						Headers: matchers.MapMatcher{
+							"Content-Type": matchers.String("application/json"),
 						},
 						Body: map[string]string{
 							"phoneNumber": "85845984598649858684596849859549684568465894689498468495689645468384938743893892317571934751439574638753683761084565480713465618457365784613876481376457651471645463178546357843615971435645387364139756147361456145161587165477143576698764574569834659465974657946574569856896745229786",
 						},
 					}).
-					WillRespondWith(dsl.Response{
+					WithCompleteResponse(consumer.Response{
 						Status:  http.StatusBadRequest,
-						Headers: dsl.MapMatcher{"Content-Type": dsl.String("application/problem+json")},
-						Body:    dsl.Match(editMyDetailsBadRequestResponse{}),
+						Headers: matchers.MapMatcher{"Content-Type": matchers.String("application/problem+json")},
+						Body: matchers.Like(map[string]interface{}{
+							"detail": matchers.Like("Payload failed validation"),
+							"validation_errors": matchers.Like(map[string]interface{}{
+								"phoneNumber": matchers.Like(map[string]interface{}{
+									"stringLengthTooLong": matchers.Like("The input is more than 255 characters long"),
+								}),
+							}),
+						}),
 					})
 			},
 			expectedError: &ValidationError{
@@ -101,8 +92,8 @@ func TestEditMyDetails(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			tc.setup()
 
-			assert.Nil(t, pact.Verify(func() error {
-				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
+			assert.Nil(t, pact.ExecuteTest(t, func(config consumer.MockServerConfig) error {
+				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://127.0.0.1:%d", config.Port))
 
 				err := client.EditMyDetails(Context{Context: context.Background()}, 47, tc.phoneNumber)
 				assert.Equal(t, tc.expectedError, err)
