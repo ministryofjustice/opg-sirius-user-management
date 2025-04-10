@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -73,14 +74,18 @@ type Request struct {
 	Path    string              `json:"path"`
 	Query   map[string][]string `json:"query"`
 	Headers map[string][]string `json:"headers"`
-	Body    interface{}         `json:"body"`
+	Body    RequestBody         `json:"body"`
+}
+
+type RequestBody struct {
+	Content interface{} `json:"content"`
 }
 
 func (q Request) String() string {
 	return fmt.Sprintf("method=%s path=%s query=%s headers=%v body=%v", q.Method, q.Path, q.Query, q.Headers, q.Body)
 }
 
-func (q Request) Match(r *http.Request) bool {
+func (q Request) Match(r *http.Request, requestBody []byte) bool {
 	if q.Method != r.Method {
 		return false
 	}
@@ -111,6 +116,15 @@ func (q Request) Match(r *http.Request) bool {
 			}
 		} else if !slices.Contains(vs, r.Header.Get(k)) {
 			log.Println("HX", q)
+			return false
+		}
+	}
+
+	if r.Method == "POST" && r.URL.Path == "/api/v1/random-review-settings" {
+		bodyString, _ := json.Marshal(q.Body.Content)
+
+		if string(requestBody) != string(bodyString) {
+			log.Println("BX", string(requestBody), string(bodyString))
 			return false
 		}
 	}
@@ -166,9 +180,10 @@ type Server struct {
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Printf("-> method=%s path=%s query=%s headers=%v body=%v\n", r.Method, r.URL.Path, r.URL.Query().Encode(), r.Header, nil)
+	requestBody, _ := io.ReadAll(r.Body)
 
 	for _, interaction := range s.interactions {
-		if interaction.Request.Match(r) {
+		if interaction.Request.Match(r, bytes.Trim(requestBody, "\n\r")) {
 			interaction.Response.Send(w)
 			return
 		}
