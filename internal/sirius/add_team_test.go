@@ -6,20 +6,14 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/pact-foundation/pact-go/dsl"
+	"github.com/pact-foundation/pact-go/v2/consumer"
+	"github.com/pact-foundation/pact-go/v2/matchers"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestAddTeam(t *testing.T) {
-	pact := &dsl.Pact{
-		Consumer:          "sirius-user-management",
-		Provider:          "sirius",
-		Host:              "localhost",
-		PactFileWriteMode: "merge",
-		LogDir:            "../../logs",
-		PactDir:           "../../pacts",
-	}
-	defer pact.Teardown()
+	pact, err := newPact()
+	assert.NoError(t, err)
 
 	testCases := []struct {
 		scenario      string
@@ -38,11 +32,11 @@ func TestAddTeam(t *testing.T) {
 					AddInteraction().
 					Given("An admin user").
 					UponReceiving("A request to add a new team").
-					WithRequest(dsl.Request{
+					WithCompleteRequest(consumer.Request{
 						Method: http.MethodPost,
-						Path:   dsl.String("/api/v1/teams"),
-						Headers: dsl.MapMatcher{
-							"Content-Type": dsl.String("application/json"),
+						Path:   matchers.String("/api/v1/teams"),
+						Headers: matchers.MapMatcher{
+							"Content-Type": matchers.String("application/json"),
 						},
 						Body: map[string]interface{}{
 							"email":       "john.doe@example.com",
@@ -50,10 +44,10 @@ func TestAddTeam(t *testing.T) {
 							"phoneNumber": "0300456090",
 						},
 					}).
-					WillRespondWith(dsl.Response{
+					WithCompleteResponse(consumer.Response{
 						Status: http.StatusCreated,
-						Body: dsl.Like(map[string]interface{}{
-							"id": dsl.Like(123),
+						Body: matchers.Like(map[string]interface{}{
+							"id": matchers.Like(123),
 						}),
 					})
 			},
@@ -71,11 +65,11 @@ func TestAddTeam(t *testing.T) {
 					AddInteraction().
 					Given("An admin user").
 					UponReceiving("A request to add a new supervision team").
-					WithRequest(dsl.Request{
+					WithCompleteRequest(consumer.Request{
 						Method: http.MethodPost,
-						Path:   dsl.String("/api/v1/teams"),
-						Headers: dsl.MapMatcher{
-							"Content-Type": dsl.String("application/json"),
+						Path:   matchers.String("/api/v1/teams"),
+						Headers: matchers.MapMatcher{
+							"Content-Type": matchers.String("application/json"),
 						},
 						Body: map[string]interface{}{
 							"email":       "john.doe@example.com",
@@ -84,10 +78,10 @@ func TestAddTeam(t *testing.T) {
 							"type":        "INVESTIGATIONS",
 						},
 					}).
-					WillRespondWith(dsl.Response{
+					WithCompleteResponse(consumer.Response{
 						Status: http.StatusCreated,
-						Body: dsl.Like(map[string]interface{}{
-							"id": dsl.Like(123),
+						Body: matchers.Like(map[string]interface{}{
+							"id": matchers.Like(123),
 						}),
 					})
 			},
@@ -104,11 +98,11 @@ func TestAddTeam(t *testing.T) {
 					AddInteraction().
 					Given("An admin user").
 					UponReceiving("A request to add a new team errors").
-					WithRequest(dsl.Request{
+					WithCompleteRequest(consumer.Request{
 						Method: http.MethodPost,
-						Path:   dsl.String("/api/v1/teams"),
-						Headers: dsl.MapMatcher{
-							"Content-Type": dsl.String("application/json"),
+						Path:   matchers.String("/api/v1/teams"),
+						Headers: matchers.MapMatcher{
+							"Content-Type": matchers.String("application/problem+json"),
 						},
 						Body: map[string]interface{}{
 							"email":       "john.doehrfgjuerhujghejrhrgherjrghgjrehergeghrjkrghkerhgerjkhgerjkheghergkhgekrhgerherhjghkjerhgherghjkerhgekjherkjhgerhgjehherkjhgkjehrghrehgkjrehjkghrjkehgrehehgkjhrejghhehgkjerhegjrhegrjhrjkhgkrhrghrkjegrkjehrghjkerhgjkhergjhrjkerregjhrekjhrgrehjkg@example.com",
@@ -116,11 +110,11 @@ func TestAddTeam(t *testing.T) {
 							"phoneNumber": "0300456090",
 						},
 					}).
-					WillRespondWith(dsl.Response{
+					WithCompleteResponse(consumer.Response{
 						Status: http.StatusBadRequest,
-						Body: dsl.Like(map[string]interface{}{
-							"validation_errors": dsl.Like(map[string]interface{}{
-								"email": dsl.Like(map[string]interface{}{
+						Body: matchers.Like(map[string]interface{}{
+							"validation_errors": matchers.Like(map[string]interface{}{
+								"email": matchers.Like(map[string]interface{}{
 									"stringLengthTooLong": "The input is more than 255 characters long",
 								}),
 							}),
@@ -145,8 +139,8 @@ func TestAddTeam(t *testing.T) {
 		t.Run(tc.scenario, func(t *testing.T) {
 			tc.setup()
 
-			assert.Nil(t, pact.Verify(func() error {
-				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
+			assert.Nil(t, pact.ExecuteTest(t, func(config consumer.MockServerConfig) error {
+				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://127.0.0.1:%d", config.Port))
 
 				id, err := client.AddTeam(Context{Context: context.Background()}, tc.name, tc.teamType, tc.phone, tc.email)
 				assert.Equal(t, tc.expectedError, err)

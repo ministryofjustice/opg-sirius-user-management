@@ -5,27 +5,22 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/ministryofjustice/opg-sirius-user-management/internal/mocks"
-	"github.com/ministryofjustice/opg-sirius-user-management/internal/model"
-	"github.com/pact-foundation/pact-go/dsl"
-	"github.com/stretchr/testify/assert"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/ministryofjustice/opg-sirius-user-management/internal/mocks"
+	"github.com/ministryofjustice/opg-sirius-user-management/internal/model"
+	"github.com/pact-foundation/pact-go/v2/consumer"
+	"github.com/pact-foundation/pact-go/v2/matchers"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAddFeedback(t *testing.T) {
-	pact := &dsl.Pact{
-		Consumer:          "sirius-user-management",
-		Provider:          "sirius",
-		Host:              "localhost",
-		PactFileWriteMode: "merge",
-		LogDir:            "../../logs",
-		PactDir:           "../../pacts",
-	}
-	defer pact.Teardown()
+	pact, err := newPact()
+	assert.NoError(t, err)
 
 	testCases := []struct {
 		name          string
@@ -44,11 +39,11 @@ func TestAddFeedback(t *testing.T) {
 					AddInteraction().
 					Given("Supervision team with members exists").
 					UponReceiving("A request to add feedback").
-					WithRequest(dsl.Request{
+					WithCompleteRequest(consumer.Request{
 						Method: http.MethodPost,
-						Path:   dsl.String("/api/supervision-feedback"),
-						Headers: dsl.MapMatcher{
-							"Content-Type": dsl.String("application/json"),
+						Path:   matchers.String("/api/supervision-feedback"),
+						Headers: matchers.MapMatcher{
+							"Content-Type": matchers.String("application/json"),
 						},
 						Body: map[string]interface{}{
 							"isSupervisionFeedback": true,
@@ -58,12 +53,12 @@ func TestAddFeedback(t *testing.T) {
 							"message":               "some feedback",
 						},
 					}).
-					WillRespondWith(dsl.Response{
+					WithCompleteResponse(consumer.Response{
 						Status: http.StatusForbidden,
 					})
 			},
 			expectedError: func(port int) error {
-				return StatusError{Code: 403, URL: fmt.Sprintf("http://localhost:%d/api/supervision-feedback", port), Method: http.MethodPost}
+				return StatusError{Code: 403, URL: fmt.Sprintf("http://127.0.0.1:%d/api/supervision-feedback", port), Method: http.MethodPost}
 			},
 		},
 	}
@@ -71,12 +66,12 @@ func TestAddFeedback(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			tc.setup()
 
-			assert.Nil(t, pact.Verify(func() error {
-				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
+			assert.Nil(t, pact.ExecuteTest(t, func(config consumer.MockServerConfig) error {
+				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://127.0.0.1:%d", config.Port))
 
 				err := client.AddFeedback(Context{Context: context.Background()}, tc.form)
 
-				assert.Equal(t, tc.expectedError(pact.Server.Port), err)
+				assert.Equal(t, tc.expectedError(config.Port), err)
 				return nil
 			}))
 		})
