@@ -1,14 +1,15 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
-	"net/url"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 )
@@ -64,25 +65,27 @@ type Pacts struct {
 }
 
 type Interaction struct {
-	Description   string   `json:"description"`
-	ProviderState string   `json:"providerState"`
-	Request       Request  `json:"request"`
-	Response      Response `json:"response"`
+	Request  Request  `json:"request"`
+	Response Response `json:"response"`
 }
 
 type Request struct {
-	Method  string            `json:"method"`
-	Path    string            `json:"path"`
-	Query   string            `json:"query"`
-	Headers map[string]string `json:"headers"`
-	Body    interface{}       `json:"body"`
+	Method  string              `json:"method"`
+	Path    string              `json:"path"`
+	Query   map[string][]string `json:"query"`
+	Headers map[string][]string `json:"headers"`
+	Body    RequestBody         `json:"body"`
+}
+
+type RequestBody struct {
+	Content interface{} `json:"content"`
 }
 
 func (q Request) String() string {
 	return fmt.Sprintf("method=%s path=%s query=%s headers=%v body=%v", q.Method, q.Path, q.Query, q.Headers, q.Body)
 }
 
-func (q Request) Match(r *http.Request) bool {
+func (q Request) Match(r *http.Request, requestBody []byte) bool {
 	if q.Method != r.Method {
 		return false
 	}
@@ -91,27 +94,37 @@ func (q Request) Match(r *http.Request) bool {
 		return false
 	}
 
-	if q.Query != "" {
-		if expectedQuery, err := url.ParseQuery(q.Query); err == nil {
-			query := r.URL.Query()
-
-			if expectedQuery.Encode() != query.Encode() {
+	for k, vs := range q.Query {
+		actualQuery := r.URL.Query()[k]
+		for _, v := range vs {
+			if !slices.Contains(actualQuery, v) {
 				log.Println("QX", q)
 				return false
 			}
 		}
 	}
 
-	for k, v := range q.Headers {
+	for k, vs := range q.Headers {
 		if k == "Cookie" {
-			for ck, cv := range readCookies(v) {
-				if cookie, err := r.Cookie(ck); err != nil || cookie.Value != cv {
-					log.Println("CX", q)
-					return false
+			for _, v := range vs {
+				for ck, cv := range readCookies(v) {
+					if cookie, err := r.Cookie(ck); err != nil || cookie.Value != cv {
+						log.Println("CX", q)
+						return false
+					}
 				}
 			}
-		} else if r.Header.Get(k) != v {
+		} else if !slices.Contains(vs, r.Header.Get(k)) {
 			log.Println("HX", q)
+			return false
+		}
+	}
+
+	if r.Method == "POST" && r.URL.Path == "/api/v1/random-review-settings" {
+		bodyString, _ := json.Marshal(q.Body.Content)
+
+		if string(requestBody) != string(bodyString) {
+			log.Println("BX", string(requestBody), string(bodyString))
 			return false
 		}
 	}
@@ -134,24 +147,28 @@ func readCookies(s string) map[string]string {
 }
 
 type Response struct {
-	Status  int               `json:"status"`
-	Headers map[string]string `json:"headers"`
-	Body    interface{}       `json:"body"`
+	Status  int                 `json:"status"`
+	Headers map[string][]string `json:"headers"`
+	Body    struct {
+		Content interface{} `json:"content"`
+	} `json:"body"`
 }
 
 func (r Response) Send(w http.ResponseWriter) {
-	for k, v := range r.Headers {
-		w.Header().Add(k, v)
+	for k, vs := range r.Headers {
+		for _, v := range vs {
+			w.Header().Add(k, v)
+		}
 	}
 
 	w.WriteHeader(r.Status)
 
-	if sbody, ok := r.Body.(string); ok {
+	if sbody, ok := r.Body.Content.(string); ok {
 		if _, err := io.WriteString(w, sbody); err != nil {
 			log.Println(err)
 		}
 	} else {
-		if err := json.NewEncoder(w).Encode(r.Body); err != nil {
+		if err := json.NewEncoder(w).Encode(r.Body.Content); err != nil {
 			log.Println(err)
 		}
 	}
@@ -163,9 +180,10 @@ type Server struct {
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Printf("-> method=%s path=%s query=%s headers=%v body=%v\n", r.Method, r.URL.Path, r.URL.Query().Encode(), r.Header, nil)
+	requestBody, _ := io.ReadAll(r.Body)
 
 	for _, interaction := range s.interactions {
-		if interaction.Request.Match(r) {
+		if interaction.Request.Match(r, bytes.Trim(requestBody, "\n\r")) {
 			interaction.Response.Send(w)
 			return
 		}
