@@ -7,29 +7,14 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/pact-foundation/pact-go/dsl"
+	"github.com/pact-foundation/pact-go/v2/consumer"
+	"github.com/pact-foundation/pact-go/v2/matchers"
 	"github.com/stretchr/testify/assert"
 )
 
-type exampleAuthUser struct {
-	ID        int      `json:"id" pact:"example=123"`
-	Firstname string   `json:"firstname" pact:"example=system"`
-	Surname   string   `json:"surname" pact:"example=admin"`
-	Email     string   `json:"email" pact:"example=system.admin@opgtest.com"`
-	Roles     []string `json:"roles"`
-	Suspended bool     `json:"suspended" pact:"example=false"`
-}
-
 func TestUser(t *testing.T) {
-	pact := &dsl.Pact{
-		Consumer:          "sirius-user-management",
-		Provider:          "sirius",
-		Host:              "localhost",
-		PactFileWriteMode: "merge",
-		LogDir:            "../../logs",
-		PactDir:           "../../pacts",
-	}
-	defer pact.Teardown()
+	pact, err := newPact()
+	assert.NoError(t, err)
 
 	testCases := []struct {
 		name             string
@@ -44,14 +29,21 @@ func TestUser(t *testing.T) {
 					AddInteraction().
 					Given("User exists").
 					UponReceiving("A request for the user").
-					WithRequest(dsl.Request{
+					WithCompleteRequest(consumer.Request{
 						Method: http.MethodGet,
-						Path:   dsl.String("/api/v1/users/123"),
+						Path:   matchers.String("/api/v1/users/123"),
 					}).
-					WillRespondWith(dsl.Response{
+					WithCompleteResponse(consumer.Response{
 						Status:  http.StatusOK,
-						Headers: dsl.MapMatcher{"Content-Type": dsl.String("application/json")},
-						Body:    dsl.Match(&exampleAuthUser{}),
+						Headers: matchers.MapMatcher{"Content-Type": matchers.String("application/json")},
+						Body: matchers.Like(map[string]interface{}{
+							"id":        matchers.Like(123),
+							"firstname": matchers.Like("system"),
+							"surname":   matchers.Like("admin"),
+							"email":     matchers.Like("system.admin@opgtest.com"),
+							"roles":     matchers.EachLike("string", 1),
+							"suspended": matchers.Like(false),
+						}),
 					})
 			},
 			expectedResponse: AuthUser{
@@ -70,8 +62,8 @@ func TestUser(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			tc.setup()
 
-			assert.Nil(t, pact.Verify(func() error {
-				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
+			assert.Nil(t, pact.ExecuteTest(t, func(config consumer.MockServerConfig) error {
+				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://127.0.0.1:%d", config.Port))
 
 				users, err := client.User(Context{Context: context.Background()}, 123)
 				assert.Equal(t, tc.expectedResponse, users)

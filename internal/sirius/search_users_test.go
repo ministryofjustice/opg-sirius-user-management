@@ -6,20 +6,14 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/pact-foundation/pact-go/dsl"
+	"github.com/pact-foundation/pact-go/v2/consumer"
+	"github.com/pact-foundation/pact-go/v2/matchers"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestSearchUsers(t *testing.T) {
-	pact := &dsl.Pact{
-		Consumer:          "sirius-user-management",
-		Provider:          "sirius",
-		Host:              "localhost",
-		PactFileWriteMode: "merge",
-		LogDir:            "../../logs",
-		PactDir:           "../../pacts",
-	}
-	defer pact.Teardown()
+	pact, err := newPact()
+	assert.NoError(t, err)
 
 	testCases := []struct {
 		name             string
@@ -35,25 +29,25 @@ func TestSearchUsers(t *testing.T) {
 					AddInteraction().
 					Given("A user called Anton exists who is in a team").
 					UponReceiving("A search for Anton").
-					WithRequest(dsl.Request{
+					WithCompleteRequest(consumer.Request{
 						Method: http.MethodGet,
-						Path:   dsl.String("/api/v1/search/users"),
-						Query: dsl.MapMatcher{
-							"includeSuspended": dsl.String("1"),
-							"query":            dsl.String("anton"),
+						Path:   matchers.String("/api/v1/search/users"),
+						Query: matchers.MapMatcher{
+							"includeSuspended": matchers.String("1"),
+							"query":            matchers.String("anton"),
 						},
 					}).
-					WillRespondWith(dsl.Response{
+					WithCompleteResponse(consumer.Response{
 						Status:  http.StatusOK,
-						Headers: dsl.MapMatcher{"Content-Type": dsl.String("application/json")},
-						Body: dsl.EachLike(map[string]interface{}{
-							"id":          dsl.Like(47),
-							"displayName": dsl.String("Anton Mccoy"),
-							"surname":     dsl.String("Mccoy"),
-							"email":       dsl.String("anton.mccoy@opgtest.com"),
-							"suspended":   dsl.Like(false),
-							"teams": dsl.EachLike(map[string]interface{}{
-								"displayName": dsl.Like("my friendly team"),
+						Headers: matchers.MapMatcher{"Content-Type": matchers.String("application/json")},
+						Body: matchers.EachLike(map[string]interface{}{
+							"id":          matchers.Like(47),
+							"displayName": matchers.String("Anton Mccoy"),
+							"surname":     matchers.String("Mccoy"),
+							"email":       matchers.String("anton.mccoy@opgtest.com"),
+							"suspended":   matchers.Like(false),
+							"teams": matchers.EachLike(map[string]interface{}{
+								"displayName": matchers.Like("my friendly team"),
 							}, 1),
 						}, 1),
 					})
@@ -76,23 +70,23 @@ func TestSearchUsers(t *testing.T) {
 					AddInteraction().
 					Given("User exists").
 					UponReceiving("A search for admin users").
-					WithRequest(dsl.Request{
+					WithCompleteRequest(consumer.Request{
 						Method: http.MethodGet,
-						Path:   dsl.String("/api/v1/search/users"),
-						Query: dsl.MapMatcher{
-							"includeSuspended": dsl.String("1"),
-							"query":            dsl.String("admin"),
+						Path:   matchers.String("/api/v1/search/users"),
+						Query: matchers.MapMatcher{
+							"includeSuspended": matchers.String("1"),
+							"query":            matchers.String("admin"),
 						},
 					}).
-					WillRespondWith(dsl.Response{
+					WithCompleteResponse(consumer.Response{
 						Status:  http.StatusOK,
-						Headers: dsl.MapMatcher{"Content-Type": dsl.String("application/json")},
-						Body: dsl.EachLike(map[string]interface{}{
-							"id":          dsl.Like(47),
-							"displayName": dsl.String("system admin"),
-							"surname":     dsl.String("admin"),
-							"email":       dsl.String("system.admin@opgtest.com"),
-							"suspended":   dsl.Like(false),
+						Headers: matchers.MapMatcher{"Content-Type": matchers.String("application/json")},
+						Body: matchers.EachLike(map[string]interface{}{
+							"id":          matchers.Like(47),
+							"displayName": matchers.String("system admin"),
+							"surname":     matchers.String("admin"),
+							"email":       matchers.String("system.admin@opgtest.com"),
+							"suspended":   matchers.Like(false),
 						}, 1),
 					})
 			},
@@ -112,8 +106,8 @@ func TestSearchUsers(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			tc.setup()
 
-			assert.Nil(t, pact.Verify(func() error {
-				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
+			assert.Nil(t, pact.ExecuteTest(t, func(config consumer.MockServerConfig) error {
+				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://127.0.0.1:%d", config.Port))
 
 				users, err := client.SearchUsers(Context{Context: context.Background()}, tc.searchTerm)
 				assert.Equal(t, tc.expectedResponse, users)
