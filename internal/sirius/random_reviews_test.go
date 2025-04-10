@@ -6,22 +6,16 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/pact-foundation/pact-go/dsl"
+	"github.com/pact-foundation/pact-go/v2/consumer"
+	"github.com/pact-foundation/pact-go/v2/matchers"
 	"github.com/stretchr/testify/assert"
 )
 
 const UrlRandomReview = "/api/v1/random-review-settings"
 
 func TestRandomReviews(t *testing.T) {
-	pact := &dsl.Pact{
-		Consumer:          "sirius-user-management",
-		Provider:          "sirius",
-		Host:              "localhost",
-		PactFileWriteMode: "merge",
-		LogDir:            "../../logs",
-		PactDir:           "../../pacts",
-	}
-	defer pact.Teardown()
+	pact, err := newPact()
+	assert.NoError(t, err)
 
 	testCases := []struct {
 		name                  string
@@ -36,23 +30,23 @@ func TestRandomReviews(t *testing.T) {
 					AddInteraction().
 					Given("User exists").
 					UponReceiving("A request to get random reviews").
-					WithRequest(dsl.Request{
+					WithCompleteRequest(consumer.Request{
 						Method: http.MethodGet,
-						Path:   dsl.String(UrlRandomReview),
+						Path:   matchers.String(UrlRandomReview),
 					}).
-					WillRespondWith(dsl.Response{
+					WithCompleteResponse(consumer.Response{
 						Status:  http.StatusOK,
-						Headers: dsl.MapMatcher{"Content-Type": dsl.String("application/json")},
-						Body: dsl.Like(map[string]interface{}{
-							"layPercentage": dsl.Like(20),
-							"paPercentage": dsl.Like(30),
-							"reviewCycle":   dsl.Like(3),
+						Headers: matchers.MapMatcher{"Content-Type": matchers.String("application/json")},
+						Body: matchers.Like(map[string]interface{}{
+							"layPercentage": matchers.Like(20),
+							"paPercentage":  matchers.Like(30),
+							"reviewCycle":   matchers.Like(3),
 						}),
 					})
 			},
 			expectedRandomReviews: RandomReviews{
 				LayPercentage: 20,
-				PaPercentage: 30,
+				PaPercentage:  30,
 				ReviewCycle:   3,
 			},
 		},
@@ -62,8 +56,8 @@ func TestRandomReviews(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			tc.setup()
 
-			assert.Nil(t, pact.Verify(func() error {
-				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
+			assert.Nil(t, pact.ExecuteTest(t, func(config consumer.MockServerConfig) error {
+				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://127.0.0.1:%d", config.Port))
 
 				randomReviews, err := client.RandomReviews(Context{Context: context.Background()})
 				assert.Equal(t, tc.expectedRandomReviews, randomReviews)

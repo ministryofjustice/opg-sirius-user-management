@@ -14,10 +14,10 @@ unit-test: setup-directories
 	docker compose run --rm test-runner
 
 build:
-	docker compose build --parallel user-management pact-stub
+	docker compose build --parallel user-management
 
 build-all:
-	docker compose build --parallel user-management pact-stub
+	docker compose build --parallel user-management
 
 up:
 	docker compose up -d --build user-management
