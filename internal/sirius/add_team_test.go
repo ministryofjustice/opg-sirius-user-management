@@ -102,7 +102,7 @@ func TestAddTeam(t *testing.T) {
 						Method: http.MethodPost,
 						Path:   matchers.String("/api/v1/teams"),
 						Headers: matchers.MapMatcher{
-							"Content-Type": matchers.String("application/problem+json"),
+							"Content-Type": matchers.String("application/json"),
 						},
 						Body: map[string]interface{}{
 							"email":       "john.doehrfgjuerhujghejrhrgherjrghgjrehergeghrjkrghkerhgerjkhgerjkheghergkhgekrhgerherhjghkjerhgherghjkerhgekjherkjhgerhgjehherkjhgkjehrghrehgkjrehjkghrjkehgrehehgkjhrejghhehgkjerhegjrhegrjhrjkhgkrhrghrkjegrkjehrghjkerhgjkhergjhrjkerregjhrekjhrgrehjkg@example.com",
@@ -112,6 +112,9 @@ func TestAddTeam(t *testing.T) {
 					}).
 					WithCompleteResponse(consumer.Response{
 						Status: http.StatusBadRequest,
+						Headers: matchers.MapMatcher{
+							"Content-Type": matchers.String("application/problem+json"),
+						},
 						Body: matchers.Like(map[string]interface{}{
 							"validation_errors": matchers.Like(map[string]interface{}{
 								"email": matchers.Like(map[string]interface{}{

@@ -112,7 +112,7 @@ func TestEditTeam(t *testing.T) {
 						Method: http.MethodPut,
 						Path:   matchers.String("/api/v1/teams/65"),
 						Headers: matchers.MapMatcher{
-							"Content-Type": matchers.String("application/problem+json"),
+							"Content-Type": matchers.String("application/json"),
 						},
 						Body: map[string]interface{}{
 							"name":        "Test duplicate finance team",
@@ -124,6 +124,9 @@ func TestEditTeam(t *testing.T) {
 					}).
 					WithCompleteResponse(consumer.Response{
 						Status: http.StatusBadRequest,
+						Headers: matchers.MapMatcher{
+							"Content-Type": matchers.String("application/problem+json"),
+						},
 						Body: matchers.Like(map[string]interface{}{
 							"validation_errors": matchers.Like(map[string]interface{}{
 								"type": matchers.Like(map[string]interface{}{
