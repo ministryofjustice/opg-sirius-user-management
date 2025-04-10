@@ -6,28 +6,14 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/pact-foundation/pact-go/dsl"
+	"github.com/pact-foundation/pact-go/v2/consumer"
+	"github.com/pact-foundation/pact-go/v2/matchers"
 	"github.com/stretchr/testify/assert"
 )
 
-type editTeamErrorsResponse struct {
-	Errors *struct {
-		TeamType *struct {
-			Error string `json:"error" pact:"example=Invalid team type"`
-		} `json:"type"`
-	} `json:"validation_errors"`
-}
-
 func TestEditTeam(t *testing.T) {
-	pact := &dsl.Pact{
-		Consumer:          "sirius-user-management",
-		Provider:          "sirius",
-		Host:              "localhost",
-		PactFileWriteMode: "merge",
-		LogDir:            "../../logs",
-		PactDir:           "../../pacts",
-	}
-	defer pact.Teardown()
+	pact, err := newPact()
+	assert.NoError(t, err)
 
 	testCases := []struct {
 		name          string
@@ -49,11 +35,11 @@ func TestEditTeam(t *testing.T) {
 					AddInteraction().
 					Given("Supervision team with members exists").
 					UponReceiving("A request to edit the team").
-					WithRequest(dsl.Request{
+					WithCompleteRequest(consumer.Request{
 						Method: http.MethodPut,
-						Path:   dsl.String("/api/v1/teams/65"),
-						Headers: dsl.MapMatcher{
-							"Content-Type": dsl.String("application/json"),
+						Path:   matchers.String("/api/v1/teams/65"),
+						Headers: matchers.MapMatcher{
+							"Content-Type": matchers.String("application/json"),
 						},
 						Body: map[string]interface{}{
 							"email":       "test.team@opgtest.com",
@@ -63,7 +49,7 @@ func TestEditTeam(t *testing.T) {
 							"memberIds":   []int{},
 						},
 					}).
-					WillRespondWith(dsl.Response{
+					WithCompleteResponse(consumer.Response{
 						Status: http.StatusOK,
 					})
 			},
@@ -90,11 +76,11 @@ func TestEditTeam(t *testing.T) {
 					AddInteraction().
 					Given("Supervision team with members exists").
 					UponReceiving("A request to edit the team with members").
-					WithRequest(dsl.Request{
+					WithCompleteRequest(consumer.Request{
 						Method: http.MethodPut,
-						Path:   dsl.String("/api/v1/teams/65"),
-						Headers: dsl.MapMatcher{
-							"Content-Type": dsl.String("application/json"),
+						Path:   matchers.String("/api/v1/teams/65"),
+						Headers: matchers.MapMatcher{
+							"Content-Type": matchers.String("application/json"),
 						},
 						Body: map[string]interface{}{
 							"email":       "test.team@opgtest.com",
@@ -104,7 +90,7 @@ func TestEditTeam(t *testing.T) {
 							"memberIds":   []int{23},
 						},
 					}).
-					WillRespondWith(dsl.Response{
+					WithCompleteResponse(consumer.Response{
 						Status: http.StatusOK,
 					})
 			},
@@ -122,11 +108,11 @@ func TestEditTeam(t *testing.T) {
 					AddInteraction().
 					Given("Supervision team with members exists").
 					UponReceiving("A request to edit the team with a non-unique type").
-					WithRequest(dsl.Request{
+					WithCompleteRequest(consumer.Request{
 						Method: http.MethodPut,
-						Path:   dsl.String("/api/v1/teams/65"),
-						Headers: dsl.MapMatcher{
-							"Content-Type": dsl.String("application/json"),
+						Path:   matchers.String("/api/v1/teams/65"),
+						Headers: matchers.MapMatcher{
+							"Content-Type": matchers.String("application/problem+json"),
 						},
 						Body: map[string]interface{}{
 							"name":        "Test duplicate finance team",
@@ -136,9 +122,15 @@ func TestEditTeam(t *testing.T) {
 							"memberIds":   []int{},
 						},
 					}).
-					WillRespondWith(dsl.Response{
+					WithCompleteResponse(consumer.Response{
 						Status: http.StatusBadRequest,
-						Body:   dsl.Match(editTeamErrorsResponse{}),
+						Body: matchers.Like(map[string]interface{}{
+							"validation_errors": matchers.Like(map[string]interface{}{
+								"type": matchers.Like(map[string]interface{}{
+									"error": matchers.Like("Invalid team type"),
+								}),
+							}),
+						}),
 					})
 			},
 			expectedError: func(port int) error {
@@ -157,12 +149,12 @@ func TestEditTeam(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			tc.setup()
 
-			assert.Nil(t, pact.Verify(func() error {
-				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
+			assert.Nil(t, pact.ExecuteTest(t, func(config consumer.MockServerConfig) error {
+				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://127.0.0.1:%d", config.Port))
 
 				err := client.EditTeam(Context{Context: context.Background()}, tc.team)
 
-				assert.Equal(t, tc.expectedError(pact.Server.Port), err)
+				assert.Equal(t, tc.expectedError(config.Port), err)
 				return nil
 			}))
 		})

@@ -5,6 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/pact-foundation/pact-go/v2/consumer"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -22,6 +23,26 @@ func invalidJSONServer() *httptest.Server {
 			_, _ = w.Write([]byte("1a is not valid json"))
 		}),
 	)
+}
+
+func newPact() (*consumer.V4HTTPMockProvider, error) {
+	return consumer.NewV4Pact(consumer.MockHTTPProviderConfig{
+		Consumer: "sirius-user-management",
+		Provider: "sirius",
+		Host:     "127.0.0.1",
+		LogDir:   "../../logs",
+		PactDir:  "../../pacts",
+	})
+}
+
+func newIgnoredPact() (*consumer.V4HTTPMockProvider, error) {
+	return consumer.NewV4Pact(consumer.MockHTTPProviderConfig{
+		Consumer: "ignored",
+		Provider: "ignored",
+		Host:     "127.0.0.1",
+		LogDir:   "../../logs",
+		PactDir:  "../../pacts",
+	})
 }
 
 func TestClientError(t *testing.T) {
