@@ -6,7 +6,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/pact-foundation/pact-go/dsl"
+	"github.com/pact-foundation/pact-go/v2/consumer"
+	"github.com/pact-foundation/pact-go/v2/matchers"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -15,15 +16,8 @@ func TestTeamsIgnoredPact(t *testing.T) {
 	// responses containing a mix of LPA and Supervision teams, and Pact not
 	// having a way to match arrays containing either type. We still want to
 	// produce a contract that can be used for mocking responses though.
-	pact := &dsl.Pact{
-		Consumer:          "ignored",
-		Provider:          "ignored",
-		Host:              "localhost",
-		PactFileWriteMode: "merge",
-		LogDir:            "../../logs",
-		PactDir:           "../../pacts",
-	}
-	defer pact.Teardown()
+	pact, err := newIgnoredPact()
+	assert.NoError(t, err)
 
 	testCases := []struct {
 		name             string
@@ -38,21 +32,21 @@ func TestTeamsIgnoredPact(t *testing.T) {
 					AddInteraction().
 					Given("User exists").
 					UponReceiving("A request for teams").
-					WithRequest(dsl.Request{
+					WithCompleteRequest(consumer.Request{
 						Method: http.MethodGet,
-						Path:   dsl.String("/api/v1/teams"),
+						Path:   matchers.String("/api/v1/teams"),
 					}).
-					WillRespondWith(dsl.Response{
+					WithCompleteResponse(consumer.Response{
 						Status:  http.StatusOK,
-						Headers: dsl.MapMatcher{"Content-Type": dsl.String("application/json")},
-						Body: dsl.EachLike(map[string]interface{}{
-							"id":          dsl.Like(123),
-							"displayName": dsl.Like("Cool Team"),
-							"members": dsl.EachLike(map[string]interface{}{
-								"displayName": dsl.Like("John"),
-								"email":       dsl.Like("john@opgtest.com"),
+						Headers: matchers.MapMatcher{"Content-Type": matchers.String("application/json")},
+						Body: matchers.EachLike(map[string]interface{}{
+							"id":          matchers.Like(123),
+							"displayName": matchers.Like("Cool Team"),
+							"members": matchers.EachLike(map[string]interface{}{
+								"displayName": matchers.Like("John"),
+								"email":       matchers.Like("john@opgtest.com"),
 							}, 1),
-							"teamType": dsl.Like(map[string]interface{}{
+							"teamType": matchers.Like(map[string]interface{}{
 								"handle": "ALLOCATIONS",
 								"label":  "Allocations",
 							}),
@@ -82,19 +76,19 @@ func TestTeamsIgnoredPact(t *testing.T) {
 					AddInteraction().
 					Given("User exists and teams have no type").
 					UponReceiving("A request for teams").
-					WithRequest(dsl.Request{
+					WithCompleteRequest(consumer.Request{
 						Method: http.MethodGet,
-						Path:   dsl.String("/api/v1/teams"),
+						Path:   matchers.String("/api/v1/teams"),
 					}).
-					WillRespondWith(dsl.Response{
+					WithCompleteResponse(consumer.Response{
 						Status:  http.StatusOK,
-						Headers: dsl.MapMatcher{"Content-Type": dsl.String("application/json")},
-						Body: dsl.EachLike(map[string]interface{}{
-							"id":          dsl.Like(123),
-							"displayName": dsl.Like("Cool Team"),
-							"members": dsl.EachLike(map[string]interface{}{
-								"displayName": dsl.Like("John"),
-								"email":       dsl.Like("john@opgtest.com"),
+						Headers: matchers.MapMatcher{"Content-Type": matchers.String("application/json")},
+						Body: matchers.EachLike(map[string]interface{}{
+							"id":          matchers.Like(123),
+							"displayName": matchers.Like("Cool Team"),
+							"members": matchers.EachLike(map[string]interface{}{
+								"displayName": matchers.Like("John"),
+								"email":       matchers.Like("john@opgtest.com"),
 							}, 1),
 						}, 1),
 					})
@@ -120,8 +114,8 @@ func TestTeamsIgnoredPact(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			tc.setup()
 
-			assert.Nil(t, pact.Verify(func() error {
-				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
+			assert.Nil(t, pact.ExecuteTest(t, func(config consumer.MockServerConfig) error {
+				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://127.0.0.1:%d", config.Port))
 
 				users, err := client.Teams(Context{Context: context.Background()})
 				assert.Equal(t, tc.expectedResponse, users)

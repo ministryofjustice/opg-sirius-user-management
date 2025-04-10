@@ -6,28 +6,14 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/pact-foundation/pact-go/dsl"
+	"github.com/pact-foundation/pact-go/v2/consumer"
+	"github.com/pact-foundation/pact-go/v2/matchers"
 	"github.com/stretchr/testify/assert"
 )
 
-type addUserBadRequestResponse struct {
-	ErrorMessages *struct {
-		Email *struct {
-			EmailAddressLengthExceeded string `json:"emailAddressLengthExceeded" pact:"example=The input is more than 255 characters long"`
-		} `json:"email"`
-	} `json:"validation_errors"`
-}
-
 func TestAddUser(t *testing.T) {
-	pact := &dsl.Pact{
-		Consumer:          "sirius-user-management",
-		Provider:          "sirius",
-		Host:              "localhost",
-		PactFileWriteMode: "merge",
-		LogDir:            "../../logs",
-		PactDir:           "../../pacts",
-	}
-	defer pact.Teardown()
+	pact, err := newPact()
+	assert.NoError(t, err)
 
 	testCases := []struct {
 		name          string
@@ -46,11 +32,11 @@ func TestAddUser(t *testing.T) {
 					AddInteraction().
 					Given("An admin user").
 					UponReceiving("A request to add a new user").
-					WithRequest(dsl.Request{
+					WithCompleteRequest(consumer.Request{
 						Method: http.MethodPost,
-						Path:   dsl.String("/api/v1/users"),
-						Headers: dsl.MapMatcher{
-							"Content-Type": dsl.String("application/json"),
+						Path:   matchers.String("/api/v1/users"),
+						Headers: matchers.MapMatcher{
+							"Content-Type": matchers.String("application/json"),
 						},
 						Body: map[string]interface{}{
 							"firstname": "John",
@@ -59,7 +45,7 @@ func TestAddUser(t *testing.T) {
 							"roles":     []string{"COP User", "other1", "other2"},
 						},
 					}).
-					WillRespondWith(dsl.Response{
+					WithCompleteResponse(consumer.Response{
 						Status: http.StatusCreated,
 					})
 			},
@@ -76,11 +62,11 @@ func TestAddUser(t *testing.T) {
 					AddInteraction().
 					Given("An admin user").
 					UponReceiving("A request to add a new user errors").
-					WithRequest(dsl.Request{
+					WithCompleteRequest(consumer.Request{
 						Method: http.MethodPost,
-						Path:   dsl.String("/api/v1/users"),
-						Headers: dsl.MapMatcher{
-							"Content-Type": dsl.String("application/json"),
+						Path:   matchers.String("/api/v1/users"),
+						Headers: matchers.MapMatcher{
+							"Content-Type": matchers.String("application/json"),
 						},
 						Body: map[string]interface{}{
 							"firstname": "John",
@@ -89,9 +75,18 @@ func TestAddUser(t *testing.T) {
 							"roles":     []string{"COP User", "other1", "other2"},
 						},
 					}).
-					WillRespondWith(dsl.Response{
+					WithCompleteResponse(consumer.Response{
 						Status: http.StatusBadRequest,
-						Body:   dsl.Match(addUserBadRequestResponse{}),
+						Headers: matchers.MapMatcher{
+							"Content-Type": matchers.String("application/problem+json"),
+						},
+						Body: matchers.Like(map[string]interface{}{
+							"validation_errors": matchers.Like(map[string]interface{}{
+								"email": matchers.Like(map[string]interface{}{
+									"emailAddressLengthExceeded": matchers.Like("The input is more than 255 characters long"),
+								}),
+							}),
+						}),
 					})
 			},
 			firstName:    "John",
@@ -113,8 +108,8 @@ func TestAddUser(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			tc.setup()
 
-			assert.Nil(t, pact.Verify(func() error {
-				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
+			assert.Nil(t, pact.ExecuteTest(t, func(config consumer.MockServerConfig) error {
+				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://127.0.0.1:%d", config.Port))
 
 				err := client.AddUser(Context{Context: context.Background()}, tc.email, tc.firstName, tc.lastName, tc.organisation, tc.roles)
 				assert.Equal(t, tc.expectedError, err)
