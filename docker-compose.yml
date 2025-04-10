@@ -34,13 +34,11 @@ services:
     command: golangci-lint run -v --timeout 5m --enable gosec --output.text.path stdout --output.sarif.path test-results/golangci-lint.sarif
 
   pact-stub:
-    build: docker/pact-stub
+    image: pactfoundation/pact-stub-server:0.6.0
     ports: ["8080:8080"]
-    environment:
-      PACT_DIR: ./pacts
-      PORT: 8080
     volumes:
-      - ./pacts:/app/pacts
+      - ./pacts:/tmp/pacts
+    command: --port 8080 --dir /tmp/pacts -l trace
 
   pact-cli:
     image: pactfoundation/pact-cli:1.4.0.5

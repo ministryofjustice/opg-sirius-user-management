@@ -30,8 +30,8 @@ func TestEditLayPercentage(t *testing.T) {
 		{
 			name:          "Lay percentage - validation errors",
 			layPercentage: "200",
-			paPercentage:  "10",
-			proPercentage: "18",
+			paPercentage:  "30",
+			proPercentage: "0",
 			reviewCycle:   "3",
 			setup: func() {
 				pact.
@@ -43,8 +43,8 @@ func TestEditLayPercentage(t *testing.T) {
 						Path:   matchers.String(UrlRoute),
 						Body: map[string]interface{}{
 							"layPercentage": "200",
-							"paPercentage":  "10",
-							"proPercentage": "18",
+							"paPercentage":  "30",
+							"proPercentage": "0",
 							"reviewCycle":   "3",
 						},
 					}).
