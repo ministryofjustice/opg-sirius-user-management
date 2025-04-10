@@ -6,38 +6,17 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/pact-foundation/pact-go/dsl"
+	"github.com/pact-foundation/pact-go/v2/consumer"
+	"github.com/pact-foundation/pact-go/v2/matchers"
 	"github.com/stretchr/testify/assert"
 )
-
-type editLayPercentageBadRequestResponse struct {
-	Status int    `json:"status" pact:"example=400"`
-	Detail string `json:"detail" pact:"example=Enter a percentage between 0 and 100 for lay cases"`
-}
-
-type editPaPercentageBadRequestResponse struct {
-	Status int    `json:"status" pact:"example=400"`
-	Detail string `json:"detail" pact:"example=Enter a percentage between 0 and 100 for PA cases"`
-}
-
-type editProPercentageBadRequestResponse struct {
-	Status int    `json:"status" pact:"example=400"`
-	Detail string `json:"detail" pact:"example=Enter a percentage between 0 and 100 for Pro cases"`
-}
 
 const UserExists = "User exists"
 const UrlRoute = "/api/v1/random-review-settings"
 
 func TestEditLayPercentage(t *testing.T) {
-	pact := &dsl.Pact{
-		Consumer:          "sirius-user-management",
-		Provider:          "sirius",
-		Host:              "localhost",
-		PactFileWriteMode: "merge",
-		LogDir:            "../../logs",
-		PactDir:           "../../pacts",
-	}
-	defer pact.Teardown()
+	pact, err := newPact()
+	assert.NoError(t, err)
 
 	testCases := []struct {
 		name          string
@@ -51,28 +30,31 @@ func TestEditLayPercentage(t *testing.T) {
 		{
 			name:          "Lay percentage - validation errors",
 			layPercentage: "200",
-			paPercentage:  "10",
-			proPercentage: "18",
+			paPercentage:  "30",
+			proPercentage: "0",
 			reviewCycle:   "3",
 			setup: func() {
 				pact.
 					AddInteraction().
 					Given(UserExists).
 					UponReceiving("A request to edit the lay percentage errors on validation").
-					WithRequest(dsl.Request{
+					WithCompleteRequest(consumer.Request{
 						Method: http.MethodPost,
-						Path:   dsl.String(UrlRoute),
+						Path:   matchers.String(UrlRoute),
 						Body: map[string]interface{}{
 							"layPercentage": "200",
-							"paPercentage":  "10",
-							"proPercentage": "18",
+							"paPercentage":  "30",
+							"proPercentage": "0",
 							"reviewCycle":   "3",
 						},
 					}).
-					WillRespondWith(dsl.Response{
+					WithCompleteResponse(consumer.Response{
 						Status:  http.StatusBadRequest,
-						Headers: dsl.MapMatcher{"Content-Type": dsl.String("application/problem+json")},
-						Body:    dsl.Match(editLayPercentageBadRequestResponse{}),
+						Headers: matchers.MapMatcher{"Content-Type": matchers.String("application/problem+json")},
+						Body: matchers.Like(map[string]interface{}{
+							"status": matchers.Like(400),
+							"detail": matchers.Like("Enter a percentage between 0 and 100 for lay cases"),
+						}),
 					})
 			},
 			expectedError: ValidationError{
@@ -90,11 +72,11 @@ func TestEditLayPercentage(t *testing.T) {
 					AddInteraction().
 					Given(UserExists).
 					UponReceiving("A request to edit the lay percentage").
-					WithRequest(dsl.Request{
+					WithCompleteRequest(consumer.Request{
 						Method: http.MethodPost,
-						Path:   dsl.String(UrlRoute),
-						Headers: dsl.MapMatcher{
-							"Content-Type": dsl.String("application/json"),
+						Path:   matchers.String(UrlRoute),
+						Headers: matchers.MapMatcher{
+							"Content-Type": matchers.String("application/json"),
 						},
 						Body: map[string]interface{}{
 							"layPercentage": "20",
@@ -103,7 +85,7 @@ func TestEditLayPercentage(t *testing.T) {
 							"reviewCycle":   "3",
 						},
 					}).
-					WillRespondWith(dsl.Response{
+					WithCompleteResponse(consumer.Response{
 						Status: http.StatusOK,
 					})
 			},
@@ -120,9 +102,9 @@ func TestEditLayPercentage(t *testing.T) {
 					AddInteraction().
 					Given(UserExists).
 					UponReceiving("A request to edit the PA percentage errors on validation").
-					WithRequest(dsl.Request{
+					WithCompleteRequest(consumer.Request{
 						Method: http.MethodPost,
-						Path:   dsl.String(UrlRoute),
+						Path:   matchers.String(UrlRoute),
 						Body: map[string]interface{}{
 							"layPercentage": "20",
 							"paPercentage":  "1000",
@@ -130,10 +112,13 @@ func TestEditLayPercentage(t *testing.T) {
 							"reviewCycle":   "3",
 						},
 					}).
-					WillRespondWith(dsl.Response{
+					WithCompleteResponse(consumer.Response{
 						Status:  http.StatusBadRequest,
-						Headers: dsl.MapMatcher{"Content-Type": dsl.String("application/problem+json")},
-						Body:    dsl.Match(editPaPercentageBadRequestResponse{}),
+						Headers: matchers.MapMatcher{"Content-Type": matchers.String("application/problem+json")},
+						Body: matchers.Like(map[string]interface{}{
+							"status": matchers.Like(400),
+							"detail": matchers.Like("Enter a percentage between 0 and 100 for PA cases"),
+						}),
 					})
 			},
 			expectedError: ValidationError{
@@ -151,11 +136,11 @@ func TestEditLayPercentage(t *testing.T) {
 					AddInteraction().
 					Given(UserExists).
 					UponReceiving("A request to edit the PA percentage").
-					WithRequest(dsl.Request{
+					WithCompleteRequest(consumer.Request{
 						Method: http.MethodPost,
-						Path:   dsl.String(UrlRoute),
-						Headers: dsl.MapMatcher{
-							"Content-Type": dsl.String("application/json"),
+						Path:   matchers.String(UrlRoute),
+						Headers: matchers.MapMatcher{
+							"Content-Type": matchers.String("application/json"),
 						},
 						Body: map[string]interface{}{
 							"layPercentage": "20",
@@ -164,7 +149,7 @@ func TestEditLayPercentage(t *testing.T) {
 							"reviewCycle":   "3",
 						},
 					}).
-					WillRespondWith(dsl.Response{
+					WithCompleteResponse(consumer.Response{
 						Status: http.StatusOK,
 					})
 			},
@@ -181,9 +166,9 @@ func TestEditLayPercentage(t *testing.T) {
 					AddInteraction().
 					Given(UserExists).
 					UponReceiving("A request to edit the PRO percentage errors on validation").
-					WithRequest(dsl.Request{
+					WithCompleteRequest(consumer.Request{
 						Method: http.MethodPost,
-						Path:   dsl.String(UrlRoute),
+						Path:   matchers.String(UrlRoute),
 						Body: map[string]interface{}{
 							"layPercentage": "20",
 							"paPercentage":  "50",
@@ -191,10 +176,13 @@ func TestEditLayPercentage(t *testing.T) {
 							"reviewCycle":   "3",
 						},
 					}).
-					WillRespondWith(dsl.Response{
+					WithCompleteResponse(consumer.Response{
 						Status:  http.StatusBadRequest,
-						Headers: dsl.MapMatcher{"Content-Type": dsl.String("application/problem+json")},
-						Body:    dsl.Match(editProPercentageBadRequestResponse{}),
+						Headers: matchers.MapMatcher{"Content-Type": matchers.String("application/problem+json")},
+						Body: matchers.Like(map[string]interface{}{
+							"status": matchers.Like(400),
+							"detail": matchers.Like("Enter a percentage between 0 and 100 for Pro cases"),
+						}),
 					})
 			},
 			expectedError: ValidationError{
@@ -212,11 +200,11 @@ func TestEditLayPercentage(t *testing.T) {
 					AddInteraction().
 					Given(UserExists).
 					UponReceiving("A request to edit the PRO percentage").
-					WithRequest(dsl.Request{
+					WithCompleteRequest(consumer.Request{
 						Method: http.MethodPost,
-						Path:   dsl.String(UrlRoute),
-						Headers: dsl.MapMatcher{
-							"Content-Type": dsl.String("application/json"),
+						Path:   matchers.String(UrlRoute),
+						Headers: matchers.MapMatcher{
+							"Content-Type": matchers.String("application/json"),
 						},
 						Body: map[string]interface{}{
 							"layPercentage": "20",
@@ -225,7 +213,7 @@ func TestEditLayPercentage(t *testing.T) {
 							"reviewCycle":   "3",
 						},
 					}).
-					WillRespondWith(dsl.Response{
+					WithCompleteResponse(consumer.Response{
 						Status: http.StatusOK,
 					})
 			},
@@ -242,11 +230,11 @@ func TestEditLayPercentage(t *testing.T) {
 					AddInteraction().
 					Given(UserExists).
 					UponReceiving("A request to edit the review cycle").
-					WithRequest(dsl.Request{
+					WithCompleteRequest(consumer.Request{
 						Method: http.MethodPost,
-						Path:   dsl.String(UrlRoute),
-						Headers: dsl.MapMatcher{
-							"Content-Type": dsl.String("application/json"),
+						Path:   matchers.String(UrlRoute),
+						Headers: matchers.MapMatcher{
+							"Content-Type": matchers.String("application/json"),
 						},
 						Body: map[string]interface{}{
 							"layPercentage": "20",
@@ -255,7 +243,7 @@ func TestEditLayPercentage(t *testing.T) {
 							"reviewCycle":   "5",
 						},
 					}).
-					WillRespondWith(dsl.Response{
+					WithCompleteResponse(consumer.Response{
 						Status: http.StatusOK,
 					})
 			},
@@ -267,8 +255,8 @@ func TestEditLayPercentage(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			tc.setup()
 
-			assert.Nil(t, pact.Verify(func() error {
-				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://localhost:%d", pact.Server.Port))
+			assert.Nil(t, pact.ExecuteTest(t, func(config consumer.MockServerConfig) error {
+				client, _ := NewClient(http.DefaultClient, fmt.Sprintf("http://127.0.0.1:%d", config.Port))
 				data := EditRandomReview{tc.layPercentage, tc.paPercentage, tc.proPercentage, tc.reviewCycle}
 
 				err := client.EditRandomReviewSettings(Context{Context: context.Background()}, data)
