@@ -72,7 +72,7 @@ func TestEditUser(t *testing.T) {
 						Method: http.MethodPut,
 						Path:   matchers.String("/api/v1/users/123"),
 						Headers: matchers.MapMatcher{
-							"Content-Type": matchers.String("application/json"),
+							"Content-Type": matchers.String("application/problem+json"),
 						},
 						Body: map[string]interface{}{
 							"id":        123,

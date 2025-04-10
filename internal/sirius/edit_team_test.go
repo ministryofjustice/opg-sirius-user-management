@@ -112,7 +112,7 @@ func TestEditTeam(t *testing.T) {
 						Method: http.MethodPut,
 						Path:   matchers.String("/api/v1/teams/65"),
 						Headers: matchers.MapMatcher{
-							"Content-Type": matchers.String("application/json"),
+							"Content-Type": matchers.String("application/problem+json"),
 						},
 						Body: map[string]interface{}{
 							"name":        "Test duplicate finance team",

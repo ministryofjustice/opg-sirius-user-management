@@ -102,7 +102,7 @@ func TestAddTeam(t *testing.T) {
 						Method: http.MethodPost,
 						Path:   matchers.String("/api/v1/teams"),
 						Headers: matchers.MapMatcher{
-							"Content-Type": matchers.String("application/json"),
+							"Content-Type": matchers.String("application/problem+json"),
 						},
 						Body: map[string]interface{}{
 							"email":       "john.doehrfgjuerhujghejrhrgherjrghgjrehergeghrjkrghkerhgerjkhgerjkheghergkhgekrhgerherhjghkjerhgherghjkerhgekjherkjhgerhgjehherkjhgkjehrghrehgkjrehjkghrjkehgrehehgkjhrejghhehgkjerhegjrhegrjhrjkhgkrhrghrkjegrkjehrghjkerhgjkhergjhrjkerregjhrekjhrgrehjkg@example.com",
