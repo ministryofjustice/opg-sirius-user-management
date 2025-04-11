@@ -4,11 +4,11 @@ services:
     build:
       dockerfile: docker/sirius-user-management/Dockerfile
     depends_on:
-      - pact-stub
+      - sirius-mock
     ports: ["8888:8888"]
     environment:
       PORT: 8888
-      SIRIUS_URL: http://pact-stub:8080
+      SIRIUS_URL: http://sirius-mock:8080
       SIRIUS_PUBLIC_URL: http://localhost:8080
 
   cypress:
@@ -16,11 +16,11 @@ services:
     command: run --browser chrome
     entrypoint: cypress
     depends_on:
-      - pact-stub
       - user-management
     environment:
       - CYPRESS_BASE_URL=http://user-management:8888
       - CYPRESS_VIDEO=false
+      - CYPRESS_MOCK_SERVER_URI=http://sirius-mock:8080
     working_dir: /e2e
     volumes:
       - ./:/e2e
@@ -33,14 +33,11 @@ services:
       - ./.cache/golangci-lint/v1.53.3:/root/.cache
     command: golangci-lint run -v --timeout 5m --enable gosec --output.text.path stdout --output.sarif.path test-results/golangci-lint.sarif
 
-  pact-stub:
-    build: docker/pact-stub
-    ports: ["8080:8080"]
-    environment:
-      PACT_DIR: ./pacts
-      PORT: 8080
+  sirius-mock:
+    image: wiremock/wiremock:3.12.1
+    ports: ["8563:8080"]
     volumes:
-      - ./pacts:/app/pacts
+      - "./cypress/mocks:/home/wiremock/mappings"
 
   pact-cli:
     image: pactfoundation/pact-cli:1.4.0.5

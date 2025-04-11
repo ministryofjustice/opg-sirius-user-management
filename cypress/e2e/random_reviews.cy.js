@@ -1,5 +1,17 @@
 describe("Random Reviews", () => {
   beforeEach(() => {
+    cy.setupPermissions({ "v1-random-review-settings": ["get", "post"] });
+
+    cy.addMock("/api/v1/random-review-settings", "GET", {
+      status: 200,
+      body: {
+        layPercentage: 20,
+        paPercentage: 30,
+        proPercentage: 0,
+        reviewCycle: 3,
+      },
+    });
+
     cy.visit("/random-reviews");
   });
 
@@ -43,6 +55,15 @@ describe("Random Reviews", () => {
     it("throws an error after inputting the incorrect value", () => {
       cy.get("#hook-layPercentageChange").contains("Change").click();
       cy.get("#f-layPercentage").clear().type("200");
+
+      cy.addMock("/api/v1/random-review-settings", "POST", {
+        status: 400,
+        body: {
+          detail: "Enter a percentage between 0 and 100 for lay cases",
+          status: 400,
+        },
+      });
+
       cy.get("button[type=submit]").click();
       cy.contains(
         "#name-error",
