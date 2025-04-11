@@ -26,6 +26,6 @@ describe("Edit my details", () => {
 
     cy.get("button[type=submit]").click();
 
-    cy.contains(".moj-banner", "You have successfully edited your details.");
+    cy.contains(".moj-alert", "You have successfully edited your details.");
   });
 });

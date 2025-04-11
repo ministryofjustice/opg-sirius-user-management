@@ -40,6 +40,6 @@ describe("Edit user", () => {
 
     cy.get("button[type=submit]").click();
 
-    cy.contains(".moj-banner", "You have successfully edited a user.");
+    cy.contains(".moj-alert", "You have successfully edited a user.");
   });
 });

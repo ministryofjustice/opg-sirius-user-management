@@ -23,6 +23,6 @@ describe("Add user", () => {
 
     cy.get("button[type=submit]").click();
 
-    cy.contains(".moj-banner", "You have successfully added a new user.");
+    cy.contains(".moj-alert", "You have successfully added a new user.");
   });
 });
