@@ -54,9 +54,6 @@ describe("Edit a team", () => {
 
     cy.get("button[type=submit]").click();
 
-    cy.contains(
-      ".moj-banner",
-      "You have successfully edited Allocations team."
-    );
+    cy.contains(".moj-alert", "You have successfully edited Allocations team.");
   });
 });
