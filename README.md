@@ -26,7 +26,7 @@ following features:
 make up
 ```
 
-This will run the application at http://localhost:8888/ and will be running against the pact-stub, ensure you have ran the unit tests first to generate the pact files.
+This will run the application at http://localhost:8888/ and will be running against the Sirius mock, ensure you have ran the unit tests first to generate the pact files.
 
 To run the application against local Sirius `make build` and then in the Sirius repo `make dev-up`
 
@@ -41,18 +41,14 @@ SIRIUS_PUBLIC_URL=http://localhost:8080 SIRIUS_URL=http://localhost:8080 PORT=88
 make unit-test
 ```
 
-The tests will produce a `./pacts` directory which is then used to provide a
-stub service for the Cypress tests. To start the application in a way that uses
-the stub service, and open Cypress in the current project run the following:
+The tests will produce a `./pacts` directory which is uploaded to the Pact
+Broker.
+
+We also have Cypress tests, which use Wiremock to mock calls to Sirius. Each
+mocked request is set up within the test itself.
 
 ```
 make cypress
-```
-
-Note that tests can get cached, causing the pacts not to get regenerated when they should. If the pacts are not behaving as expected, its recommended to force a rebuild by doing: 
-
-```
-docker compose restart pact-stub
 ```
 
 ## Development

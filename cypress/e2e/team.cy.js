@@ -1,12 +1,32 @@
 describe("Team", () => {
   beforeEach(() => {
-    cy.visit("/teams/65");
+    cy.setupPermissions({ "v1-teams": ["put"] });
+
+    cy.addMock("/api/v1/teams/14", "GET", {
+      status: 200,
+      body: {
+        id: 748,
+        displayName: "Finance Team",
+        members: [
+          {
+            displayName: "John Ruecker",
+            email: "j.ruecker1@opg.example",
+          },
+        ],
+      },
+    });
+
+    cy.visit("/teams/14");
+  });
+
+  it("shows team name", () => {
+    cy.contains("h1", "Finance Team");
   });
 
   it("shows team members", () => {
     cy.get(".govuk-table__row").should("have.length", 2);
 
-    const expected = ["Select", "John", "john@opgtest.com"];
+    const expected = ["Select", "John", "j.ruecker1@opg.example"];
 
     cy.get(".govuk-table__body > .govuk-table__row")
       .children()

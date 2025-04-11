@@ -1,5 +1,15 @@
 describe("Delete user", () => {
   beforeEach(() => {
+    cy.setupPermissions({ "v1-users": ["put", "delete"] });
+
+    cy.addMock("/api/v1/users/123", "GET", {
+      status: 200,
+      body: {
+        firstname: "system",
+        surname: "admin",
+      },
+    });
+
     cy.visit("/delete-user/123");
   });
 
@@ -8,6 +18,11 @@ describe("Delete user", () => {
       "contain",
       "Are you sure you want to delete system admin?"
     );
+
+    cy.addMock("/api/v1/users/123", "DELETE", {
+      status: 200,
+    });
+
     cy.get("button[type=submit]").contains("Delete user").click();
 
     cy.get('a[href*="/users"]').contains("Continue").click();
