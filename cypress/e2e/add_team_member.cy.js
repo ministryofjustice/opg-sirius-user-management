@@ -53,7 +53,7 @@ describe("Add team member", () => {
     cy.contains("button", "Add to team").click();
 
     cy.contains(
-      ".moj-banner",
+      ".moj-alert",
       "You have successfully added system.admin@opgtest.com to the team."
     );
   });
