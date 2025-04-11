@@ -1,5 +1,11 @@
 describe("Feedback", () => {
   beforeEach(() => {
+    cy.setupPermissions();
+
+    cy.addMock("/api/supervision-feedback", "POST", {
+      status: 200,
+    });
+
     cy.visit("/feedback");
   });
 
