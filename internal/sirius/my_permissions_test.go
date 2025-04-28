@@ -30,7 +30,7 @@ func TestPermissions(t *testing.T) {
 					UponReceiving("A request to get my permissions").
 					WithCompleteRequest(consumer.Request{
 						Method: http.MethodGet,
-						Path:   matchers.String("/api/v1/permissions"),
+						Path:   matchers.String(SupervisionAPIPath + "/v1/permissions"),
 					}).
 					WithCompleteResponse(consumer.Response{
 						Status:  http.StatusOK,
@@ -91,7 +91,7 @@ func TestPermissionsIgnoredPact(t *testing.T) {
 					UponReceiving("A request to get all the permissions I need").
 					WithCompleteRequest(consumer.Request{
 						Method: http.MethodGet,
-						Path:   matchers.String("/api/v1/permissions"),
+						Path:   matchers.String(SupervisionAPIPath + "/v1/permissions"),
 					}).
 					WithCompleteResponse(consumer.Response{
 						Status:  http.StatusOK,
@@ -146,7 +146,7 @@ func TestHasPermissionStatusError(t *testing.T) {
 	_, err := client.MyPermissions(Context{Context: context.Background()})
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
-		URL:    s.URL + "/api/v1/permissions",
+		URL:    s.URL + SupervisionAPIPath + "/v1/permissions",
 		Method: http.MethodGet,
 	}, err)
 }

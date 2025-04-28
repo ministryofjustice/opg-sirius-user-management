@@ -26,7 +26,7 @@ type MyDetailsTeam struct {
 func (c *Client) MyDetails(ctx Context) (MyDetails, error) {
 	var v MyDetails
 
-	req, err := c.newRequest(ctx, http.MethodGet, "/api/v1/users/current", nil)
+	req, err := c.newRequest(ctx, http.MethodGet, SupervisionAPIPath + "/v1/users/current", nil)
 	if err != nil {
 		return v, err
 	}

@@ -34,7 +34,7 @@ func (c *Client) EditTeam(ctx Context, team Team) error {
 		return err
 	}
 
-	requestURL := fmt.Sprintf("/api/v1/teams/%d", team.ID)
+	requestURL := fmt.Sprintf(SupervisionAPIPath + "/v1/teams/%d", team.ID)
 
 	req, err := c.newRequest(ctx, http.MethodPut, requestURL, &body)
 	if err != nil {

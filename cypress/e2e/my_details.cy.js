@@ -2,7 +2,7 @@ describe("My details", () => {
   it("shows my details", () => {
     cy.setupPermissions({ "v1-users-updatetelephonenumber": ["put"] });
 
-    cy.addMock("/api/v1/users/current", "GET", {
+    cy.addMock("/supervision-api/v1/users/current", "GET", {
       status: 200,
       body: {
         firstname: "system",

@@ -2,7 +2,7 @@ describe("Delete a team", () => {
   beforeEach(() => {
     cy.setupPermissions({ "v1-teams": ["delete"] });
 
-    cy.addMock("/api/v1/teams/65", "GET", {
+    cy.addMock("/supervision-api/v1/teams/65", "GET", {
       status: 200,
       body: {
         displayName: "Deletion Test Team",
@@ -20,7 +20,7 @@ describe("Delete a team", () => {
   });
 
   it("allows me to delete the team", () => {
-    cy.addMock("/api/v1/teams/65", "DELETE", {
+    cy.addMock("/supervision-api/v1/teams/65", "DELETE", {
       status: 204,
     });
 
