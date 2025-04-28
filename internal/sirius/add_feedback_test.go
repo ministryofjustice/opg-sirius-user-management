@@ -58,7 +58,7 @@ func TestAddFeedback(t *testing.T) {
 					})
 			},
 			expectedError: func(port int) error {
-				return StatusError{Code: 403, URL: fmt.Sprintf("http://127.0.0.1:%d/api/supervision-feedback", port), Method: http.MethodPost}
+				return StatusError{Code: 403, URL: fmt.Sprintf("http://127.0.0.1:%d/supervision-api/supervision-feedback", port), Method: http.MethodPost}
 			},
 		},
 	}
