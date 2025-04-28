@@ -7,7 +7,7 @@ import (
 )
 
 func (c *Client) DeleteTeam(ctx Context, teamID int) error {
-	req, err := c.newRequest(ctx, http.MethodDelete, fmt.Sprintf("/api/v1/teams/%d", teamID), nil)
+	req, err := c.newRequest(ctx, http.MethodDelete, fmt.Sprintf(SupervisionAPIPath + "/v1/teams/%d", teamID), nil)
 	if err != nil {
 		return err
 	}

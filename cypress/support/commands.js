@@ -12,7 +12,7 @@ Cypress.Commands.add("resetMocks", async () => {
  * @param {{[key: string]: string[]}} permissions
  */
 Cypress.Commands.add("setupPermissions", async (permissions = {}) => {
-  await addMock("/api/v1/permissions", "GET", {
+  await addMock("/supervision-api/v1/permissions", "GET", {
     status: 200,
     body: Object.entries(permissions).reduce(
       (set, [endpoint, methods]) => ({
@@ -25,7 +25,7 @@ Cypress.Commands.add("setupPermissions", async (permissions = {}) => {
     ),
   });
 
-  await addMock("/api/v1/users/current", "GET", {
+  await addMock("/supervision-api/v1/users/current", "GET", {
     status: 200,
     body: {},
   });

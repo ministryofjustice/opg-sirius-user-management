@@ -2,7 +2,7 @@ describe("Delete user", () => {
   beforeEach(() => {
     cy.setupPermissions({ "v1-users": ["put", "delete"] });
 
-    cy.addMock("/api/v1/users/123", "GET", {
+    cy.addMock("/supervision-api/v1/users/123", "GET", {
       status: 200,
       body: {
         firstname: "system",
@@ -19,7 +19,7 @@ describe("Delete user", () => {
       "Are you sure you want to delete system admin?"
     );
 
-    cy.addMock("/api/v1/users/123", "DELETE", {
+    cy.addMock("/supervision-api/v1/users/123", "DELETE", {
       status: 200,
     });
 

@@ -34,7 +34,7 @@ func TestAddTeam(t *testing.T) {
 					UponReceiving("A request to add a new team").
 					WithCompleteRequest(consumer.Request{
 						Method: http.MethodPost,
-						Path:   matchers.String("/api/v1/teams"),
+						Path:   matchers.String(SupervisionAPIPath + "/v1/teams"),
 						Headers: matchers.MapMatcher{
 							"Content-Type": matchers.String("application/json"),
 						},
@@ -67,7 +67,7 @@ func TestAddTeam(t *testing.T) {
 					UponReceiving("A request to add a new supervision team").
 					WithCompleteRequest(consumer.Request{
 						Method: http.MethodPost,
-						Path:   matchers.String("/api/v1/teams"),
+						Path:   matchers.String(SupervisionAPIPath + "/v1/teams"),
 						Headers: matchers.MapMatcher{
 							"Content-Type": matchers.String("application/json"),
 						},
@@ -100,7 +100,7 @@ func TestAddTeam(t *testing.T) {
 					UponReceiving("A request to add a new team errors").
 					WithCompleteRequest(consumer.Request{
 						Method: http.MethodPost,
-						Path:   matchers.String("/api/v1/teams"),
+						Path:   matchers.String(SupervisionAPIPath + "/v1/teams"),
 						Headers: matchers.MapMatcher{
 							"Content-Type": matchers.String("application/json"),
 						},
@@ -163,7 +163,7 @@ func TestAddTeamStatusError(t *testing.T) {
 	_, err := client.AddTeam(Context{Context: context.Background()}, "", "", "", "")
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
-		URL:    s.URL + "/api/v1/teams",
+		URL:    s.URL + SupervisionAPIPath + "/v1/teams",
 		Method: http.MethodPost,
 	}, err)
 }

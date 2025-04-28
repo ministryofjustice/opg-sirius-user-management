@@ -15,7 +15,7 @@ func (c *Client) TeamTypes(ctx Context) ([]RefDataTeamType, error) {
 		Data []RefDataTeamType `json:"teamType"`
 	}
 
-	req, err := c.newRequest(ctx, http.MethodGet, "/api/v1/reference-data?filter=teamType", nil)
+	req, err := c.newRequest(ctx, http.MethodGet, SupervisionAPIPath + "/v1/reference-data?filter=teamType", nil)
 	if err != nil {
 		return v.Data, err
 	}

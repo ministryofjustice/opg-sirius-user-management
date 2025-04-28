@@ -38,7 +38,7 @@ type Team struct {
 }
 
 func (c *Client) Teams(ctx Context) ([]Team, error) {
-	req, err := c.newRequest(ctx, http.MethodGet, "/api/v1/teams", nil)
+	req, err := c.newRequest(ctx, http.MethodGet, SupervisionAPIPath + "/v1/teams", nil)
 	if err != nil {
 		return nil, err
 	}

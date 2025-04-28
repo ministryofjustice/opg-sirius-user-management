@@ -2,7 +2,7 @@ describe("Random Reviews", () => {
   beforeEach(() => {
     cy.setupPermissions({ "v1-random-review-settings": ["get", "post"] });
 
-    cy.addMock("/api/v1/random-review-settings", "GET", {
+    cy.addMock("/supervision-api/v1/random-review-settings", "GET", {
       status: 200,
       body: {
         layPercentage: 20,
@@ -56,7 +56,7 @@ describe("Random Reviews", () => {
       cy.get("#hook-layPercentageChange").contains("Change").click();
       cy.get("#f-layPercentage").clear().type("200");
 
-      cy.addMock("/api/v1/random-review-settings", "POST", {
+      cy.addMock("/supervision-api/v1/random-review-settings", "POST", {
         status: 400,
         body: {
           detail: "Enter a percentage between 0 and 100 for lay cases",

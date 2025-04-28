@@ -15,7 +15,7 @@ type RandomReviews struct {
 func (c *Client) RandomReviews(ctx Context) (RandomReviews, error) {
 	var data RandomReviews
 
-	req, err := c.newRequest(ctx, http.MethodGet, "/api/v1/random-review-settings", nil)
+	req, err := c.newRequest(ctx, http.MethodGet, SupervisionAPIPath + "/v1/random-review-settings", nil)
 	if err != nil {
 		return data, err
 	}
