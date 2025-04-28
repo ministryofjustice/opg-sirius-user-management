@@ -2,7 +2,7 @@ describe("Teams", () => {
   beforeEach(() => {
     cy.setupPermissions({ "v1-teams": ["post"] });
 
-    cy.addMock("/api/v1/reference-data?filter=teamType", "GET", {
+    cy.addMock("/supervision-api/v1/reference-data?filter=teamType", "GET", {
       status: 200,
       body: {
         teamType: [
@@ -23,7 +23,7 @@ describe("Teams", () => {
     cy.get("#f-supervision-type").select("Allocations");
     cy.get("#f-phone").clear().type("0123045067");
 
-    cy.addMock("/api/v1/teams", "POST", {
+    cy.addMock("/supervision-api/v1/teams", "POST", {
       status: 201,
       body: { id: 123 },
     });

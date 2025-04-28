@@ -26,7 +26,7 @@ type authUserResponse struct {
 }
 
 func (c *Client) User(ctx Context, id int) (AuthUser, error) {
-	req, err := c.newRequest(ctx, http.MethodGet, fmt.Sprintf("/api/v1/users/%d", id), nil)
+	req, err := c.newRequest(ctx, http.MethodGet, fmt.Sprintf(SupervisionAPIPath + "/v1/users/%d", id), nil)
 	if err != nil {
 		return AuthUser{}, err
 	}

@@ -31,7 +31,7 @@ func TestUser(t *testing.T) {
 					UponReceiving("A request for the user").
 					WithCompleteRequest(consumer.Request{
 						Method: http.MethodGet,
-						Path:   matchers.String("/api/v1/users/123"),
+						Path:   matchers.String(SupervisionAPIPath + "/v1/users/123"),
 					}).
 					WithCompleteResponse(consumer.Response{
 						Status:  http.StatusOK,
@@ -93,7 +93,7 @@ func TestUserStatusError(t *testing.T) {
 	_, err := client.User(Context{Context: context.Background()}, 123)
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
-		URL:    s.URL + "/api/v1/users/123",
+		URL:    s.URL + SupervisionAPIPath + "/v1/users/123",
 		Method: http.MethodGet,
 	}, err)
 }

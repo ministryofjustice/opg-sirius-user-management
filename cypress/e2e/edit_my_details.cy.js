@@ -2,7 +2,7 @@ describe("Edit my details", () => {
   beforeEach(() => {
     cy.setupPermissions({ "v1-users-updatetelephonenumber": ["put"] });
 
-    cy.addMock("/api/v1/users/current", "GET", {
+    cy.addMock("/supervision-api/v1/users/current", "GET", {
       status: 200,
       body: {
         id: 949,
@@ -20,7 +20,7 @@ describe("Edit my details", () => {
   it("allows me to change my phone number", () => {
     cy.get("#f-phonenumber").clear().type("123456789");
 
-    cy.addMock("/api/v1/users/949/updateTelephoneNumber", "PUT", {
+    cy.addMock("/supervision-api/v1/users/949/updateTelephoneNumber", "PUT", {
       status: 200,
     });
 

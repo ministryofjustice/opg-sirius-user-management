@@ -44,7 +44,7 @@ func (c *Client) SearchUsers(ctx Context, search string) ([]User, error) {
 		return nil, ClientError("Search term must be at least three characters")
 	}
 
-	req, err := c.newRequest(ctx, http.MethodGet, "/api/v1/search/users?includeSuspended=1&query="+url.QueryEscape(search), nil)
+	req, err := c.newRequest(ctx, http.MethodGet, SupervisionAPIPath + "/v1/search/users?includeSuspended=1&query="+url.QueryEscape(search), nil)
 	if err != nil {
 		return nil, err
 	}

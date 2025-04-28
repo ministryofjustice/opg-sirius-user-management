@@ -6,7 +6,7 @@ describe("Users", () => {
   });
 
   it("allows me to search for not in a team", () => {
-    cy.addMock("/api/v1/search/users?includeSuspended=1&query=admin", "GET", {
+    cy.addMock("/supervision-api/v1/search/users?includeSuspended=1&query=admin", "GET", {
       status: 200,
       body: [
         {
@@ -28,7 +28,7 @@ describe("Users", () => {
   });
 
   it("allows me to search for a user in a team", () => {
-    cy.addMock("/api/v1/search/users?includeSuspended=1&query=anton", "GET", {
+    cy.addMock("/supervision-api/v1/search/users?includeSuspended=1&query=anton", "GET", {
       status: 200,
       body: [
         {

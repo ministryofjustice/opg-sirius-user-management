@@ -2,7 +2,7 @@ describe("Edit a team", () => {
   beforeEach(() => {
     cy.setupPermissions({ "v1-teams": ["put", "post"] });
 
-    cy.addMock("/api/v1/teams/837", "GET", {
+    cy.addMock("/supervision-api/v1/teams/837", "GET", {
       status: 200,
       body: {
         id: 837,
@@ -13,7 +13,7 @@ describe("Edit a team", () => {
       },
     });
 
-    cy.addMock("/api/v1/reference-data?filter=teamType", "GET", {
+    cy.addMock("/supervision-api/v1/reference-data?filter=teamType", "GET", {
       status: 200,
       body: {
         teamType: [
@@ -47,7 +47,7 @@ describe("Edit a team", () => {
     cy.get("#f-phoneNumber").clear().type("03573953");
     cy.get("#f-email").clear().type("other.team@opgtest.com");
 
-    cy.addMock("/api/v1/teams/837", "PUT", {
+    cy.addMock("/supervision-api/v1/teams/837", "PUT", {
       status: 200,
       body: {},
     });

@@ -2,7 +2,7 @@ describe("Team", () => {
   beforeEach(() => {
     cy.setupPermissions({ "v1-teams": ["put", "post"] });
 
-    cy.addMock("/api/v1/teams/748", "GET", {
+    cy.addMock("/supervision-api/v1/teams/748", "GET", {
       status: 200,
       body: {
         id: 748,
@@ -28,7 +28,7 @@ describe("Team", () => {
       "Are you sure you want to remove John Ruecker from the Finance Team team?"
     );
 
-    cy.addMock("/api/v1/teams/748", "PUT", {
+    cy.addMock("/supervision-api/v1/teams/748", "PUT", {
       status: 200,
       body: {},
     });

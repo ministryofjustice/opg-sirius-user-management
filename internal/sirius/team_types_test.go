@@ -30,7 +30,7 @@ func TestTeamTypes(t *testing.T) {
 					UponReceiving("A request for team types").
 					WithCompleteRequest(consumer.Request{
 						Method: http.MethodGet,
-						Path:   matchers.String("/api/v1/reference-data"),
+						Path:   matchers.String(SupervisionAPIPath + "/v1/reference-data"),
 						Query: matchers.MapMatcher{
 							"filter": matchers.String("teamType"),
 						},
@@ -80,7 +80,7 @@ func TestTeamTypesStatusError(t *testing.T) {
 	_, err := client.TeamTypes(Context{Context: context.Background()})
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
-		URL:    s.URL + "/api/v1/reference-data?filter=teamType",
+		URL:    s.URL + SupervisionAPIPath + "/v1/reference-data?filter=teamType",
 		Method: http.MethodGet,
 	}, err)
 }

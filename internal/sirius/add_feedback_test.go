@@ -41,7 +41,7 @@ func TestAddFeedback(t *testing.T) {
 					UponReceiving("A request to add feedback").
 					WithCompleteRequest(consumer.Request{
 						Method: http.MethodPost,
-						Path:   matchers.String("/api/supervision-feedback"),
+						Path:   matchers.String(SupervisionAPIPath + "/supervision-feedback"),
 						Headers: matchers.MapMatcher{
 							"Content-Type": matchers.String("application/json"),
 						},
@@ -111,7 +111,7 @@ func TestAddFeedbackCanHandleBadRequest(t *testing.T) {
 	})
 	assert.Equal(t, StatusError{
 		Code:   http.StatusBadRequest,
-		URL:    svr.URL + "/api/supervision-feedback",
+		URL:    svr.URL + SupervisionAPIPath + "/supervision-feedback",
 		Method: http.MethodPost,
 	}, err)
 }
@@ -152,7 +152,7 @@ func TestGetCaseloadListCanThrow500Error(t *testing.T) {
 
 	assert.Equal(t, StatusError{
 		Code:   http.StatusInternalServerError,
-		URL:    svr.URL + "/api/supervision-feedback",
+		URL:    svr.URL + SupervisionAPIPath + "/supervision-feedback",
 		Method: http.MethodPost,
 	}, err)
 }

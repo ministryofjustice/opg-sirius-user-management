@@ -25,7 +25,7 @@ func (c *Client) AddTeam(ctx Context, name, teamType, phone, email string) (int,
 		return 0, err
 	}
 
-	req, err := c.newRequest(ctx, http.MethodPost, "/api/v1/teams", &body)
+	req, err := c.newRequest(ctx, http.MethodPost, SupervisionAPIPath + "/v1/teams", &body)
 	if err != nil {
 		return 0, err
 	}
