@@ -26,7 +26,7 @@ services:
       - ./:/e2e
 
   go-lint:
-    image: golangci/golangci-lint:v2.0.2
+    image: golangci/golangci-lint:v2.1.5
     working_dir: /go/src/app
     volumes:
       - ./:/go/src/app
@@ -34,13 +34,13 @@ services:
     command: golangci-lint run -v --timeout 5m --enable gosec --output.text.path stdout --output.sarif.path test-results/golangci-lint.sarif
 
   sirius-mock:
-    image: wiremock/wiremock:3.12.1
+    image: wiremock/wiremock:3.13.0
     ports: ["8563:8080"]
     volumes:
       - "./cypress/mocks:/home/wiremock/mappings"
 
   pact-cli:
-    image: pactfoundation/pact-cli:1.4.0.5
+    image: pactfoundation/pact-cli:1.4.0.6
     working_dir: /go/src/app
     volumes:
       - ./pacts:/go/src/app/pacts
