@@ -33,7 +33,7 @@ func TestDeleteUser(t *testing.T) {
 					UponReceiving("A request to delete the user").
 					WithCompleteRequest(consumer.Request{
 						Method: http.MethodDelete,
-						Path:   matchers.String("/api/v1/users/123"),
+						Path:   matchers.String(SupervisionAPIPath + "/v1/users/123"),
 					}).
 					WithCompleteResponse(consumer.Response{
 						Status: http.StatusOK,
@@ -81,7 +81,7 @@ func TestDeleteUserStatusError(t *testing.T) {
 	err := client.DeleteUser(Context{Context: context.Background()}, 123)
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
-		URL:    s.URL + "/api/v1/users/123",
+		URL:    s.URL + SupervisionAPIPath + "/v1/users/123",
 		Method: http.MethodDelete,
 	}, err)
 }
