@@ -31,7 +31,7 @@ func TestSearchUsers(t *testing.T) {
 					UponReceiving("A search for Anton").
 					WithCompleteRequest(consumer.Request{
 						Method: http.MethodGet,
-						Path:   matchers.String(SupervisionAPIPath + "/v1/search/users"),
+						Path:   matchers.String("/v1/search/users"),
 						Query: matchers.MapMatcher{
 							"includeSuspended": matchers.String("1"),
 							"query":            matchers.String("anton"),
@@ -72,7 +72,7 @@ func TestSearchUsers(t *testing.T) {
 					UponReceiving("A search for admin users").
 					WithCompleteRequest(consumer.Request{
 						Method: http.MethodGet,
-						Path:   matchers.String(SupervisionAPIPath + "/v1/search/users"),
+						Path:   matchers.String("/v1/search/users"),
 						Query: matchers.MapMatcher{
 							"includeSuspended": matchers.String("1"),
 							"query":            matchers.String("admin"),
@@ -127,7 +127,7 @@ func TestSearchUsersStatusError(t *testing.T) {
 	_, err := client.SearchUsers(Context{Context: context.Background()}, "abc")
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
-		URL:    s.URL + SupervisionAPIPath + "/v1/search/users?includeSuspended=1&query=abc",
+		URL:    s.URL + "/v1/search/users?includeSuspended=1&query=abc",
 		Method: http.MethodGet,
 	}, err)
 }
@@ -141,7 +141,7 @@ func TestSearchUsersEscapesQuery(t *testing.T) {
 	_, err := client.SearchUsers(Context{Context: context.Background()}, "Maria Fernández")
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
-		URL:    s.URL + SupervisionAPIPath + "/v1/search/users?includeSuspended=1&query=Maria+Fern%C3%A1ndez",
+		URL:    s.URL + "/v1/search/users?includeSuspended=1&query=Maria+Fern%C3%A1ndez",
 		Method: http.MethodGet,
 	}, err)
 }

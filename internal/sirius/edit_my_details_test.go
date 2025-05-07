@@ -31,7 +31,7 @@ func TestEditMyDetails(t *testing.T) {
 					UponReceiving("A request to change my phone number").
 					WithCompleteRequest(consumer.Request{
 						Method: http.MethodPut,
-						Path:   matchers.String(SupervisionAPIPath + "/v1/users/47/updateTelephoneNumber"),
+						Path:   matchers.String("/v1/users/47/updateTelephoneNumber"),
 						Headers: matchers.MapMatcher{
 							"Content-Type": matchers.String("application/json"),
 						},
@@ -56,7 +56,7 @@ func TestEditMyDetails(t *testing.T) {
 					UponReceiving("An invalid request to change my phone number").
 					WithCompleteRequest(consumer.Request{
 						Method: http.MethodPut,
-						Path:   matchers.String(SupervisionAPIPath + "/v1/users/47/updateTelephoneNumber"),
+						Path:   matchers.String("/v1/users/47/updateTelephoneNumber"),
 						Headers: matchers.MapMatcher{
 							"Content-Type": matchers.String("application/json"),
 						},
@@ -112,7 +112,7 @@ func TestEditMyDetailsStatusError(t *testing.T) {
 	err := client.EditMyDetails(Context{Context: context.Background()}, 47, "")
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
-		URL:    s.URL + SupervisionAPIPath + "/v1/users/47/updateTelephoneNumber",
+		URL:    s.URL + "/v1/users/47/updateTelephoneNumber",
 		Method: http.MethodPut,
 	}, err)
 }

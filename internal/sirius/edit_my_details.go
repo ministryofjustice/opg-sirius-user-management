@@ -15,7 +15,7 @@ func (c *Client) EditMyDetails(ctx Context, id int, phoneNumber string) error {
 
 	var body = strings.NewReader("{\"phoneNumber\":\"" + phoneNumber + "\"}")
 
-	req, err := c.newRequest(ctx, http.MethodPut, fmt.Sprintf(SupervisionAPIPath + "/v1/users/%d/updateTelephoneNumber", id), body)
+	req, err := c.newRequest(ctx, http.MethodPut, fmt.Sprintf("/v1/users/%d/updateTelephoneNumber", id), body)
 	if err != nil {
 		return err
 	}

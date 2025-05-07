@@ -34,7 +34,7 @@ func TestAddUser(t *testing.T) {
 					UponReceiving("A request to add a new user").
 					WithCompleteRequest(consumer.Request{
 						Method: http.MethodPost,
-						Path:   matchers.String(SupervisionAPIPath + "/v1/users"),
+						Path:   matchers.String("/v1/users"),
 						Headers: matchers.MapMatcher{
 							"Content-Type": matchers.String("application/json"),
 						},
@@ -64,7 +64,7 @@ func TestAddUser(t *testing.T) {
 					UponReceiving("A request to add a new user errors").
 					WithCompleteRequest(consumer.Request{
 						Method: http.MethodPost,
-						Path:   matchers.String(SupervisionAPIPath + "/v1/users"),
+						Path:   matchers.String("/v1/users"),
 						Headers: matchers.MapMatcher{
 							"Content-Type": matchers.String("application/json"),
 						},
@@ -128,7 +128,7 @@ func TestAddUserStatusError(t *testing.T) {
 	err := client.AddUser(Context{Context: context.Background()}, "", "", "", "", nil)
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
-		URL:    s.URL + SupervisionAPIPath + "/v1/users",
+		URL:    s.URL + "/v1/users",
 		Method: http.MethodPost,
 	}, err)
 }

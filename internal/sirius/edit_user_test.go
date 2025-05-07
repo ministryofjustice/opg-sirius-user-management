@@ -39,7 +39,7 @@ func TestEditUser(t *testing.T) {
 					UponReceiving("A request to edit the user").
 					WithCompleteRequest(consumer.Request{
 						Method: http.MethodPut,
-						Path:   matchers.String(SupervisionAPIPath + "/v1/users/123"),
+						Path:   matchers.String("/v1/users/123"),
 						Headers: matchers.MapMatcher{
 							"Content-Type": matchers.String("application/json"),
 						},
@@ -70,7 +70,7 @@ func TestEditUser(t *testing.T) {
 					UponReceiving("A request to edit the user errors on validation").
 					WithCompleteRequest(consumer.Request{
 						Method: http.MethodPut,
-						Path:   matchers.String(SupervisionAPIPath + "/v1/users/123"),
+						Path:   matchers.String("/v1/users/123"),
 						Headers: matchers.MapMatcher{
 							"Content-Type": matchers.String("application/json"),
 						},
@@ -131,7 +131,7 @@ func TestEditUserStatusError(t *testing.T) {
 	err := client.EditUser(Context{Context: context.Background()}, AuthUser{ID: 123})
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
-		URL:    s.URL + SupervisionAPIPath + "/v1/users/123",
+		URL:    s.URL + "/v1/users/123",
 		Method: http.MethodPut,
 	}, err)
 }

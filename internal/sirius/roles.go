@@ -9,7 +9,7 @@ import (
 func (c *Client) Roles(ctx Context) ([]string, error) {
 	var v []string
 
-	req, err := c.newRequest(ctx, http.MethodGet, SupervisionAPIPath + "/v1/roles", nil)
+	req, err := c.newRequest(ctx, http.MethodGet, "/v1/roles", nil)
 	if err != nil {
 		return v, err
 	}

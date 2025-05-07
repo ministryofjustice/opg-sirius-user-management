@@ -37,7 +37,7 @@ func TestEditTeam(t *testing.T) {
 					UponReceiving("A request to edit the team").
 					WithCompleteRequest(consumer.Request{
 						Method: http.MethodPut,
-						Path:   matchers.String(SupervisionAPIPath + "/v1/teams/65"),
+						Path:   matchers.String("/v1/teams/65"),
 						Headers: matchers.MapMatcher{
 							"Content-Type": matchers.String("application/json"),
 						},
@@ -78,7 +78,7 @@ func TestEditTeam(t *testing.T) {
 					UponReceiving("A request to edit the team with members").
 					WithCompleteRequest(consumer.Request{
 						Method: http.MethodPut,
-						Path:   matchers.String(SupervisionAPIPath + "/v1/teams/65"),
+						Path:   matchers.String("/v1/teams/65"),
 						Headers: matchers.MapMatcher{
 							"Content-Type": matchers.String("application/json"),
 						},
@@ -110,7 +110,7 @@ func TestEditTeam(t *testing.T) {
 					UponReceiving("A request to edit the team with a non-unique type").
 					WithCompleteRequest(consumer.Request{
 						Method: http.MethodPut,
-						Path:   matchers.String(SupervisionAPIPath + "/v1/teams/65"),
+						Path:   matchers.String("/v1/teams/65"),
 						Headers: matchers.MapMatcher{
 							"Content-Type": matchers.String("application/json"),
 						},
@@ -173,7 +173,7 @@ func TestEditTeamStatusError(t *testing.T) {
 	err := client.EditTeam(Context{Context: context.Background()}, Team{ID: 65})
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
-		URL:    s.URL + SupervisionAPIPath + "/v1/teams/65",
+		URL:    s.URL + "/v1/teams/65",
 		Method: http.MethodPut,
 	}, err)
 }
