@@ -30,7 +30,7 @@ func TestMyDetails(t *testing.T) {
 					UponReceiving("A request to get my details").
 					WithCompleteRequest(consumer.Request{
 						Method: http.MethodGet,
-						Path:   matchers.String("/api/v1/users/current"),
+						Path:   matchers.String("/v1/users/current"),
 					}).
 					WithCompleteResponse(consumer.Response{
 						Status:  http.StatusOK,
@@ -95,7 +95,7 @@ func TestMyDetailsStatusError(t *testing.T) {
 	_, err := client.MyDetails(Context{Context: context.Background()})
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
-		URL:    s.URL + "/api/v1/users/current",
+		URL:    s.URL + "/v1/users/current",
 		Method: http.MethodGet,
 	}, err)
 }

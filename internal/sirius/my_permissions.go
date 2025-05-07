@@ -22,7 +22,7 @@ func (ps PermissionSet) HasPermission(group string, method string) bool {
 }
 
 func (c *Client) MyPermissions(ctx Context) (PermissionSet, error) {
-	req, err := c.newRequest(ctx, http.MethodGet, "/api/v1/permissions", nil)
+	req, err := c.newRequest(ctx, http.MethodGet, "/v1/permissions", nil)
 	if err != nil {
 		return nil, err
 	}

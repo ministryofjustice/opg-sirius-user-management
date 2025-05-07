@@ -2,12 +2,12 @@ describe("Edit user", () => {
   beforeEach(() => {
     cy.setupPermissions({ "v1-users": ["put"] });
 
-    cy.addMock("/api/v1/roles", "GET", {
+    cy.addMock("/supervision-api/v1/roles", "GET", {
       status: 200,
       body: ["System Admin", "Finance", "Self-Allocation", "File Creation"],
     });
 
-    cy.addMock("/api/v1/users/123", "GET", {
+    cy.addMock("/supervision-api/v1/users/123", "GET", {
       status: 200,
       body: {
         firstname: "Hadley",
@@ -33,7 +33,7 @@ describe("Edit user", () => {
     cy.get("#f-firstname").type("Abe");
     cy.get("[name='roles'][value='System Admin']").check();
 
-    cy.addMock("/api/v1/users/123", "PUT", {
+    cy.addMock("/supervision-api/v1/users/123", "PUT", {
       status: 200,
       body: {},
     });

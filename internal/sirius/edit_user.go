@@ -30,7 +30,7 @@ func (c *Client) EditUser(ctx Context, user AuthUser) error {
 		return err
 	}
 
-	requestURL := fmt.Sprintf("/api/v1/users/%d", user.ID)
+	requestURL := fmt.Sprintf("/v1/users/%d", user.ID)
 
 	req, err := c.newRequest(ctx, http.MethodPut, requestURL, &body)
 	if err != nil {

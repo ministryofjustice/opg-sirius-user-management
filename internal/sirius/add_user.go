@@ -25,7 +25,7 @@ func (c *Client) AddUser(ctx Context, email, firstName, lastName, organisation s
 		return err
 	}
 
-	req, err := c.newRequest(ctx, http.MethodPost, "/api/v1/users", &body)
+	req, err := c.newRequest(ctx, http.MethodPost, "/v1/users", &body)
 	if err != nil {
 		return err
 	}

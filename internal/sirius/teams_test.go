@@ -34,7 +34,7 @@ func TestTeamsIgnoredPact(t *testing.T) {
 					UponReceiving("A request for teams").
 					WithCompleteRequest(consumer.Request{
 						Method: http.MethodGet,
-						Path:   matchers.String("/api/v1/teams"),
+						Path:   matchers.String("/v1/teams"),
 					}).
 					WithCompleteResponse(consumer.Response{
 						Status:  http.StatusOK,
@@ -78,7 +78,7 @@ func TestTeamsIgnoredPact(t *testing.T) {
 					UponReceiving("A request for teams").
 					WithCompleteRequest(consumer.Request{
 						Method: http.MethodGet,
-						Path:   matchers.String("/api/v1/teams"),
+						Path:   matchers.String("/v1/teams"),
 					}).
 					WithCompleteResponse(consumer.Response{
 						Status:  http.StatusOK,
@@ -135,7 +135,7 @@ func TestTeamsStatusError(t *testing.T) {
 	_, err := client.Teams(Context{Context: context.Background()})
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
-		URL:    s.URL + "/api/v1/teams",
+		URL:    s.URL + "/v1/teams",
 		Method: http.MethodGet,
 	}, err)
 }

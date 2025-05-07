@@ -7,7 +7,7 @@ import (
 )
 
 func (c *Client) Team(ctx Context, id int) (Team, error) {
-	req, err := c.newRequest(ctx, http.MethodGet, "/api/v1/teams/"+strconv.Itoa(id), nil)
+	req, err := c.newRequest(ctx, http.MethodGet, "/v1/teams/"+strconv.Itoa(id), nil)
 	if err != nil {
 		return Team{}, err
 	}

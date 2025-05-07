@@ -33,6 +33,7 @@ func run(ctx context.Context, logger *slog.Logger) error {
 	port := getEnv("PORT", "8080")
 	webDir := getEnv("WEB_DIR", "web")
 	siriusURL := getEnv("SIRIUS_URL", "http://localhost:9001")
+	supervisionApiPath := getEnv("SUPERVISION_API_PATH", "/supervision-api")
 	siriusPublicURL := getEnv("SIRIUS_PUBLIC_URL", "")
 	prefix := getEnv("PREFIX", "")
 	exportTraces := env.Get("TRACING_ENABLED", "0") == "1"
@@ -77,7 +78,7 @@ func run(ctx context.Context, logger *slog.Logger) error {
 	httpClient := http.DefaultClient
 	httpClient.Transport = otelhttp.NewTransport(httpClient.Transport)
 
-	client, err := sirius.NewClient(httpClient, siriusURL)
+	client, err := sirius.NewClient(httpClient, siriusURL+supervisionApiPath)
 	if err != nil {
 		return err
 	}

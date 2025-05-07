@@ -2,7 +2,7 @@ describe("Add user", () => {
   beforeEach(() => {
     cy.setupPermissions({ "v1-users": ["post", "put"] });
 
-    cy.addMock("/api/v1/roles", "GET", {
+    cy.addMock("/supervision-api/v1/roles", "GET", {
       status: 200,
       body: ["System Admin"],
     });
@@ -17,7 +17,7 @@ describe("Add user", () => {
     cy.get("#f-firstname").clear().type("123456789");
     cy.get("#f-surname").clear().type("123456789");
 
-    cy.addMock("/api/v1/users", "POST", {
+    cy.addMock("/supervision-api/v1/users", "POST", {
       status: 201,
     });
 

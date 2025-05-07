@@ -32,7 +32,7 @@ func TestDeleteTeam(t *testing.T) {
 					UponReceiving("A request to delete the team").
 					WithCompleteRequest(consumer.Request{
 						Method: http.MethodDelete,
-						Path:   matchers.String("/api/v1/teams/461"),
+						Path:   matchers.String("/v1/teams/461"),
 					}).
 					WithCompleteResponse(consumer.Response{
 						Status: http.StatusNoContent,
@@ -80,7 +80,7 @@ func TestDeleteTeamStatusError(t *testing.T) {
 	err := client.DeleteTeam(Context{Context: context.Background()}, 461)
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
-		URL:    s.URL + "/api/v1/teams/461",
+		URL:    s.URL + "/v1/teams/461",
 		Method: http.MethodDelete,
 	}, err)
 }

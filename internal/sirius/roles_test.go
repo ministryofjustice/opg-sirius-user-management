@@ -30,7 +30,7 @@ func TestRoles(t *testing.T) {
 					UponReceiving("A request for roles").
 					WithCompleteRequest(consumer.Request{
 						Method: http.MethodGet,
-						Path:   matchers.String("/api/v1/roles"),
+						Path:   matchers.String("/v1/roles"),
 					}).
 					WithCompleteResponse(consumer.Response{
 						Status: http.StatusOK,
@@ -67,7 +67,7 @@ func TestRolesStatusError(t *testing.T) {
 	_, err := client.Roles(Context{Context: context.Background()})
 	assert.Equal(t, StatusError{
 		Code:   http.StatusTeapot,
-		URL:    s.URL + "/api/v1/roles",
+		URL:    s.URL + "/v1/roles",
 		Method: http.MethodGet,
 	}, err)
 }
