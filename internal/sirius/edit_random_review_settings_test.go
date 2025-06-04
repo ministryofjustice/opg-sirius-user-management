@@ -12,7 +12,7 @@ import (
 )
 
 const UserExists = "User exists"
-const UrlRoute = "/api/v1/random-review-settings"
+const UrlRoute = "/supervision-api/v1/random-review-settings"
 
 func TestEditLayPercentage(t *testing.T) {
 	pact, err := newPact()
