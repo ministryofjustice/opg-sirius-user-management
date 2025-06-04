@@ -21,7 +21,7 @@ func (c *Client) EditRandomReviewSettings(ctx Context, reviewSettings EditRandom
 		return err
 	}
 
-	req, err := c.newRequest(ctx, http.MethodPost, "/api/v1/random-review-settings", &body)
+	req, err := c.newRequest(ctx, http.MethodPost, "/supervision-api/v1/random-review-settings", &body)
 	if err != nil {
 		return err
 	}

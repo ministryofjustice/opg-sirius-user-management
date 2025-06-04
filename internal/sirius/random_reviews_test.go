@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const UrlRandomReview = "/api/v1/random-review-settings"
+const UrlRandomReview = "/supervision-api/v1/random-review-settings"
 
 func TestRandomReviews(t *testing.T) {
 	pact, err := newPact()
