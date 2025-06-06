@@ -37,6 +37,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           default_bump: minor
+          releases_enabled: false
     outputs:
       commit: ${{ steps.commit_branch.outputs.COMMIT }}
       branch: ${{ steps.commit_branch.outputs.BRANCH }}
