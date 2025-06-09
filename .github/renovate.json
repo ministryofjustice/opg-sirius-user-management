@@ -11,6 +11,8 @@
         "Dependencies",
         "Renovate"
     ],
+    "configMigration": true,
+    "postUpdateOptions": ["gomodTidy"],
     "packageRules": [
         {
             "automerge": true,
