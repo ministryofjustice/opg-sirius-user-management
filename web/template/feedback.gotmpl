@@ -5,7 +5,6 @@
     <h1 class="govuk-heading-l">Feedback</h1>
     {{ if eq .Success false }}
         <form class="form" method="post">
-            <input type="hidden" name="xsrfToken" value="{{ .XSRFToken }}" />
             <div class="govuk-form-group">
                 <label class="govuk-label" for="name">
                     Name (optional)
@@ -68,6 +67,7 @@
                 <button id="submit-feedback" class="govuk-button" type="submit">Send Feedback</button>
                 <button id="cancel-feedback" type="button" class="govuk-button govuk-button--secondary close-tab" data-module="moj-close-tab">Cancel</button>
             </div>
+            <input type="hidden" name="xsrfToken" value="{{ .XSRFToken }}" />
         </form>
     {{ else }}
         <br><br>
