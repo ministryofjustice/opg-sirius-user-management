@@ -2,7 +2,7 @@ describe("Feedback", () => {
   beforeEach(() => {
     cy.setupPermissions();
 
-    cy.addMock("/supervision-api/supervision-feedback", "POST", {
+    cy.addMock("/api/supervision-feedback", "POST", {
       status: 200,
     });
 
