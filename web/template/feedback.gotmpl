@@ -5,6 +5,7 @@
     <h1 class="govuk-heading-l">Feedback</h1>
     {{ if eq .Success false }}
         <form class="form" method="post">
+            <input type="hidden" name="xsrfToken" value="{{ .XSRFToken }}" />
             <div class="govuk-form-group">
                 <label class="govuk-label" for="name">
                     Name (optional)
