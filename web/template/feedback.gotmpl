@@ -67,6 +67,7 @@
                 <button id="submit-feedback" class="govuk-button" type="submit">Send Feedback</button>
                 <button id="cancel-feedback" type="button" class="govuk-button govuk-button--secondary close-tab" data-module="moj-close-tab">Cancel</button>
             </div>
+            <input type="hidden" name="xsrfToken" value="{{ .XSRFToken }}" />
         </form>
     {{ else }}
         <br><br>

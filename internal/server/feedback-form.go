@@ -11,11 +11,12 @@ type FeedbackFormClient interface {
 }
 
 type feedbackFormVars struct {
-	Path    string
-	Success bool
-	Errors  sirius.ValidationErrors
-	Error   string
-	Form    model.FeedbackForm
+	Path      string
+	Success   bool
+	Errors    sirius.ValidationErrors
+	Error     string
+	Form      model.FeedbackForm
+	XSRFToken string
 }
 
 func feedbackForm(client FeedbackFormClient, tmpl Template) Handler {
@@ -25,7 +26,8 @@ func feedbackForm(client FeedbackFormClient, tmpl Template) Handler {
 		}
 		ctx := getContext(r)
 		vars := feedbackFormVars{
-			Path: "/feedback",
+			Path:      "/feedback",
+			XSRFToken: ctx.XSRFToken,
 		}
 
 		if r.Method == http.MethodPost {
