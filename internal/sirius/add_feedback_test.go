@@ -41,7 +41,7 @@ func TestAddFeedback(t *testing.T) {
 					UponReceiving("A request to add feedback").
 					WithCompleteRequest(consumer.Request{
 						Method: http.MethodPost,
-						Path:   matchers.String("/supervision-api/v1/supervision-feedback"),
+						Path:   matchers.String("/supervision-api/supervision-feedback"),
 						Headers: matchers.MapMatcher{
 							"Content-Type": matchers.String("application/json"),
 						},
@@ -58,7 +58,7 @@ func TestAddFeedback(t *testing.T) {
 					})
 			},
 			expectedError: func(port int) error {
-				return StatusError{Code: 403, URL: fmt.Sprintf("http://127.0.0.1:%d/supervision-api/v1/supervision-feedback", port), Method: http.MethodPost}
+				return StatusError{Code: 403, URL: fmt.Sprintf("http://127.0.0.1:%d/supervision-api/supervision-feedback", port), Method: http.MethodPost}
 			},
 		},
 	}
@@ -111,7 +111,7 @@ func TestAddFeedbackCanHandleBadRequest(t *testing.T) {
 	})
 	assert.Equal(t, StatusError{
 		Code:   http.StatusBadRequest,
-		URL:    svr.URL + "/supervision-api/v1/supervision-feedback",
+		URL:    svr.URL + "/supervision-api/supervision-feedback",
 		Method: http.MethodPost,
 	}, err)
 }
@@ -152,7 +152,7 @@ func TestGetCaseloadListCanThrow500Error(t *testing.T) {
 
 	assert.Equal(t, StatusError{
 		Code:   http.StatusInternalServerError,
-		URL:    svr.URL + "/supervision-api/v1/supervision-feedback",
+		URL:    svr.URL + "/supervision-api/supervision-feedback",
 		Method: http.MethodPost,
 	}, err)
 }
