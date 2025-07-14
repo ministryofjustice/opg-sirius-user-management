@@ -30,10 +30,11 @@ func (c *Client) AddFeedback(ctx Context, form model.FeedbackForm) error {
 		return err
 	}
 
-	req, err := c.newRequest(ctx, http.MethodPost, "/supervision-api/supervision-feedback", &body)
+	req, err := c.newRequest(ctx, http.MethodPost, "/supervision-api/v1/supervision-feedback", &body)
 	if err != nil {
 		return err
 	}
+	println("request is " + req.URL.String())
 
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := c.http.Do(req)
