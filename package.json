@@ -16,7 +16,7 @@
     "govuk-frontend": "^5.0.0"
   },
   "devDependencies": {
-    "@cypress/webpack-preprocessor": "^6.0.0",
+    "@cypress/webpack-preprocessor": "^7.0.0",
     "axe-core": "^4.3.5",
     "cypress": "14.5.4",
     "cypress-axe": "^1.0.0",
