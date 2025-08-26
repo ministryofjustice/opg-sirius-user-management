@@ -1,6 +1,6 @@
 services:
   user-management:
-    image: 311462405659.dkr.ecr.eu-west-1.amazonaws.com/sirius-user-management:latest
+    image: 311462405659.dkr.ecr.eu-west-1.amazonaws.com/sirius/sirius-user-management:latest
     build:
       dockerfile: docker/sirius-user-management/Dockerfile
     depends_on:
