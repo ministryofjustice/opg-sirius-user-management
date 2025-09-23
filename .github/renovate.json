@@ -34,7 +34,8 @@
         "labels": [
             "Dependencies",
             "Renovate"
-        ]
+        ],
+        "minimumReleaseAge": "3 days"
     },
     "vulnerabilityAlerts": {
         "groupName": "Vulnerability Patches",
