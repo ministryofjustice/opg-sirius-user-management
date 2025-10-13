@@ -2,10 +2,10 @@ module github.com/ministryofjustice/opg-sirius-user-management
 
 go 1.24.3
 
-toolchain go1.25.1
+toolchain go1.25.2
 
 require (
-	github.com/ministryofjustice/opg-go-common v1.128.0
+	github.com/ministryofjustice/opg-go-common v1.133.0
 	github.com/pact-foundation/pact-go/v2 v2.4.1
 	github.com/stretchr/testify v1.11.1
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.63.0
@@ -42,7 +42,7 @@ require (
 	golang.org/x/text v0.28.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250825161204-c5933d9347a5 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250825161204-c5933d9347a5 // indirect
-	google.golang.org/grpc v1.75.1 // indirect
+	google.golang.org/grpc v1.76.0 // indirect
 	google.golang.org/protobuf v1.36.8 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
