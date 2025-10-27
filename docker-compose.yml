@@ -40,7 +40,7 @@ services:
       - "./cypress/mocks:/home/wiremock/mappings"
 
   pact-cli:
-    image: pactfoundation/pact-cli:1.5.0.0
+    image: pactfoundation/pact-cli:1.5.0.2
     working_dir: /go/src/app
     volumes:
       - ./pacts:/go/src/app/pacts
