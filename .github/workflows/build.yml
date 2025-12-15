@@ -105,7 +105,7 @@ jobs:
           (diff <(jq --sort-keys . ${PACT_DIR}/sirius-user-management-sirius.json) <(jq --sort-keys . /tmp/latest-pact.json) || true) | (! grep '<')
 
       - name: Upload Code Coverage
-        uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7 # v5.5.1
+        uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
@@ -128,7 +128,7 @@ jobs:
       - name: Run linting
         run: make lint
       - name: Upload SARIF file
-        uses: github/codeql-action/upload-sarif@fe4161a26a8629af62121b670040955b330f9af2 # v4.31.6
+        uses: github/codeql-action/upload-sarif@1b168cd39490f61582a9beae412bb7057a6b2c4e # v4.31.8
         if: always()
         with:
           sarif_file: test-results/golangci-lint.sarif
@@ -192,7 +192,7 @@ jobs:
         run: make scan
 
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@fe4161a26a8629af62121b670040955b330f9af2 # v4.31.6
+        uses: github/codeql-action/upload-sarif@1b168cd39490f61582a9beae412bb7057a6b2c4e # v4.31.8
         if: always()
         with:
           sarif_file: "test-results/trivy.sarif"
