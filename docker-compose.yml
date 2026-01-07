@@ -12,8 +12,9 @@ services:
       SIRIUS_PUBLIC_URL: http://localhost:8080
 
   cypress:
-    build: docker/cypress
-    command: run --browser chrome
+    build:
+      dockerfile: docker/cypress/Dockerfile
+    command: run --browser electron
     entrypoint: cypress
     depends_on:
       - user-management
@@ -23,7 +24,8 @@ services:
       - CYPRESS_MOCK_SERVER_URI=http://sirius-mock:8080
     working_dir: /e2e
     volumes:
-      - ./:/e2e
+      - ./cypress:/e2e/cypress
+      - ./cypress.config.js:/e2e/cypress.config.js
 
   go-lint:
     image: golangci/golangci-lint:v2.7.2

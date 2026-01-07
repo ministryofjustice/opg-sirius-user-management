@@ -31,7 +31,7 @@ This will run the application at http://localhost:8888/ and will be running agai
 To run the application against local Sirius `make build` and then in the Sirius repo `make dev-up`
 
 ```
-yarn && yarn build
+npm install && npm run build
 SIRIUS_PUBLIC_URL=http://localhost:8080 SIRIUS_URL=http://localhost:8080 PORT=8888 go run main.go
 ```
 

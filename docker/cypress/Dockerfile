@@ -1,8 +1,7 @@
 FROM cypress/included:15.8.1
 
-RUN yarn add cypress-failed-log
-RUN yarn add axe-core
-RUN yarn add cypress-axe
-RUN yarn add @cypress/webpack-preprocessor
-RUN yarn add path-browserify
-RUN yarn add webpack
+WORKDIR /e2e
+
+COPY package.json .
+COPY package-lock.json .
+RUN npm ci --include=dev --ignore-scripts
