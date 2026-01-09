@@ -10,7 +10,6 @@ test-results
 # ignore JetBrains project files
 .idea
 .vscode
-.yarn-error.log
 .cache
 .gocache
 .trivy-cache
