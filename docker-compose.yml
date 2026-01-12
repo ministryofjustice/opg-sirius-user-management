@@ -28,7 +28,7 @@ services:
       - ./cypress.config.js:/e2e/cypress.config.js
 
   go-lint:
-    image: golangci/golangci-lint:v2.7.2
+    image: golangci/golangci-lint:v2.8.0
     working_dir: /go/src/app
     volumes:
       - ./:/go/src/app
@@ -42,7 +42,7 @@ services:
       - "./cypress/mocks:/home/wiremock/mappings"
 
   pact-cli:
-    image: pactfoundation/pact-cli:1.5.0.2
+    image: pactfoundation/pact-cli:1.5.0.3
     working_dir: /go/src/app
     volumes:
       - ./pacts:/go/src/app/pacts
