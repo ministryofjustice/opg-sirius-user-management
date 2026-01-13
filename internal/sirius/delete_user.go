@@ -24,11 +24,21 @@ func (c *Client) DeleteUser(ctx Context, userID int) error {
 
 	if resp.StatusCode != http.StatusOK {
 		var v struct {
-			Message string `json:"message"`
+			Detail           string           `json:"detail"`
+			ValidationErrors ValidationErrors `json:"validation_errors"`
 		}
 
 		if err := json.NewDecoder(resp.Body).Decode(&v); err == nil {
-			return ClientError(v.Message)
+			errValidation := ValidationError{
+				Message: v.Detail,
+				Errors:  v.ValidationErrors,
+			}
+
+			if len(v.ValidationErrors) == 0 {
+				errValidation.Errors = ValidationErrors{"#": {"error": v.Detail}}
+			}
+
+			return errValidation
 		}
 
 		return newStatusError(resp)

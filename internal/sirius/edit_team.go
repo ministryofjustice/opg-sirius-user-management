@@ -58,7 +58,7 @@ func (c *Client) EditTeam(ctx Context, team Team) error {
 		}
 
 		if err := json.NewDecoder(resp.Body).Decode(&v); err == nil {
-			return &ValidationError{
+			return ValidationError{
 				Errors: v.ValidationErrors,
 			}
 		}
