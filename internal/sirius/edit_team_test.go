@@ -137,7 +137,7 @@ func TestEditTeam(t *testing.T) {
 					})
 			},
 			expectedError: func(port int) error {
-				return &ValidationError{
+				return ValidationError{
 					Errors: ValidationErrors{
 						"type": {
 							"error": "Invalid team type",

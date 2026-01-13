@@ -216,7 +216,7 @@ func TestPostEditMyDetailsSiriusErrors(t *testing.T) {
 func TestPostEditMyDetailsInvalidRequest(t *testing.T) {
 	assert := assert.New(t)
 
-	validationError := &sirius.ValidationError{
+	validationError := sirius.ValidationError{
 		Errors: sirius.ValidationErrors{
 			"phoneNumber": {
 				"invalidNumber": "Phone number is not in valid format",
