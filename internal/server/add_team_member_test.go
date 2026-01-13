@@ -344,7 +344,7 @@ func TestPostAddTeamMemberValidationError(t *testing.T) {
 			{ID: 4},
 		},
 	}
-	client.editTeam.err = &sirius.ValidationError{
+	client.editTeam.err = sirius.ValidationError{
 		Errors: validationErrors,
 	}
 	template := &mockTemplate{}

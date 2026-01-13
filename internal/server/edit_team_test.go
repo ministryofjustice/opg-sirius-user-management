@@ -340,7 +340,7 @@ func TestPostEditTeamValidationError(t *testing.T) {
 		Email:       "complaint@opgtest.com",
 		PhoneNumber: "01234",
 	}
-	client.editTeam.err = &sirius.ValidationError{
+	client.editTeam.err = sirius.ValidationError{
 		Errors: validationErrors,
 	}
 	template := &mockTemplate{}

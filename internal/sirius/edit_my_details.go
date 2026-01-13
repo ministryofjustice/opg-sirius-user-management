@@ -34,7 +34,7 @@ func (c *Client) EditMyDetails(ctx Context, id int, phoneNumber string) error {
 
 	if resp.StatusCode != http.StatusOK {
 		if err := json.NewDecoder(resp.Body).Decode(&v); err == nil {
-			return &ValidationError{
+			return ValidationError{
 				Message: v.Detail,
 				Errors:  v.ValidationErrors,
 			}

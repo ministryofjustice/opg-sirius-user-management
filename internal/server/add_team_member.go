@@ -70,7 +70,7 @@ func addTeamMember(client AddTeamMemberClient, tmpl Template) Handler {
 					},
 				}
 				w.WriteHeader(http.StatusBadRequest)
-			} else if verr, ok := err.(*sirius.ValidationError); ok {
+			} else if verr, ok := err.(sirius.ValidationError); ok {
 				vars.Errors = verr.Errors
 				w.WriteHeader(http.StatusBadRequest)
 			} else if err != nil {

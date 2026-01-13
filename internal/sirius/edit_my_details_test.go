@@ -77,7 +77,7 @@ func TestEditMyDetails(t *testing.T) {
 						}),
 					})
 			},
-			expectedError: &ValidationError{
+			expectedError: ValidationError{
 				Message: "Payload failed validation",
 				Errors: ValidationErrors{
 					"phoneNumber": {

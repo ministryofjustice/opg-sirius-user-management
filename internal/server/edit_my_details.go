@@ -46,7 +46,7 @@ func editMyDetails(client EditMyDetailsClient, tmpl Template) Handler {
 			vars.PhoneNumber = r.FormValue("phonenumber")
 			err := client.EditMyDetails(ctx, myDetails.ID, vars.PhoneNumber)
 
-			if e, ok := err.(*sirius.ValidationError); ok {
+			if e, ok := err.(sirius.ValidationError); ok {
 				vars.Errors = e.Errors
 				w.WriteHeader(http.StatusBadRequest)
 			} else if err != nil {

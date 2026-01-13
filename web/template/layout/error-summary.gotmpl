@@ -8,7 +8,13 @@
         <ul class="govuk-list govuk-error-summary__list">
           {{ range $k, $v := . }}
             {{ range $v }}
-              <li><a href="#f-{{ $k }}">{{ . }}</a></li>
+              <li>
+                {{ if (eq $k "#") }}
+                  {{ . }}
+                {{ else }}
+                  <a href="#f-{{ $k }}">{{ . }}</a>
+                {{ end }}
+              </li>
             {{ end }}
           {{ end }}
         </ul>

@@ -81,7 +81,7 @@ func editTeam(client EditTeamClient, tmpl Template) Handler {
 			// Attempt to save
 			err := client.EditTeam(ctx, vars.Team)
 
-			if e, ok := err.(*sirius.ValidationError); ok {
+			if e, ok := err.(sirius.ValidationError); ok {
 				vars.Errors = e.Errors
 				w.WriteHeader(http.StatusBadRequest)
 			} else if err != nil {

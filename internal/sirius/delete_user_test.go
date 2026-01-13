@@ -61,7 +61,7 @@ func TestDeleteUser(t *testing.T) {
 func TestDeleteUserClientError(t *testing.T) {
 	s := httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			http.Error(w, `{"message":"oops"}`, http.StatusBadRequest)
+			http.Error(w, `{"detail":"oops"}`, http.StatusBadRequest)
 		}),
 	)
 	defer s.Close()
@@ -69,7 +69,12 @@ func TestDeleteUserClientError(t *testing.T) {
 	client, _ := NewClient(http.DefaultClient, s.URL)
 
 	err := client.DeleteUser(Context{Context: context.Background()}, 123)
-	assert.Equal(t, ClientError("oops"), err)
+	assert.Equal(t, ValidationError{
+		Message: "oops",
+		Errors: ValidationErrors{
+			"#": {"error": "oops"},
+		},
+	}, err)
 }
 
 func TestDeleteUserStatusError(t *testing.T) {
