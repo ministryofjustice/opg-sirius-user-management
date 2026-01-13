@@ -27,7 +27,7 @@ func TestEditMyDetails(t *testing.T) {
 			setup: func() {
 				pact.
 					AddInteraction().
-					Given("User exists").
+					Given("I am a Lay Team user").
 					UponReceiving("A request to change my phone number").
 					WithCompleteRequest(consumer.Request{
 						Method: http.MethodPut,
@@ -52,7 +52,7 @@ func TestEditMyDetails(t *testing.T) {
 			setup: func() {
 				pact.
 					AddInteraction().
-					Given("User exists").
+					Given("I am a Lay Team user").
 					UponReceiving("An invalid request to change my phone number").
 					WithCompleteRequest(consumer.Request{
 						Method: http.MethodPut,
