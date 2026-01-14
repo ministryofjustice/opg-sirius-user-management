@@ -8,6 +8,7 @@ import (
 
 	"github.com/pact-foundation/pact-go/v2/consumer"
 	"github.com/pact-foundation/pact-go/v2/matchers"
+	"github.com/pact-foundation/pact-go/v2/models"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -27,11 +28,19 @@ func TestEditMyDetails(t *testing.T) {
 			setup: func() {
 				pact.
 					AddInteraction().
-					Given("User exists").
+					GivenWithParameter(models.ProviderState{
+						Name: "I am a POA user",
+						Parameters: map[string]interface{}{
+							"user_id": 1234,
+						},
+					}).
 					UponReceiving("A request to change my phone number").
 					WithCompleteRequest(consumer.Request{
 						Method: http.MethodPut,
-						Path:   matchers.String("/api/v1/users/47/updateTelephoneNumber"),
+						Path: matchers.FromProviderState(
+							"/api/v1/users/${user_id}/updateTelephoneNumber",
+							"/api/v1/users/1234/updateTelephoneNumber",
+						),
 						Headers: matchers.MapMatcher{
 							"Content-Type": matchers.String("application/json"),
 						},
@@ -52,11 +61,19 @@ func TestEditMyDetails(t *testing.T) {
 			setup: func() {
 				pact.
 					AddInteraction().
-					Given("User exists").
+					GivenWithParameter(models.ProviderState{
+						Name: "I am a POA user",
+						Parameters: map[string]interface{}{
+							"user_id": 1234,
+						},
+					}).
 					UponReceiving("An invalid request to change my phone number").
 					WithCompleteRequest(consumer.Request{
 						Method: http.MethodPut,
-						Path:   matchers.String("/api/v1/users/47/updateTelephoneNumber"),
+						Path: matchers.FromProviderState(
+							"/api/v1/users/${user_id}/updateTelephoneNumber",
+							"/api/v1/users/1234/updateTelephoneNumber",
+						),
 						Headers: matchers.MapMatcher{
 							"Content-Type": matchers.String("application/json"),
 						},
