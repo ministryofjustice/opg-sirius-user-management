@@ -28,7 +28,7 @@ services:
       - ./cypress.config.js:/e2e/cypress.config.js
 
   go-lint:
-    image: golangci/golangci-lint:v2.9.0
+    image: golangci/golangci-lint:v2.10.1
     working_dir: /go/src/app
     volumes:
       - ./:/go/src/app
