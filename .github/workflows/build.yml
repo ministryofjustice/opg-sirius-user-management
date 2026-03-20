@@ -188,14 +188,21 @@ jobs:
         run: |
           docker load -i /tmp/images/multi-arch-image.tar
 
-      - name: Trivy Image Vulnerability Scanner
-        run: make scan
+      # - name: Trivy Image Vulnerability Scanner
+      #   run: make scan
 
-      - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@0d579ffd059c29b07949a3cce3983f0780820c98 # v4.32.6
-        if: always()
+      # - name: Upload Trivy scan results to GitHub Security tab
+      #   uses: github/codeql-action/upload-sarif@0d579ffd059c29b07949a3cce3983f0780820c98 # v4.32.6
+      #   if: always()
+      #   with:
+      #     sarif_file: "test-results/trivy.sarif"
+
+      - name: Snyk scan
+        uses: snyk/actions/docker@9adf32b1121593767fc3c057af55b55db032dc04 # v1.0.0
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_OPG_ORG_TOKEN }}
         with:
-          sarif_file: "test-results/trivy.sarif"
+          image: 311462405659.dkr.ecr.eu-west-1.amazonaws.com/sirius/sirius-user-management:latest
 
       - name: Configure OIDC AWS credentials for ECR push
         uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 # v6.0.0
