@@ -35,7 +35,7 @@ RUN apk --update --no-cache add \
     tzdata \
     && rm -rf /var/cache/apk/*
 
-RUN apk upgrade libcrypto3 libssl3 busybox zlib
+# RUN apk upgrade libcrypto3 libssl3 busybox zlib
 
 COPY --from=build-env /go/bin/opg-sirius-user-management opg-sirius-user-management
 COPY --from=asset-env /app/web/static web/static
