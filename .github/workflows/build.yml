@@ -66,62 +66,59 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Run tests
-        run: exit 0
+      - name: Cache GO Dependencies
+        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
+        with:
+          path: ~/.gocache
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
 
-      # - name: Cache GO Dependencies
-      #   uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
-      #   with:
-      #     path: ~/.gocache
-      #     key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-      #     restore-keys: |
-      #       ${{ runner.os }}-go-
+      - name: Run Tests
+        run: make unit-test
 
-      # - name: Run Tests
-      #   run: make unit-test
+      - name: Publish Unit Test Results
+        uses: EnricoMi/publish-unit-test-result-action@c950f6fb443cb5af20a377fd0dfaa78838901040 # v2.23.0
+        if: ${{ always() && github.actor != 'dependabot[bot]' }}
+        with:
+          check_name: "Unit Test Results"
+          files: test-results/unit-tests.xml
 
-      # - name: Publish Unit Test Results
-      #   uses: EnricoMi/publish-unit-test-result-action@c950f6fb443cb5af20a377fd0dfaa78838901040 # v2.23.0
-      #   if: ${{ always() && github.actor != 'dependabot[bot]' }}
-      #   with:
-      #     check_name: "Unit Test Results"
-      #     files: test-results/unit-tests.xml
+      - name: Publish pacts
+        if: github.actor != 'dependabot[bot]'
+        run: |
+          docker compose run --rm pact-cli pact-broker publish ./pacts/sirius-user-management-sirius.json \
+            --consumer-app-version ${{ needs.identify.outputs.commit }} \
+            --branch ${{ needs.identify.outputs.branch }} \
+            --tag ${{ needs.create-tag.outputs.tag }} \
+            --broker-base-url https://pact-broker.api.opg.service.justice.gov.uk \
+            --broker-username admin \
+            --broker-password ${{ secrets.PACT_BROKER_PASSWORD }}
 
-      # - name: Publish pacts
-      #   if: github.actor != 'dependabot[bot]'
-      #   run: |
-      #     docker compose run --rm pact-cli pact-broker publish ./pacts/sirius-user-management-sirius.json \
-      #       --consumer-app-version ${{ needs.identify.outputs.commit }} \
-      #       --branch ${{ needs.identify.outputs.branch }} \
-      #       --tag ${{ needs.create-tag.outputs.tag }} \
-      #       --broker-base-url https://pact-broker.api.opg.service.justice.gov.uk \
-      #       --broker-username admin \
-      #       --broker-password ${{ secrets.PACT_BROKER_PASSWORD }}
+      - name: Compare pacts
+        if: github.actor == 'dependabot[bot]'
+        env:
+          PACT_DIR: ./pacts
+          PACT_BROKER_URL: https://pact-broker.api.opg.service.justice.gov.uk
+        run: |
+          curl ${PACT_BROKER_URL}/pacts/provider/sirius/consumer/sirius-user-management/latest > /tmp/latest-pact.json
+          (diff <(jq --sort-keys . ${PACT_DIR}/sirius-user-management-sirius.json) <(jq --sort-keys . /tmp/latest-pact.json) || true) | (! grep '<')
 
-      # - name: Compare pacts
-      #   if: github.actor == 'dependabot[bot]'
-      #   env:
-      #     PACT_DIR: ./pacts
-      #     PACT_BROKER_URL: https://pact-broker.api.opg.service.justice.gov.uk
-      #   run: |
-      #     curl ${PACT_BROKER_URL}/pacts/provider/sirius/consumer/sirius-user-management/latest > /tmp/latest-pact.json
-      #     (diff <(jq --sort-keys . ${PACT_DIR}/sirius-user-management-sirius.json) <(jq --sort-keys . /tmp/latest-pact.json) || true) | (! grep '<')
+      - name: Upload Code Coverage
+        uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        with:
+          files: test-results/test-coverage.txt
+          fail_ci_if_error: true
+          verbose: true
 
-      # - name: Upload Code Coverage
-      #   uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
-      #   env:
-      #     CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-      #   with:
-      #     files: test-results/test-coverage.txt
-      #     fail_ci_if_error: true
-      #     verbose: true
-
-      # - name: Persist Pacts
-      #   uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
-      #   with:
-      #     name: pacts
-      #     path: |
-      #       ./pacts/sirius-user-management-sirius.json
+      - name: Persist Pacts
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: pacts
+          path: |
+            ./pacts/sirius-user-management-sirius.json
 
   lint:
     name: GO lint
@@ -143,37 +140,34 @@ jobs:
       - build
       - test
     steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Set up Docker
+        run: |
+          echo '{"experimental": true, "features": { "containerd-snapshotter": true }}' | sudo tee -a /etc/docker/daemon.json
+          sudo systemctl restart docker
+          docker run --privileged --rm tonistiigi/binfmt --install all
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          path: /tmp/images
+          name: multi-arch-image
+      - name: Load Images
+        run: |
+          docker load -i /tmp/images/multi-arch-image.tar
+
       - name: Run Cypress tests
-        run: exit 0
-  #     - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-  #     - name: Set up Docker
-  #       run: |
-  #         echo '{"experimental": true, "features": { "containerd-snapshotter": true }}' | sudo tee -a /etc/docker/daemon.json
-  #         sudo systemctl restart docker
-  #         docker run --privileged --rm tonistiigi/binfmt --install all
-  #     - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
-  #       with:
-  #         path: /tmp/images
-  #         name: multi-arch-image
-  #     - name: Load Images
-  #       run: |
-  #         docker load -i /tmp/images/multi-arch-image.tar
+        run: make cypress
 
-      # - name: Run Cypress tests
-      #   run: make cypress
-
-      # - name: Upload Cypress screenshots
-      #   uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
-      #   if: failure()
-      #   with:
-      #     name: cypress-screenshots
-      #     path: cypress/screenshots
+      - name: Upload Cypress screenshots
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        if: failure()
+        with:
+          name: cypress-screenshots
+          path: cypress/screenshots
 
   push:
     name: "Push Images"
     runs-on: ubuntu-latest
-    needs: ['identify', 'create-tag', 'build', 'test', 'lint']
-    # needs: ['identify', 'create-tag', 'build', 'test', 'lint', 'cypress']
+    needs: ['identify', 'create-tag', 'build', 'test', 'lint', 'cypress']
     if: github.actor != 'dependabot[bot]'
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -195,11 +189,11 @@ jobs:
           docker load -i /tmp/images/multi-arch-image.tar
 
       - name: Snyk Scan
-        uses: ministryofjustice/opg-github-actions/actions/snyk-scan@SP-3543
+        uses: ministryofjustice/opg-github-actions/actions/snyk-scan@a6ee7f30fbae7d1bc6cee8cb2699063ef4f0c7e3 # v4.4.0
+
         with:
           SNYK_TEST_IMAGE: 311462405659.dkr.ecr.eu-west-1.amazonaws.com/sirius/sirius-user-management:latest
           SNYK_TOKEN: ${{ secrets.SNYK_OPG_ORG_TOKEN }}
-          snyk_test_args: "--severity-threshold=high"
 
       - name: Upload Snyk scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@0d579ffd059c29b07949a3cce3983f0780820c98 # v4.32.6
@@ -207,31 +201,31 @@ jobs:
         with:
           sarif_file: "test-results/snyk.sarif"
 
-      # - name: Configure OIDC AWS credentials for ECR push
-      #   uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 # v6.0.0
-      #   with:
-      #     role-to-assume: arn:aws:iam::311462405659:role/sirius-component-ecr-role
-      #     role-session-name: opg-sirius-user-management-github-actions-ecr-push
-      #     role-duration-seconds: 900
-      #     aws-region: eu-west-1
+      - name: Configure OIDC AWS credentials for ECR push
+        uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 # v6.0.0
+        with:
+          role-to-assume: arn:aws:iam::311462405659:role/sirius-component-ecr-role
+          role-session-name: opg-sirius-user-management-github-actions-ecr-push
+          role-duration-seconds: 900
+          aws-region: eu-west-1
 
-      # - name: ECR Login
-      #   id: login-ecr
-      #   uses: aws-actions/amazon-ecr-login@c962da2960ed15f492addc26fffa274485265950 # v2.0.2
-      #   with:
-      #     registries: 311462405659
+      - name: ECR Login
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@c962da2960ed15f492addc26fffa274485265950 # v2.0.2
+        with:
+          registries: 311462405659
 
-      # - name: Push
-      #   run: |
-      #     docker tag 311462405659.dkr.ecr.eu-west-1.amazonaws.com/sirius/sirius-user-management:latest 311462405659.dkr.ecr.eu-west-1.amazonaws.com/sirius/sirius-user-management:${{ needs.create-tag.outputs.tag }}
-      #     if [ "${{ needs.identify.outputs.branch }}" == "main" ]; then
-      #       # We want all of the tags pushed
-      #       docker tag 311462405659.dkr.ecr.eu-west-1.amazonaws.com/sirius/sirius-user-management:latest 311462405659.dkr.ecr.eu-west-1.amazonaws.com/sirius/sirius-user-management:main-${{ needs.create-tag.outputs.tag }}
-      #       docker tag 311462405659.dkr.ecr.eu-west-1.amazonaws.com/sirius/sirius-user-management:latest 311462405659.dkr.ecr.eu-west-1.amazonaws.com/sirius/sirius-user-management:main-${{ needs.create-tag.outputs.tag }}-${{ needs.create-tag.outputs.timestamp }}
-      #       docker push --all-tags 311462405659.dkr.ecr.eu-west-1.amazonaws.com/sirius/sirius-user-management
-      #     else
-      #       docker push 311462405659.dkr.ecr.eu-west-1.amazonaws.com/sirius/sirius-user-management:${{ needs.create-tag.outputs.tag }}
-      #     fi
+      - name: Push
+        run: |
+          docker tag 311462405659.dkr.ecr.eu-west-1.amazonaws.com/sirius/sirius-user-management:latest 311462405659.dkr.ecr.eu-west-1.amazonaws.com/sirius/sirius-user-management:${{ needs.create-tag.outputs.tag }}
+          if [ "${{ needs.identify.outputs.branch }}" == "main" ]; then
+            # We want all of the tags pushed
+            docker tag 311462405659.dkr.ecr.eu-west-1.amazonaws.com/sirius/sirius-user-management:latest 311462405659.dkr.ecr.eu-west-1.amazonaws.com/sirius/sirius-user-management:main-${{ needs.create-tag.outputs.tag }}
+            docker tag 311462405659.dkr.ecr.eu-west-1.amazonaws.com/sirius/sirius-user-management:latest 311462405659.dkr.ecr.eu-west-1.amazonaws.com/sirius/sirius-user-management:main-${{ needs.create-tag.outputs.tag }}-${{ needs.create-tag.outputs.timestamp }}
+            docker push --all-tags 311462405659.dkr.ecr.eu-west-1.amazonaws.com/sirius/sirius-user-management
+          else
+            docker push 311462405659.dkr.ecr.eu-west-1.amazonaws.com/sirius/sirius-user-management:${{ needs.create-tag.outputs.tag }}
+          fi
 
   end_of_pr_workflow:
     name: End of PR Workflow
