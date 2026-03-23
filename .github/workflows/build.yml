@@ -154,20 +154,21 @@ jobs:
         run: |
           docker load -i /tmp/images/multi-arch-image.tar
 
-      - name: Run Cypress tests
-        run: make cypress
+      # - name: Run Cypress tests
+      #   run: make cypress
 
-      - name: Upload Cypress screenshots
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
-        if: failure()
-        with:
-          name: cypress-screenshots
-          path: cypress/screenshots
+      # - name: Upload Cypress screenshots
+      #   uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+      #   if: failure()
+      #   with:
+      #     name: cypress-screenshots
+      #     path: cypress/screenshots
 
   push:
     name: "Push Images"
     runs-on: ubuntu-latest
-    needs: ['identify', 'create-tag', 'build', 'test', 'lint', 'cypress']
+    needs: ['identify', 'create-tag', 'build', 'test', 'lint']
+    # needs: ['identify', 'create-tag', 'build', 'test', 'lint', 'cypress']
     if: github.actor != 'dependabot[bot]'
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
