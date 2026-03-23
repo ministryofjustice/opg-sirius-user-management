@@ -1,0 +1,7 @@
+version: v1.25.1
+ignore:
+  SNYK-GOLANG-GOLANGORGXNETHTTP2-15363313:
+    - '*':
+        reason: Ignoring to test snyk
+        expires: 2026-03-27T00:00:00.000Z
+        created: 2026-03-20T15:53:35.634Z
