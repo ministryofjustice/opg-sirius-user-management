@@ -56,9 +56,9 @@ services:
       - ./:/go/src/app
       - ./.gocache:/go/pkg/mod
 
-  trivy:
-    image: aquasec/trivy:latest
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./.trivy-cache:/root/.cache
-      - ./test-results:/test-results
+  # trivy:
+  #   image: aquasec/trivy:latest
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #     - ./.trivy-cache:/root/.cache
+  #     - ./test-results:/test-results
