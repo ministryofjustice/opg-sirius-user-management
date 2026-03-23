@@ -189,7 +189,7 @@ jobs:
           docker load -i /tmp/images/multi-arch-image.tar
 
       - name: Trivy Image Vulnerability Scanner
-        run: make scan
+        run: exit 1
 
       - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@0d579ffd059c29b07949a3cce3983f0780820c98 # v4.32.6
