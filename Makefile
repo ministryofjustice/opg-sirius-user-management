@@ -1,12 +1,12 @@
 export DOCKER_BUILDKIT=1
 
-all: lint unit-test build scan cypress down
+all: lint unit-test build cypress down
 
 lint:
 	docker compose run --rm go-lint
 
 test-results:
-	mkdir -p -m 0777 test-results .gocache pacts logs cypress/screenshots .trivy-cache
+	mkdir -p -m 0777 test-results .gocache pacts logs cypress/screenshots
 
 setup-directories: test-results
 
@@ -21,10 +21,6 @@ build-all:
 
 up:
 	docker compose up -d --build user-management
-
-# scan: setup-directories
-# 	docker compose run --rm trivy image --format table --exit-code 0 311462405659.dkr.ecr.eu-west-1.amazonaws.com/sirius/sirius-user-management:latest
-# 	docker compose run --rm trivy image --format sarif --output /test-results/trivy.sarif --exit-code 1 311462405659.dkr.ecr.eu-west-1.amazonaws.com/sirius/sirius-user-management:latest
 
 cypress: setup-directories
 	docker compose up -d --wait user-management
