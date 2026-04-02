@@ -77,13 +77,6 @@ jobs:
       - name: Run Tests
         run: make unit-test
 
-      - name: Publish Unit Test Results
-        uses: EnricoMi/publish-unit-test-result-action@c950f6fb443cb5af20a377fd0dfaa78838901040 # v2.23.0
-        if: ${{ always() && github.actor != 'dependabot[bot]' }}
-        with:
-          check_name: "Unit Test Results"
-          files: test-results/unit-tests.xml
-
       - name: Publish pacts
         if: github.actor != 'dependabot[bot]'
         run: |
