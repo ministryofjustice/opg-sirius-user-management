@@ -1,6 +1,5 @@
 # Sirius user management
 
-[![CircleCI](https://circleci.com/gh/ministryofjustice/opg-sirius-user-management.svg?style=shield)](https://circleci.com/gh/ministryofjustice/opg-sirius-user-management)
 [![codecov](https://codecov.io/gh/ministryofjustice/opg-sirius-user-management/branch/main/graph/badge.svg?token=BFGR5FBQ0T)](https://codecov.io/gh/ministryofjustice/opg-sirius-user-management)
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/ministryofjustice/opg-sirius-user-management)](https://pkg.go.dev/github.com/ministryofjustice/opg-sirius-user-management)
 
