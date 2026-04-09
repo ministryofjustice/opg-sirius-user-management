@@ -77,13 +77,6 @@ jobs:
       - name: Run Tests
         run: make unit-test
 
-      - name: Publish Unit Test Results
-        uses: EnricoMi/publish-unit-test-result-action@c950f6fb443cb5af20a377fd0dfaa78838901040 # v2.23.0
-        if: ${{ always() && github.actor != 'dependabot[bot]' }}
-        with:
-          check_name: "Unit Test Results"
-          files: test-results/unit-tests.xml
-
       - name: Publish pacts
         if: github.actor != 'dependabot[bot]'
         run: |
@@ -258,10 +251,6 @@ jobs:
           role-session-name: opg-sirius-user-management-github-actions-ssm-push
           role-duration-seconds: 900
           aws-region: eu-west-1
-
-      - name: Install AWS CLI
-        id: install-aws-cli
-        uses: unfor19/install-aws-cli-action@f5b46b7f32cf5e7ebd652656c5036bf83dd1e60c # 1.0.8
 
       - name: Push Tag to Parameter Store
         run: |
