@@ -12,8 +12,8 @@
     "prettier": "prettier --write ."
   },
   "dependencies": {
-    "@ministryofjustice/frontend": "^8.0.0",
-    "govuk-frontend": "^5.0.0"
+    "@ministryofjustice/frontend": "^9.0.0",
+    "govuk-frontend": "^6.1.0"
   },
   "devDependencies": {
     "@cypress/webpack-preprocessor": "^7.0.0",

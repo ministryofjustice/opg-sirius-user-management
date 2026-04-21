@@ -1,12 +1,12 @@
 $govuk-assets-path: "/admin/assets/";
 
-@import "node_modules/govuk-frontend/dist/govuk/all";
+@import "node_modules/govuk-frontend/dist/govuk";
 @import "node_modules/@ministryofjustice/frontend/moj/all";
 
 .govuk-table .link-button {
   @include govuk-link-common;
   @include govuk-link-style-default;
-  color: $govuk-link-colour;
+  color: govuk-functional-colour(link);
   text-decoration: underline;
   margin-bottom: 0;
   padding: 0;
@@ -32,8 +32,8 @@ $govuk-assets-path: "/admin/assets/";
 }
 
 #sirius-title {
-    float: right;
-    width: 60%;
+  float: right;
+  width: 60%;
 }
 
 #header-logo {
@@ -41,7 +41,8 @@ $govuk-assets-path: "/admin/assets/";
 }
 
 .app-table-align-middle {
-  & th, & td {
+  & th,
+  & td {
     vertical-align: middle;
   }
 }
