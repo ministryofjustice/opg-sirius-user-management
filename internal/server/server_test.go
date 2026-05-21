@@ -258,8 +258,8 @@ func TestGetContext(t *testing.T) {
 	assert := assert.New(t)
 
 	r, _ := http.NewRequest("GET", "/", nil)
-	r.AddCookie(&http.Cookie{Name: "XSRF-TOKEN", Value: "z3tVRZ00yx4dHz3KWYv3boLWHZ4/RsCsVAKbvo2SBNc%3D"})
-	r.AddCookie(&http.Cookie{Name: "another", Value: "one"})
+	r.AddCookie(&http.Cookie{Name: "XSRF-TOKEN", Value: "z3tVRZ00yx4dHz3KWYv3boLWHZ4/RsCsVAKbvo2SBNc%3D", Secure: true, HttpOnly: true, SameSite: http.SameSiteStrictMode})
+	r.AddCookie(&http.Cookie{Name: "another", Value: "one", Secure: true, HttpOnly: true, SameSite: http.SameSiteStrictMode})
 
 	ctx := getContext(r)
 	assert.Equal(r.Context(), ctx.Context)
@@ -271,8 +271,8 @@ func TestGetContextBadXSRFToken(t *testing.T) {
 	assert := assert.New(t)
 
 	r, _ := http.NewRequest("GET", "/", nil)
-	r.AddCookie(&http.Cookie{Name: "XSRF-TOKEN", Value: "%"})
-	r.AddCookie(&http.Cookie{Name: "another", Value: "one"})
+	r.AddCookie(&http.Cookie{Name: "XSRF-TOKEN", Value: "%", Secure: true, HttpOnly: true, SameSite: http.SameSiteStrictMode})
+	r.AddCookie(&http.Cookie{Name: "another", Value: "one", Secure: true, HttpOnly: true, SameSite: http.SameSiteStrictMode})
 
 	ctx := getContext(r)
 	assert.Equal(r.Context(), ctx.Context)
@@ -284,7 +284,7 @@ func TestGetContextMissingXSRFToken(t *testing.T) {
 	assert := assert.New(t)
 
 	r, _ := http.NewRequest("GET", "/", nil)
-	r.AddCookie(&http.Cookie{Name: "another", Value: "one"})
+	r.AddCookie(&http.Cookie{Name: "another", Value: "one", Secure: true, HttpOnly: true, SameSite: http.SameSiteStrictMode})
 
 	ctx := getContext(r)
 	assert.Equal(r.Context(), ctx.Context)
@@ -297,8 +297,8 @@ func TestGetContextForPostRequest(t *testing.T) {
 
 	r, _ := http.NewRequest("POST", "/", strings.NewReader("xsrfToken=the-real-one"))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	r.AddCookie(&http.Cookie{Name: "XSRF-TOKEN", Value: "z3tVRZ00yx4dHz3KWYv3boLWHZ4/RsCsVAKbvo2SBNc%3D"})
-	r.AddCookie(&http.Cookie{Name: "another", Value: "one"})
+	r.AddCookie(&http.Cookie{Name: "XSRF-TOKEN", Value: "z3tVRZ00yx4dHz3KWYv3boLWHZ4/RsCsVAKbvo2SBNc%3D", Secure: true, HttpOnly: true, SameSite: http.SameSiteStrictMode})
+	r.AddCookie(&http.Cookie{Name: "another", Value: "one", Secure: true, HttpOnly: true, SameSite: http.SameSiteStrictMode})
 
 	ctx := getContext(r)
 	assert.Equal(r.Context(), ctx.Context)
