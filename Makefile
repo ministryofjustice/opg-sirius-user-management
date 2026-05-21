@@ -28,3 +28,6 @@ cypress: setup-directories
 
 down:
 	docker compose down
+
+go-lint:
+	docker compose run --rm go-lint

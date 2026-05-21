@@ -192,7 +192,14 @@ func errorHandler(client ErrorHandlerClient, tmplError Template, prefix, siriusU
 				}
 
 				if redirect, ok := err.(RedirectError); ok {
-					http.Redirect(w, r, prefix+redirect.To(), http.StatusFound)
+					u, err := url.Parse(redirect.To())
+					if err != nil || u.Host != "" || u.Scheme != "" {
+						http.Error(w, "Invalid redirect", http.StatusBadRequest)
+						return
+					}
+					// Use only the path component to prevent open redirect
+					safeRedirect := u.RequestURI()
+					http.Redirect(w, r, prefix+safeRedirect, http.StatusFound) //nolint:gosec
 					return
 				}
 
