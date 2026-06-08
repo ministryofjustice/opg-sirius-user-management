@@ -3,7 +3,7 @@ module github.com/ministryofjustice/opg-sirius-user-management
 go 1.26.0
 
 require (
-	github.com/ministryofjustice/opg-go-common v1.165.12
+	github.com/ministryofjustice/opg-go-common v1.165.13
 	github.com/pact-foundation/pact-go/v2 v2.5.1
 	github.com/stretchr/testify v1.11.1
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.69.0
