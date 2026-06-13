@@ -21,7 +21,7 @@
     "cypress": "15.16.0",
     "cypress-axe": "^1.0.0",
     "cypress-failed-log": "^2.10.0",
-    "esbuild": "^0.28.0",
+    "esbuild": "^0.28.1",
     "path-browserify": "^1.0.1",
     "prettier": "^3.0.0",
     "sass": "^1.26.11",
