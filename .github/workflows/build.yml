@@ -78,7 +78,6 @@ jobs:
         run: make unit-test
 
       - name: Publish pacts
-        if: github.actor != 'dependabot[bot]'
         run: |
           docker compose run --rm pact-cli pact-broker publish ./pacts/sirius-user-management-sirius.json \
             --consumer-app-version ${{ needs.identify.outputs.commit }} \
@@ -88,15 +87,6 @@ jobs:
             --broker-username admin \
             --broker-password ${{ secrets.PACT_BROKER_PASSWORD }}
 
-      - name: Compare pacts
-        if: github.actor == 'dependabot[bot]'
-        env:
-          PACT_DIR: ./pacts
-          PACT_BROKER_URL: https://pact-broker.api.opg.service.justice.gov.uk
-        run: |
-          curl ${PACT_BROKER_URL}/pacts/provider/sirius/consumer/sirius-user-management/latest > /tmp/latest-pact.json
-          (diff <(jq --sort-keys . ${PACT_DIR}/sirius-user-management-sirius.json) <(jq --sort-keys . /tmp/latest-pact.json) || true) | (! grep '<')
-
       - name: Upload Code Coverage
         uses: codecov/codecov-action@e79a6962e0d4c0c17b229090214935d2e33f8354 # v6
         env:
@@ -105,13 +95,6 @@ jobs:
           files: test-results/test-coverage.txt
           fail_ci_if_error: false
           verbose: true
-
-      - name: Persist Pacts
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: pacts
-          path: |
-            ./pacts/sirius-user-management-sirius.json
 
   lint:
     name: GO lint
