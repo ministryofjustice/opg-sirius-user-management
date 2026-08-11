@@ -1,7 +1,7 @@
-$govuk-assets-path: "/admin/assets/";
+@use "node_modules/@ministryofjustice/frontend/moj/all";
+@use "node_modules/govuk-frontend/dist/govuk" as *;
 
-@import "node_modules/govuk-frontend/dist/govuk";
-@import "node_modules/@ministryofjustice/frontend/moj/all";
+$moj-assets-path: "/admin/assets/";
 
 .govuk-table .link-button {
   @include govuk-link-common;
@@ -45,4 +45,39 @@ $govuk-assets-path: "/admin/assets/";
   & td {
     vertical-align: middle;
   }
+}
+.govuk-footer__copyright-logo::before {
+  background: currentcolor;
+  -webkit-mask-image: url("#{$moj-assets-path}images/govuk-crest.svg");
+  mask-image: url("#{$moj-assets-path}images/govuk-crest.svg");
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: 50% 0%;
+  mask-position: 50% 0%;
+  -webkit-mask-size: 125px 102px;
+  mask-size: 125px 102px;
+}
+
+
+.govuk-footer__copyright-logo::before {
+  content: "";
+  display: block;
+  width: 100%;
+  padding-top: 112px;
+  background-image: url("#{$moj-assets-path}images/govuk-crest.svg");
+  background-repeat: no-repeat;
+  background-position: 50% 0%;
+  background-size: 125px 102px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.moj-search__button {
+  display: inline-block;
+  position: relative;
+  top: -2px;
+  width: auto;
+  margin-bottom: 0;
+  margin-left: 10px;
+  vertical-align: bottom;
 }
