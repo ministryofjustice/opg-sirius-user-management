@@ -52,6 +52,40 @@ jobs:
     name: Create Tags
     uses: ./.github/workflows/create-tags.yml
 
+  verify-readonly-fs:
+    name: Verify Read-only Filesystem
+    runs-on: ubuntu-latest
+    env:
+      AWS_ROLE_ARN: ${{ github.ref_name == 'main' && 'arn:aws:iam::997462338508:role/sirius-component-ssm-role' || 'arn:aws:iam::679638075911:role/sirius-component-ssm-pr-role' }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@99214aa6889fcddfa57764031d71add364327e59 # v6.1.3
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          role-session-name: opg-sirius-user-management-verify-readonly-fs
+          aws-region: eu-west-1
+
+      - name: Fetch ECS mounts config from SSM
+        id: ssm
+        run: |
+          mounts_json=$(aws ssm get-parameter \
+            --name "/sirius/production/ecs-mounts" \
+            --region eu-west-1 \
+            --query "Parameter.Value" \
+            --output text)
+          echo "mounts_json<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$mounts_json" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+      - name: Verify docker-compose read_only/tmpfs matches infrastructure
+        uses: ministryofjustice/opg-github-actions/actions/verify-readonly-fs@722a5f955424aaba01e9ca43d68390cd4048d6e1
+        with:
+          mounts_json: ${{ steps.ssm.outputs.mounts_json }}
+          service_json: |
+            { "user-management": null }
+
   build:
     name: Build Sirius User Management
     uses: ministryofjustice/opg-github-workflows/.github/workflows/build-multi-architecture-image.yml@17ca444d0b23a0f9f6c612f1bfb8dc9be358f235 # v3.19.6
@@ -143,7 +177,7 @@ jobs:
   push:
     name: "Push Images"
     runs-on: ubuntu-latest
-    needs: ['identify', 'create-tag', 'build', 'test', 'lint', 'cypress']
+    needs: ['identify', 'verify-readonly-fs', 'create-tag', 'build', 'test', 'lint', 'cypress']
     if: github.actor != 'dependabot[bot]'
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
@@ -206,7 +240,7 @@ jobs:
     name: End of PR Workflow
     runs-on: ubuntu-latest
     if: always()
-    needs: ['identify', 'create-tag', 'build', 'test', 'lint', 'cypress', 'push']
+    needs: ['identify', 'verify-readonly-fs', 'create-tag', 'build', 'test', 'lint', 'cypress', 'push']
     steps:
       - name: End of PR Workflow
         run: |
