@@ -8,6 +8,7 @@ services:
     ports: ["8888:8888"]
     privileged: false
     user: app
+    read_only: true
     environment:
       HEALTHCHECK: "/health-check"
       PORT: 8888
