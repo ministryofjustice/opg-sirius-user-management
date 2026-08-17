@@ -138,7 +138,7 @@ jobs:
       - name: Run linting
         run: make lint
       - name: Upload SARIF file
-        uses: github/codeql-action/upload-sarif@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v4.37.3
+        uses: github/codeql-action/upload-sarif@5595ccaf912efad79be6eef63a5619ff05969be3 # v4.37.6
         if: always()
         with:
           sarif_file: test-results/golangci-lint.sarif
@@ -219,7 +219,7 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_OPG_ORG_TOKEN }}
 
       - name: Upload Snyk scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v4.37.3
+        uses: github/codeql-action/upload-sarif@5595ccaf912efad79be6eef63a5619ff05969be3 # v4.37.6
         if: always()
         with:
           sarif_file: "test-results/snyk.sarif"
