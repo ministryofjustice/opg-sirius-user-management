@@ -32,7 +32,7 @@ services:
       - ./cypress.config.js:/e2e/cypress.config.js
 
   go-lint:
-    image: golangci/golangci-lint:v2.12.2
+    image: golangci/golangci-lint:v2.12.2@sha256:5cceeef04e53efe1470638d4b4b4f5ceefd574955ab3941b2d9a68a8c9ad5240
     working_dir: /go/src/app
     volumes:
       - ./:/go/src/app
@@ -40,7 +40,7 @@ services:
     command: golangci-lint run -v --timeout 5m --enable gosec --output.text.path stdout --output.sarif.path test-results/golangci-lint.sarif
 
   sirius-mock:
-    image: wiremock/wiremock:3.13.2
+    image: wiremock/wiremock:3.13.2@sha256:0d4ecb3e4dc8213fd7a4d37d6a78f6e6b553a6d2e15bd51b0999781282ac61b3
     ports: ["8563:8080"]
     volumes:
       - "./cypress/mocks:/home/wiremock/mappings"
