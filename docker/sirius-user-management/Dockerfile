@@ -11,7 +11,7 @@ RUN npm ci --ignore-scripts
 COPY web/assets web/assets
 RUN npm run build
 
-FROM golang:1.26@sha256:87a41d2539e5671777734e91f467499ed5eafb1fb1f77221dff2744db7a51775 AS build-env
+FROM golang:1.26@sha256:6c2a5538f964f1c82f97ad14988bf05de100d922d159d0e398b54c7b0ca0c6c9 AS build-env
 
 RUN adduser \
     --disabled-password \
