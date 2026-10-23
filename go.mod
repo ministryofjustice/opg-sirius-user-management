@@ -1,6 +1,6 @@
 module github.com/ministryofjustice/opg-sirius-user-management
 
-go 1.26.0
+go 1.27.3
 
 require (
 	github.com/ministryofjustice/opg-go-common v1.165.29
