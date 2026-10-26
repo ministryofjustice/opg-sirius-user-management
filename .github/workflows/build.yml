@@ -31,7 +31,7 @@ jobs:
     name: Identify version
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: "0"
       - name: Define commit SHA and branch
@@ -58,7 +58,7 @@ jobs:
     env:
       AWS_ROLE_ARN: ${{ github.ref_name == 'main' && 'arn:aws:iam::997462338508:role/sirius-component-ssm-role' || 'arn:aws:iam::679638075911:role/sirius-component-ssm-pr-role' }}
     steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
@@ -98,7 +98,7 @@ jobs:
     needs: ['identify', 'create-tag']
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Cache GO Dependencies
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -134,7 +134,7 @@ jobs:
     name: GO lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Run linting
         run: make lint
       - name: Upload SARIF file
@@ -150,7 +150,7 @@ jobs:
       - build
       - test
     steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Set up Docker
         run: |
           echo '{"experimental": true, "features": { "containerd-snapshotter": true }}' | sudo tee -a /etc/docker/daemon.json
@@ -180,7 +180,7 @@ jobs:
     needs: ['identify', 'verify-readonly-fs', 'create-tag', 'build', 'test', 'lint', 'cypress']
     if: github.actor != 'dependabot[bot]'
     steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: "0"
 
@@ -258,7 +258,7 @@ jobs:
     needs: ['create-tag', 'end_of_pr_workflow']
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Configure OIDC AWS credentials for SSM
         uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
