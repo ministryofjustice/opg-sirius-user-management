@@ -1,4 +1,4 @@
-FROM node:22.12.0-alpine3.19@sha256:40dc4b415c17b85bea9be05314b4a753f45a4e1716bb31c01182e6c53d51a654 AS asset-env
+FROM node:24.22.1-alpine3.24@sha256:06d7adf3e0ef61a13f1d28682726366f97a15aa1888c934d3ecec86c33918b53 AS asset-env
 
 WORKDIR /app
 
@@ -24,6 +24,8 @@ RUN adduser \
 
 ARG TARGETARCH
 WORKDIR /app
+
+RUN update-ca-certificates
 
 COPY go.mod .
 COPY go.sum .
