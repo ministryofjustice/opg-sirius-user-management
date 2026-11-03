@@ -1,4 +1,4 @@
-FROM node:22.12.0-alpine3.19@sha256:40dc4b415c17b85bea9be05314b4a753f45a4e1716bb31c01182e6c53d51a654 AS asset-env
+FROM node:24.22.2-alpine3.24@sha256:8a32c8cf649a49915a66e81e7a609223c708d0adabf288ee3f4077d765542f85 AS asset-env
 
 WORKDIR /app
 
@@ -11,7 +11,7 @@ RUN npm ci --ignore-scripts
 COPY web/assets web/assets
 RUN npm run build
 
-FROM golang:1.27.3@sha256:f20d83a83e18dbd2a4714b8ffd4b30b287b6243962dd75608e86abcc63ba4efc AS build-env
+FROM golang:1.27.3@sha256:2920bb124f1a2e12a1d39f0cab756ae0068441ee1da7655dec7f5e374944095b AS build-env
 
 RUN adduser \
     --disabled-password \
@@ -24,6 +24,8 @@ RUN adduser \
 
 ARG TARGETARCH
 WORKDIR /app
+
+RUN update-ca-certificates
 
 COPY go.mod .
 COPY go.sum .
