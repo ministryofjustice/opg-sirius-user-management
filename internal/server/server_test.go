@@ -129,7 +129,8 @@ func TestErrorHandlerMyPermissionsError(t *testing.T) {
 	data := map[string]string{}
 	err := json.Unmarshal(logBuf.Bytes(), &data)
 	assert.Nil(err)
-	assert.Equal("oops", data["msg"])
+	assert.Equal("request failed", data["msg"])
+	assert.Equal("oops", data["err"])
 	assert.Equal("ERROR", data["level"])
 
 	assert.Equal(http.StatusInternalServerError, resp.StatusCode)
@@ -186,7 +187,8 @@ func TestErrorHandlerStatus(t *testing.T) {
 	data := map[string]string{}
 	err := json.Unmarshal(logBuf.Bytes(), &data)
 	assert.Nil(err)
-	assert.Equal("418 I'm a teapot", data["msg"])
+	assert.Equal("request failed", data["msg"])
+	assert.Equal("418 I'm a teapot", data["err"])
 	assert.Equal("ERROR", data["level"])
 }
 
