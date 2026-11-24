@@ -199,7 +199,7 @@ func errorHandler(client ErrorHandlerClient, tmplError Template, prefix, siriusU
 					}
 					// Use only the path component to prevent open redirect
 					safeRedirect := u.RequestURI()
-					http.Redirect(w, r, prefix+safeRedirect, http.StatusFound) //nolint:gosec
+					http.Redirect(w, r, prefix+safeRedirect, http.StatusFound) // #nosec G710 -- host and scheme rejected above
 					return
 				}
 
@@ -212,7 +212,7 @@ func errorHandler(client ErrorHandlerClient, tmplError Template, prefix, siriusU
 
 				logger := telemetry.LoggerFromContext(r.Context())
 				if code == http.StatusInternalServerError {
-					logger.Error(err.Error())
+					logger.Error("request failed", slog.Any("err", err.Error()))
 				}
 
 				w.WriteHeader(code)

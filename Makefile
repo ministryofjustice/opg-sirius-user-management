@@ -1,6 +1,6 @@
 export DOCKER_BUILDKIT=1
 
-all: lint unit-test build cypress down
+all: lint gosec unit-test build cypress down
 
 lint:
 	docker compose run --rm go-lint
@@ -9,6 +9,9 @@ test-results:
 	mkdir -p -m 0777 test-results .gocache pacts logs cypress/screenshots
 
 setup-directories: test-results
+
+gosec: setup-directories
+	docker compose run --rm gosec
 
 unit-test: setup-directories
 	docker compose run --rm test-runner
